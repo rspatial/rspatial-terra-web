@@ -14,11 +14,23 @@ This website provides materials to learn about spatial data analysis and modelin
 
   | Read this to learn about the basics of reading, writing, and manipulating spatial data. (`pdf </spatial/Spatialdata.pdf>`__)
   | 
+
   
 .. topic:: 3. `Remote sensing image analysis <rs/index.html>`__
 
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </rs/rs.pdf>`__)
   |
+
+   
+   
+Manuals
+-------
+
+.. topic:: I. `The terra package <pkg/index.html>`__
+
+  | A detailed description of the methods in the terra package. (`pdf </pkg/terraPackage.pdf>`__)
+  | 
+
 
    
 
@@ -31,4 +43,5 @@ This website provides materials to learn about spatial data analysis and modelin
    intr/index.rst
    spatial/index.rst
    rs/index.rst
+   pkg/index.rst
    
