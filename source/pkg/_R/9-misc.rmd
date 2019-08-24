@@ -1,0 +1,11 @@
+# Miscellaneous
+
+## Session options
+
+There is a number of session options that influence reading and writing files. These can be set in a session, with `rasterOptions```, and saved to make them persistent in between sessions. But you probably should not change the default values unless you have pressing need to do so. You can, for example, set the directory where temporary files are written, and set your preferred default file format and data type. Some of these settings can be overwritten by arguments to functions where they apply (with arguments like filename, datatype, format). Except for generic functions like mean, '+', and sqrt. These functions may write a file when the result is too large to hold in memory and then these options can only be set through the session options.  The options chunksize and maxmemory determine the maximum size (in number of cells) of a single chunk of values that is read/written in chunk-by-chunk processing of very large files.
+
+```{r  raster-119}
+library(terra)
+terraOptions()
+```
+

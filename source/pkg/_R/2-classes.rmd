@@ -1,0 +1,21 @@
+# Classes
+
+The package is built around a number of "classes" of which the `SpatRaster` and `SpatVector` are the most important. 
+
+## SpatRaster
+
+A `SpatRaster` represents multi-layer (variable) raster data. A `SpatRaster` object stores a number of fundamental parameters that describe it. These include the number of columns and rows, the coordinates of its spatial extent ('bounding box'), and the coordinate reference system (the 'map projection'). In addition, a `SpatRaster` can store information about the file(s) in which the raster cell values are stored (if there are such files) --- as raster cell values can also be held in memory.
+
+
+## SpatVector
+
+A `SpatVector` represents "vector" data, that is, points, lines or polygon geometries and their tabular attributes.
+
+## SpatExtent
+
+Class for spatial extent
+
+
+
+
+
