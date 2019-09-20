@@ -21,6 +21,12 @@ This website provides materials to learn about spatial data analysis and modelin
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </rs/rs.pdf>`__)
   |
 
+
+.. topic:: 4. `Processing MODIS data <rs-modis/index.html>`__
+
+  | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </rs/rs-modis.pdf>`__)
+  |
+
    
    
 Manuals
@@ -43,5 +49,6 @@ Manuals
    intr/index.rst
    spatial/index.rst
    rs/index.rst
+   rs-modis/index.rst
    pkg/index.rst
    

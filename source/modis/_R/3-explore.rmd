@@ -1,0 +1,76 @@
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
+datadir <- file.path(dirname(tempdir()), "agrin/modis")
+mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
+```
+
+# Image exploration
+
+Now that we have successfully downloaded one MODIS tile, we can use `terra` package to explore and visualize it. Please note that MODIS tiles are distributed in HDF format that may include subdatasets. The subdataset and processing steps might be different for various MODIS collections (e.g. daily scenes, vegetation indices products).
+
+Now that we have donwload some MODIS data, we can explore and visualize it.
+
+First create a SpatRaster object from the file created on the previous page.
+
+```{r mplot}
+mf
+r <- rast(mf[1])
+r
+```
+
+*Exercise:* Find out at least 5 properties (path, row, date of collection etc) of the MODIS data from the  information embedded in the filename.
+
+
+## Image properties
+
+The code below illustrates how you can load HDF files and access image properties of a SpatRaster object. 
+
+
+```{r imgproperties}
+# Check coordinate reference system (CRS)
+crs(r)
+
+# Number of cells, rows, columns
+ncell(r)
+dim(r)
+
+# spatial resolution ~ 500 m
+res(r)
+
+# Number of bands/layers/subdatasets
+nlyr(r)
+
+# Let's find the name of the layers within this HDF file
+names(r)
+
+# Since the names are quite long we can shorten them to be more meaningful
+sub1 <- substr(names(r), 86, 120)
+
+# In case you don't want to count the number of characters
+sub2 <- sapply(strsplit(names(r), ":"), "[[", 3)
+
+names(r) <- sub1
+```
+
+## Plot!
+
+
+Let's learn more about the product before we start plotting the bands. Read the layer description in the webpage you just opened with `productInfo` function.
+
+*Exercise:* make a table of the band names based on the wavelength information.
+Hint: Surface Reflectance Band 1 (620-670 nm) is red band.
+
+```{r plotrgb}
+
+# Create an image RGB composite plot
+plotRGB(r, r = 1, g = 4, b = 3)
+
+# Disappointing? apply some stretching; see `?plotRGB` for more options
+
+plotRGB(r, r = 1, g = 4, b = 3, stretch="lin")
+```
+
+*Exercise:* Create False Color Composite plot using the same data. Hint: try `plotRGB` and specify the bands you need to make the False Color Composite.    
+
+*Exercise:* Save the plots to files. Hint: try `?png`.

@@ -1,0 +1,89 @@
+
+```{r, echo=FALSE, message=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
+datadir <- file.path(dirname(tempdir()), "agrin/modis")
+library(agrin)
+library(terra)
+mf <- file.path(datadir, "modis_qualmasked.tif")
+rmask <- rast(mf)
+```
+
+# Processing
+
+Here we crop an image to get the exact area of interest, and then we compute the Normalized Difference Vegetation Index (NDVI).
+
+Get the polygon boundary
+
+```{r boundary}
+library(agrin)
+
+pol <- ibli_data("marsabit")
+```
+
+
+Change vector boundary coordinate reference system, so that it matches that of the MODIS data. 
+
+```{r prj}
+rmask
+
+prj <- crs(rmask)
+
+prj
+
+poly <- project(pol, prj)
+```
+
+**Question**: Why do not we change the coordinate system of the MODIS data?
+
+
+Clip the image using the transformed vector boundaries.
+
+```{r crop}
+rclip <- crop(rmask, poly)
+
+# Plot cropped MODIS and add the boundary
+plotRGB(rclip, r = 2, g = 1, b = 4, 
+        main = 'MODIS False color composite (NIR:Red:Green)',
+        stretch = "lin" )
+  # Overlay with boundary 
+  lines(poly, col="blue")
+
+```
+
+
+## NDVI
+
+We have so far masked out bad quality pixels and clipped the image to area of interest extents. Let us now use the processed image to compute an index measure. The Normalized Difference Vegetation Index (NDVI) is a common measure of greenness. It is computed as follows
+
+$$
+NDVI = \frac{(NIR - Red)}{(NIR + RED)}.
+$$
+
+
+We expect the reflectance to be between 0 (very dark areas) and 1 (very bright areas). Due to various reasons, there may values outside this rnage. First clamp values of the image between 0 and 1. 
+
+```{r clamp}
+# To ensure all data lies between 0 & 1 as anticipated for reflectance
+rimage <- clamp(rclip, 0, 1) 
+```
+
+```{r ndvi}
+ndvi <- (rclip[[2]] - rclip[[1]]) /(rclip[[2]] + rclip[[1]])
+plot(ndvi, main="NDVI")
+```
+
+*Exercise* Write a function to compute `NDVI` type two-band spectral indices and compute `NDVI` using the function.
+
+Next we extract the NDVI values computed above as spatial aggregates for each sub-location in Marsabit.
+
+```{r extract}
+
+ndvi_val <- extract(ndvi, poly, fun=mean, na.rm=TRUE)
+
+ndvi_val[1:5]
+  
+```
+
+Use `help(extract)` to check other options for spatial aggregates.
+File

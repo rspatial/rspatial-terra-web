@@ -1,0 +1,93 @@
+```{r, echo=FALSE, message=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
+library(agrin)
+library(terra)
+library(luna)
+```
+
+# Downloading MODIS data
+
+
+MODIS data can be acquired through multiple services. This is one of the reasons why beginners as well as well experienced users often get confused about which one to use. While graphical user interfaces (GUI) are great for preliminary data exploration, they are not ideal for accessing large number of files or when automatic updates are required. Please visit this [website](https://modis.gsfc.nasa.gov/tools/) to learn more about the tools and resources that related to MODIS Data use. 
+
+Here we show how to use the R package `luna` to download MODIS data for a geographic area and time period. 
+
+As mentioned earlier, large number of MODIS products are currently available for various scientific applications. We first need to find the product best suited for our study.
+
+```{r product}
+library(terra)
+library(luna)
+
+# lists all products that are currently searchable
+prod <- getProducts() 
+head(prod)
+
+# to find the MODIS products
+modis <- getProducts("^MOD|^MYD|^MCD")
+head(modis)
+```
+
+We will use "MOD09A1"
+
+```{r prod}
+product <- "MOD09A1"
+```
+
+To learn about specific product you can launch a webpage
+
+```{r productweb, eval=FALSE}
+productInfo(product)
+```
+
+Note that the entire MODIS archive is regularly re-processed for overall imporvement and revisions. We use version 6 or later for our analysis.
+
+Once we finalize the product we want to use, we define some parameters for the data we want: product name, start and end date, and area of interest.
+
+```{r dates}
+start <- "2010-01-01" 
+end <- "2010-01-07"
+```
+We will download an example MODIS 8-day composite tile for Kenya. 
+
+Our area of interest is Marsabit, Kenya. To define the area of interest, we use polygons data that comes with the `agrin` package
+
+
+```{r aoi1}
+if (!require(agrin)) {
+	devtools::install_github("aginsurance/agrin")
+}
+library(agrin)
+ken <- ibli_data("kenya") 
+ken
+```
+
+`ken` is a `SpatVector` of polygons. We can subset it like this to only get the polygon for Marsabit:
+
+```{r aoi2}
+i <- ken$NAME_1 == "Marsabit"
+aoi <- ken[i,]
+plot(ken, col="light gray")
+lines(aoi, col="red", lwd=2)
+```
+
+
+Let's now find out what MODIS data is available for this area. We will search the available tiles from a NASA server that requires login credentials. You can create a free account in [EarthData](https://urs.earthdata.nasa.gov/) portal. You need to enter the login credentials when prompted in the R-console or pass them to the function. You can save the credentials to your computer so that they can automatically be used in future requests.
+
+
+```{r getfiles}
+mf <- luna::getModis(product, start, end, aoi=aoi, download = FALSE)
+mf
+```
+
+
+To download the tiles, usually you would download them to a folder where you save the data for your project. Here we use the temporary directory. You can use a specific direcory of your choice instead.
+
+```{r download}
+datadir <- file.path(dirname(tempdir()), "agrin/modis")
+dir.create(datadir, showWarnings=FALSE, recursive=TRUE)
+mf <- luna::getModis(product, start, end,
+            aoi=aoi, download=TRUE, path=datadir)
+mf
+```
+

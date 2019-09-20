@@ -17,7 +17,7 @@ if (length(args) < 2) {
 cmd <- args[1]
 stopifnot(cmd %in% c("knit", "build"))
 
-chapters <- c("intr", "spatial", "rs", "pkg")
+chapters <- c("intr", "spatial", "rs", "modis", "pkg")
 chapter <- tolower(args[2])
 if (chapter == "all") {
 # this is problematic as there is a lot of function hiding 

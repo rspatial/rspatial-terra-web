@@ -1,0 +1,136 @@
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60))
+```
+
+# The Moderate Resolution Imaging Spectroradiometer (MODIS)
+
+This document provides a basic overview of MODIS. Additional resources on terminology and fundamentals of remote sensing can be found [here](https://www.rspatial.org/rs/1-introduction.html) and [here](https://www.nrcan.gc.ca/maps-tools-and-publications/satellite-imagery-and-air-photos/tutorial-fundamentals-remote-sensing/9309).
+and this ["review of Selected MODIS Algorithms, Data Products, and Applications"](https://pdfs.semanticscholar.org/0096/0a7c7d094c43cc461b07334ec44757110428.pdf).
+
+
+
+## Introduction 
+
+The [Moderate Resolution Imaging Spectroradiometer (MODIS)](https://modis.gsfc.nasa.gov/about/) is an optical sensor onboard two satellites named Terra (originally known as EOS AM-1) and Aqua (originally known as EOS PM-1) operated by NASA. Terra was launched on 18 December 1999 and Aqua was launched on 24 May 2002. Terra's orbit around the Earth is such that it passes from North to South across the equator in the morning, while Aqua passes South to North over the equator in the afternoon. Terra MODIS and Aqua MODIS take images for the entire Earth's surface every 1 to 2 days. The data collected is the intensity of the light reflected by earth in 36 different wavelengths ("colors"). Both Terra and Aqua also have other sensors besides MODIS. These two sensors have publicly available daily archive of conditions on the earth surface for the past 20 years!
+
+
+## Spatial and spectral properties 
+
+The table below summarized the intended use for cation and corresponding spatial resolution in which they are acquired.
+
+
+```{r, echo=FALSE}
+m <- matrix(c("1-2","Land/Cloud boundaries","250","3-7","Land/Cloud/Aerosol properties","500","8-16","Ocean Color/Phytoplankton/Biogeochemistry","1000","17-19","Atmospheric water vapor","1000","20-23","Surface/Cloud temperature","1000","24-25","Atmospheric temperature","1000","26","Cirrus clouds","1000","27-29","Water Vapor","1000","30","Ozone","1000","31-36","Surface/Cloud temperature cloud top altitude","1000"), ncol=3, byrow=TRUE) 
+dm <- data.frame(m, stringsAsFactors = FALSE)
+colnames(dm) <- c("Spectral band number", "Intended use", "Spatial resolution")
+knitr::kable(dm, caption="MODIS spectral bands and their spatial resolution")
+```
+
+
+## Processing levels
+
+MODIS data is available at different levels of processing. 
+
+- Level 0: Unprocessed raw satellite feeds ("ungridded orbital swath data").
+- Level 1A: Raw un-calibrated swath data with georeference information.
+- Level 1B: radiometrically calibrated with georeference information.
+- Level 2: level 1 data atmospherically corrected to yield surface reflectance. 
+- Level 2G: Levcel 2 data calibrated and stored as integers on the sinusoidal tiled gridded system. 
+- Level 3: level 2 data, properly georeferenced, and often temporally composited or averaged. "Best" pixel selection (e.g. one value per pixel over a period of 7 days) 
+- Level 4: data products that have been put through additional processing. Higher processing level than level 3.
+
+More information of these products can be obtain from [MODIS Nomenclature](https://modaps.modaps.eosdis.nasa.gov/services/about/nomenclature.html).
+
+## Products
+
+The higher level data products can be grouped based on their application areas (see: https://modis.gsfc.nasa.gov/data/dataprod/). These products are usually distributed in different spatial resolution (250/500/1000 m) and temporal composite (daily/8-day/16-day/monthly/annual) combinations for both sensors.
+
+Each of those products has a prefix for instance, "MOD" are products from the Terra satellite while "MYD" are products from the Aqua satellite and prefix "MCD" are products generated from a combination of the two satellites. 
+
+*MODIS Land Products*  
+- MODIS Surface Reflectance  
+- MODIS Land Surface Temperature and Emissivity (MOD11)  
+- MODIS Land Surface Temperature and Emissivity (MOD21)  
+- MODIS Land Cover Products  
+- MODIS Vegetation Index Products (NDVI and EVI)  
+- MODIS Thermal Anomalies - Active Fires  
+- MODIS Fraction of Photosynthetically Active Radiation (FPAR) / Leaf Area Index (LAI)  
+- MODIS Evapotranspiration   
+- MODIS Gross Primary Productivity (GPP) / Net Primary Productivity (NPP)  
+- MODIS Bidirectional Reflectance Distribution Function (BRDF) / Albedo Parameter   
+- MODIS Vegetation Continuous Fields                
+- MODIS Water Mask             
+- MODIS Burned Area Product    
+
+*MODIS Atmosphere Products*   
+- MODIS Aerosol Product  
+- MODIS Total Precipitable Water  
+- MODIS Cloud Product  
+- MODIS Atmospheric Profiles  
+- MODIS Atmosphere Joint Product  
+- MODIS Atmosphere Gridded Product  
+- MODIS Cloud Mask  
+
+*MODIS Cryosphere Products*              
+- MODIS Snow Cover                  
+- MODIS Sea Ice and Ice Surface Temperature             
+
+*MODIS Ocean Products*             
+- MODIS Sea Surface Temperature              
+- MODIS Remote Sensing Reflectance           
+- MODIS Chlorophyll-a Concentration           
+- MODIS Diffuse Attenuation at 490 nm             
+- MODIS Particulate Organic Carbon            
+- MODIS Particulate Inorganic Carbon           
+- MODIS Normalized Fluorescence Line Height (FLH)             
+- MODIS Instantaneous Photosynthetically Available Radiation           
+- MODIS Daily Mean Photosynthetically Available Radiation           
+
+
+These products are distributed by different Distributed Active Archive Center(DAAC). For example [Land Processes Distributed Active Archive Center, LP DAAC](https://lpdaac.usgs.gov/product_search/?collections=Combined+MODIS&collections=Terra+MODIS&collections=Aqua+MODIS&view=list) distributes the following products.  
+
+```{r MODProducts, echo=FALSE}
+m <- matrix(c('1', 'Level-1A Radiance Counts', '2', 'Level-1B Calibrated, Geolocated Radiances', '3', 'Geolocation Data Set', '4', 'Aerosol Product', '5', 'Total Precipitable Water', '6', 'Cloud Product', '7', 'Atmospheric Profiles', '8', 'Gridded Atmosphere Products (Level-3)', '9', 'Atmospherically Corrected Surface Reflectance', '10', 'Snow Cover', '11', 'Land Surface Temperature & Emissivity', '12', 'Land Cover/Land Cover Change', '13', 'Vegetation Indices', '14', 'Thermal Anomalies, Fires and Biomass Burning', '15', 'Leaf Area Index and FPAR', '16', 'Surface Resistance & Evapotranspiration', '17', 'Vegetation Production, Net Primary Productivity', '18', 'Normalized Water Leaving Radiance', '19', 'Pigment Concentration', '20', 'Chlorophyll II Fluorescence', '21', 'Chlorophyll a Pigment Concentration', '22', 'Photosynthetically Active Radiation (PAR)', '23', 'Suspended Solids Concentration in Ocean Water', '24', 'Organic Matter Concentration', '25', 'Coccolith Concentration', '26', 'Ocean Water Attenuation Coefficient', '27', 'Ocean Primary Productivity', '28', 'Sea Surface Temperature', '29', 'Sea Ice Cover', '31', 'Phycoerythrin Concentration', '35', 'Cloud Mask', '36', 'Total Absorption Coefficient', '37', 'Ocean Aerosol Properties', '39', 'Clear Water Epsilon', '43', 'Albedo 16-Day Level-3', '44', 'Vegetation Cover Conversion & Continuous Fields', 'ALB', 'Snow and Sea Ice Albedo', '', ''), ncol=2, byrow=T)
+mm = cbind(m[1:19,], m[20:38,])
+dm <- data.frame(mm, stringsAsFactors = FALSE)
+colnames(dm) <- c("ID", "Name", "ID", "Name")
+knitr::kable(dm, caption="MODIS products; # is the product number variant e.g., 'MOD', 'MYD' or 'MCD'.")
+
+```
+
+
+## File format
+
+MODIS data is stored in "Hierarchical Data Format - Earth Observation System" (HDF-EOS) files. HDF format was developed to support storing multiobject data sets (subdatasets) within one file (container). These subdatasets can include raster images, tables, scientific data sets (multidimensional arrays), annotations, vector files, palette information and many more formats.
+
+Read more about use of HDF in NASA Earth Observation System data in [HDF-EOS Information Center](http://hdfeos.org/).
+
+Converting HDF files to a common format (e.g. GeoTiff) that can be read across different software libraries has been one of the major challenges with MODIS data processing. Until recently, commercial programs like ArcGIS, ENVI were not able to read and explore HDF files. Multiple R-packages have been developed for searching, downloading and processing MODIS collections. We will learn more about them in the next section.
+
+## Geographic information
+Each file stores data for an area of 10 by 10 degrees, using the sinusoidal coordinate reference system. 
+
+## Tiling Scheme
+The tiles are identified using rows "h" (for horizontal) and columns "v" (for vertical). MODIS uses a vertical horizontal tiling systems (e.g.tile h09v04 as shown in the figure below. A kmz file with MODIS Tile boundaries can be found [here](http://spatial-analyst.net/KML/MODIS_tiles.kmz)
+
+```{r, echo=FALSE, fig.cap="MODIS tiles indexed horizontally and vertically"}
+knitr::include_graphics("img/MODIS_tiles.png")
+```
+
+## Example: MODIS product: Surface Reflectance Products "MOD09A1"
+
+The "MOD09A1" is a surface reflectance product from scenes acquired using MODIS sensor onboard the Terra satellite hence the prefix "MOD".  They are generated using the first seven, bands of the corresponding full 36 bands. The products provide an estimated "target at surface" spectral reflectance with calibration for atmospheric conditions such as gasses, aerosols, and Rayleigh scattering already taken into account. Global surface reflectance products can be obtained at either 250 m or 500 m spatial resolution, as daily or 8-day composite images. Herein the "MOD09A1" consist of 8-day surface reflectance products at 500 m spatial resolution. A summary of 13 layers that comes with "MOD09A1" HDF-EOS file is available [here](https://lpdaac.usgs.gov/products/mod09a1v006/).
+
+```{r, echo=FALSE}
+
+x <- c("Band", "Name", "Type/units", "Data Type", "Fill value", "Valid Range", "Scale fact", "1", "Red (620-670 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "2", "NIR (841-876 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", 
+"3", "Blue (459-479 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "4", "Green (545-565 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "5", "NIR (1230-1250 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001",
+"6", "SWIR (1628-1652)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "7", "SWIR (2105-2155 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "8", "Reflectance Band Quality", "Bit Field", "32-bit unsigned integer", "4294967295", "NA", "NA", "9", "Solar Zenith Angle", "Degree", "16-bit signed integer", "0", "0 - 18000", "0.01", "10", "View Zenith Angle", "Degree", "16-bit signed integer", "0", "0 - 18000", "0.01", "11", "Relative Azimuth Angle", "Degree", "16-bit signed integer", "0", "-18000 - 18000", "0.01", "12", "500 m State Flags", "Bit field", "16-bit unsigned integer", "65535", "NA", "NA", "13", "Day of Year", "Julian day", "16-bit unsigned integer", "65535", "1 - 366", "NA")
+m <- matrix(x, ncol=7, byrow=TRUE)
+cn <- m[1, ]
+m <- data.frame(m[-1,])
+colnames(m) <- cn
+knitr::kable(m, caption = "MODIS products; # is the product number variant e.g., 'MOD', 'MYD' or 'MCD'.")
+
+```
