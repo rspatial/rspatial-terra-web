@@ -1,10 +1,11 @@
 Processing MODIS data
 =====================
 
+*By* Benson Kenduiywo
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Contents
 
    1-introduction
    2-download
