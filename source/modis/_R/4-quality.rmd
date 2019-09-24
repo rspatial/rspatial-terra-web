@@ -84,3 +84,4 @@ mf <- file.path(datadir, "modis_qualmasked.tif")
 
 writeRaster(rmask, mf, overwrite=TRUE)
 ```
+

@@ -9,7 +9,6 @@ This document provides a basic overview of MODIS. Additional resources on termin
 and this ["review of Selected MODIS Algorithms, Data Products, and Applications"](https://pdfs.semanticscholar.org/0096/0a7c7d094c43cc461b07334ec44757110428.pdf).
 
 
-
 ## Introduction 
 
 The [Moderate Resolution Imaging Spectroradiometer (MODIS)](https://modis.gsfc.nasa.gov/about/) is an optical sensor onboard two satellites named Terra (originally known as EOS AM-1) and Aqua (originally known as EOS PM-1) operated by NASA. Terra was launched on 18 December 1999 and Aqua was launched on 24 May 2002. Terra's orbit around the Earth is such that it passes from North to South across the equator in the morning, while Aqua passes South to North over the equator in the afternoon. Terra MODIS and Aqua MODIS take images for the entire Earth's surface every 1 to 2 days. The data collected is the intensity of the light reflected by earth in 36 different wavelengths ("colors"). Both Terra and Aqua also have other sensors besides MODIS. These two sensors have publicly available daily archive of conditions on the earth surface for the past 20 years!
@@ -118,19 +117,21 @@ The tiles are identified using rows "h" (for horizontal) and columns "v" (for ve
 knitr::include_graphics("img/MODIS_tiles.png")
 ```
 
-## Example: MODIS product: Surface Reflectance Products "MOD09A1"
+## MOD09A1 product
 
-The "MOD09A1" is a surface reflectance product from scenes acquired using MODIS sensor onboard the Terra satellite hence the prefix "MOD".  They are generated using the first seven, bands of the corresponding full 36 bands. The products provide an estimated "target at surface" spectral reflectance with calibration for atmospheric conditions such as gasses, aerosols, and Rayleigh scattering already taken into account. Global surface reflectance products can be obtained at either 250 m or 500 m spatial resolution, as daily or 8-day composite images. Herein the "MOD09A1" consist of 8-day surface reflectance products at 500 m spatial resolution. A summary of 13 layers that comes with "MOD09A1" HDF-EOS file is available [here](https://lpdaac.usgs.gov/products/mod09a1v006/).
+Now let's look at an example MODIS surface reflectance product. "MOD09A1" is a surface reflectance product from data acquired by the MODIS sensor onboard the Terra satellite --- hence the prefix "MOD". It provides estimated "target at surface" spectral reflectance values that have been calibrated for atmospheric conditions such as gasses, aerosols, and Rayleigh scattering. Global surface reflectance products can be obtained at either 250 m or 500 m spatial resolution, and as as daily or 8-day composite data. Below we show a table of the characteristics of the 13 layers that come with "MOD09A1". A more in-depth description is available [here](https://lpdaac.usgs.gov/products/mod09a1v006/).
 
 ```{r, echo=FALSE}
 
 x <- c("Band", "Name", "Type/units", "Data Type", "Fill value", "Valid Range", "Scale fact", "1", "Red (620-670 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "2", "NIR (841-876 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", 
 "3", "Blue (459-479 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "4", "Green (545-565 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "5", "NIR (1230-1250 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001",
 "6", "SWIR (1628-1652)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "7", "SWIR (2105-2155 nm)", "Reflectance", "16-bit signed integer", "28672", "-100 - 16000", "0.0001", "8", "Reflectance Band Quality", "Bit Field", "32-bit unsigned integer", "4294967295", "NA", "NA", "9", "Solar Zenith Angle", "Degree", "16-bit signed integer", "0", "0 - 18000", "0.01", "10", "View Zenith Angle", "Degree", "16-bit signed integer", "0", "0 - 18000", "0.01", "11", "Relative Azimuth Angle", "Degree", "16-bit signed integer", "0", "-18000 - 18000", "0.01", "12", "500 m State Flags", "Bit field", "16-bit unsigned integer", "65535", "NA", "NA", "13", "Day of Year", "Julian day", "16-bit unsigned integer", "65535", "1 - 366", "NA")
+
 m <- matrix(x, ncol=7, byrow=TRUE)
 cn <- m[1, ]
 m <- data.frame(m[-1,])
-colnames(m) <- cn
-knitr::kable(m, caption = "MODIS products; # is the product number variant e.g., 'MOD', 'MYD' or 'MCD'.")
 
+colnames(m) <- cn
+knitr::kable(m, caption = "MODIS products")
 ```
+

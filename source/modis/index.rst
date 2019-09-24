@@ -1,10 +1,10 @@
 Processing MODIS data
 =====================
 
-*By* Benson Kenduiywo
+Benson Kenduiywo, Aniruddha Ghosh and Robert Hijmans
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: Contents
 
    1-introduction
@@ -12,3 +12,4 @@ Processing MODIS data
    3-explore
    4-quality
    5-processing
+
