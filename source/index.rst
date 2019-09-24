@@ -49,6 +49,6 @@ Manuals
    intr/index.rst
    spatial/index.rst
    rs/index.rst
-   rs-modis/index.rst
+   modis/index.rst
    pkg/index.rst
    
