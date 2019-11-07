@@ -1,4 +1,3 @@
-
 Spatial Data Science with R
 ============================
 
@@ -22,9 +21,9 @@ This website provides materials to learn about spatial data analysis and modelin
   |
 
 
-.. topic:: 4. `Processing MODIS data <rs-modis/index.html>`__
+.. topic:: 4. `Processing MODIS data <modis/index.html>`__
 
-  | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </rs/rs-modis.pdf>`__)
+  | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </modis/modis.pdf>`__)
   |
 
    
@@ -38,12 +37,10 @@ Manuals
   | 
 
 
-   
-
-.. This is the table of contents, must be here, but can be hidden so we can format how we like above.
+  
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :hidden:
 
    intr/index.rst

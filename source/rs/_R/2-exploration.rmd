@@ -11,7 +11,7 @@ We will primarily use a spatial subset of a Landsat 8 scene collected on June 14
 
 All Landsat image scenes have a unique product ID and metadata. You can find the information on Landsat sensor, satellite, [location on Earth (WRS path, WRS row)](https://landsat.usgs.gov/what-worldwide-reference-system-wrs) and acquisition date from the product ID. For example, the product identifier of the data we will use is 'LC08_044034_20170614'. Based on [this guide](https://landsat.usgs.gov/landsat-collections#Prod IDs), you can see that the Sensor-Satellite is OLI/TIRS combined Landsat 8, WRS Path 44, WRS Row 34 and collected on June 14, 2017. Landsat scenes are most commonly delivered as zipped file, which contains separate files for each band.  
 
-We will start by exploring and visualizing the data (See the instructions in [Chapter 1](https://rspatial.org/rs/1-introduction.html#data) for data downloading instructions if you have not already done so).
+We will start by exploring and visualizing the data (See the instructions in [Chapter 1](1-introduction.html#data) for data downloading instructions if you have not already done so).
 
 
 ## Image properties 

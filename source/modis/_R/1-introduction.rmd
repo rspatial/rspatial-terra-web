@@ -1,8 +1,3 @@
-```{r, echo=FALSE}
-library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-```
-
 # The Moderate Resolution Imaging Spectroradiometer (MODIS)
 
 This document provides a basic overview of MODIS. Additional resources on terminology and fundamentals of remote sensing can be found [here](https://www.rspatial.org/rs/1-introduction.html) and [here](https://www.nrcan.gc.ca/maps-tools-and-publications/satellite-imagery-and-air-photos/tutorial-fundamentals-remote-sensing/9309).

@@ -4,7 +4,7 @@
 library(knitr)
 ```
 
-This book provides a short introduction to satellite data analysis with R. Before reading this you should first learn the [basics of the terra package](http://rspatial.org/terra/). There is another version of this book for [the raster package](http://rspatial.org/rs/).
+This book provides a short introduction to satellite data analysis with R. Before reading this you should first learn the [basics of the terra package](http://rspatial.org/terra/). There is another version of this book for [the raster package](http://rspatial.org/raster/rs).
 
 Getting satellite images for a specific project remains a challenging task. You have to find data that is suitable for your objectives, and that you can get access to. Important properties to consider while searching the remotely sensed (satellite) data include:
 
