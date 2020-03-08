@@ -1,7 +1,5 @@
 ```{r, echo=FALSE}
-library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-datadir <- file.path(dirname(tempdir()), "agrin/modis")
+datadir <- file.path(dirname(tempdir()), "modis")
 mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
 ```
 
@@ -13,8 +11,12 @@ Now that we have donwload some MODIS data, we can explore and visualize it.
 
 First create a SpatRaster object from the file created on the previous page.
 
-```{r mplot}
-mf
+```{r mplot, message=FALSE}
+datadir <- file.path(dirname(tempdir()), "modis")
+mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
+
+
+library(terra)
 r <- rast(mf[1])
 r
 ```

@@ -1,1 +1,1 @@
-Rscript.exe --vanilla R\requirements.R
+Rscript.exe --vanilla _script\requirements.R

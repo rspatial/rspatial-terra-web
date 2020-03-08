@@ -14,5 +14,6 @@ The terra package
 	6-plotting
 	7-writing
 	8-cell_level_functions
-	9-misc
+	9-predict
+	10-misc
 

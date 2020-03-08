@@ -1,0 +1,232 @@
+# Spatial prediction
+
+Some examples for prediction. 
+
+## Predict 
+
+### GLM
+
+```{r glm, message=FALSE}
+library(terra)
+logo <- rast(system.file("exdata/logo.tif", package="terra"))   
+names(logo) <- c("red", "green", "blue")
+p <- matrix(c(48, 48, 48, 53, 50, 46, 54, 70, 84, 85, 74, 84, 95, 85, 
+   66, 42, 26, 4, 19, 17, 7, 14, 26, 29, 39, 45, 51, 56, 46, 38, 31, 
+   22, 34, 60, 70, 73, 63, 46, 43, 28), ncol=2)
+
+a <- matrix(c(22, 33, 64, 85, 92, 94, 59, 27, 30, 64, 60, 33, 31, 9,
+   99, 67, 15, 5, 4, 30, 8, 37, 42, 27, 19, 69, 60, 73, 3, 5, 21,
+   37, 52, 70, 74, 9, 13, 4, 17, 47), ncol=2)
+
+xy <- rbind(cbind(1, p), cbind(0, a))
+
+# extract predictor values for points
+e <- extract(logo, xy[,2:3])
+
+# combine with response 
+v <- data.frame(cbind(pa=xy[,1], e))
+
+#build a model, here with glm 
+model <- glm(formula=pa~., data=v)
+
+#predict to a raster
+r1 <- predict(logo, model)
+
+plot(r1)
+points(p, bg='blue', pch=21)
+points(a, bg='red', pch=21)
+
+# logistic regression
+model <- glm(formula=pa~., data=v, family="binomial")
+r1log <- predict(logo, model, type="response")
+
+# use a modified function to get the probability and standard error
+# from the glm model. The values returned by "predict" are in a list,
+# and this list needs to be transformed to a matrix
+
+predfun <- function(model, data) {
+  v <- predict(model, data, se.fit=TRUE)
+  cbind(p=as.vector(v$fit), se=as.vector(v$se.fit))
+}
+
+r2 <- predict(logo, model, fun=predfun)
+```
+
+
+### Principal components
+
+Here using sampling to simulate an object too large to feed all its values to prcomp
+
+```{r pca}
+sr <- values(spatSample(logo, 100, as.raster=TRUE))
+pca <- prcomp(sr)
+
+x <- predict(logo, pca)
+plot(x)
+
+library(pls)
+model <- plsr(formula=pa~., data=v)
+# this returns an array:
+predict(model, v[1:5,])
+# write a function to turn that into a matrix
+pfun <- function(x, data) {
+   y <- predict(x, data)
+   d <- dim(y)
+   dim(y) <- c(prod(d[1:2]), d[3])
+   y
+}
+
+pp <- predict(logo, model, fun=pfun)
+```
+
+
+### Random Forest
+
+```{r rf}
+library(randomForest)
+rfmod <- randomForest(pa ~., data=v)
+
+## note the additional argument "type='response'" that is 
+## passed to predict.randomForest
+r3 <- predict(logo, rfmod, type='response')
+
+## get class membership probabilities
+vv <- v
+vv$pa <- as.factor(vv$pa)
+rfmod2 <- randomForest(pa ~., data=vv)
+r4 <- predict(logo, rfmod2, type='prob')
+rr4 <- as(r4, "Raster")
+raster::spplot(rr4)
+```
+
+## cforest 
+
+cforest is an alternative Random Forest implementation. Here an example with a `factors` argument
+
+```{r cfor}
+library(party)
+m <- cforest(pa~., control=cforest_unbiased(mtry=3), data=v)
+# the second argument in party:::predict.RandomForest
+# is "OOB", and not "newdata" or similar. We need to write a wrapper
+# predict function to deal with this 	
+predfun <- function(m, d, ...) predict(m, newdata=d, ...)
+
+pc <- predict(logo, m, OOB=TRUE, fun=predfun)
+
+# knn, using "app" instead of "predict"
+library(class)
+cl <- factor(c(rep(1, nrow(p)), rep(0, nrow(a))))
+train <- extract(logo, rbind(p, a))
+k <- app(logo, function(x) as.integer(as.character(knn(train, x, cl))))
+```
+
+
+## Interpolate
+
+
+### Thin plate spline interpolation with x and y only
+```{r tps, message=FALSE}
+library(terra)
+# example data
+r <-rast(system.file("exdata/test.tif", package="terra"))
+ra <- aggregate(r, 10)
+xy <- data.frame(xyFromCell(ra, 1:ncell(ra)))
+v <- values(ra)
+
+# Thin plate spline model
+library(fields) 
+tps <- Tps(xy, v)
+x <- rast(r)
+
+# use model to predict values at all locations
+p <- interpolate(x, tps)
+p <- mask(p, r)
+plot(p)
+
+# change the fun from predict to fields::predictSE to get the TPS standard error
+se <- interpolate(x, tps, fun=predictSE)
+se <- mask(se, r)
+plot(se)
+
+# another variable; let"s call it elevation
+elevation <- (init(r, "x") * init(r, "y")) / 100000000
+names(elevation) <- "elev"
+elevation <- mask(elevation, r)
+
+z <- extract(elevation, vect(xy), fun=function(x)x[1])
+
+# add as another independent variable
+vv <- na.omit(cbind(xy, z, v))
+tps2 <- Tps(vv[,1:3], vv[,4])
+#p2 <- interpolate(elevation, tps2)
+#plot(p2) 
+
+# as a linear coveriate
+tps3 <- Tps(vv[,1:2], vv[,4], Z=vv[,3])
+
+# Z is a separate argument in Krig.predict, so we need a new function
+# Internally (in interpolate) a matrix is formed of x, y, and elev (Z)
+
+pfun <- function(model, x, ...) {
+   predict(model, x[,1:2], Z=x[,3], ...)
+}
+p3 <- interpolate(elevation, tps3, fun=pfun)
+```
+
+### kriging 
+
+Kriging with gstat examples. Examples provided by Maurizio Marchi
+
+
+```{r gstat}
+library(sp)
+library(gstat)
+data(meuse)
+
+# inverse distance weighted (IDW)
+r <-rast(system.file("exdata/test.tif", package="terra"))
+mg <- gstat(id = "zinc", formula = zinc~1, locations = ~x+y, data=meuse, 
+            nmax=7, set=list(idp = .5))
+f <- function(model, data, ...) predict(model, data, ...)[,3,drop=FALSE]
+z <- interpolate(r, mg, fun=f, debug.level=0)
+
+# kriging
+coordinates(meuse) <- ~x+y
+crs(meuse) <- crs(r)
+
+# ordinary kriging
+v <- variogram(log(zinc)~1, meuse)
+m <- fit.variogram(v, vgm(1, "Sph", 300, 1))
+gOK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse, model=m)
+
+fg <- function(model, d, crs, ...) {
+	sp <- SpatialPointsDataFrame(d[,1:2,drop=FALSE], data.frame(d), proj4string=CRS(crs))
+	data.frame(predict(model, sp, ...))[,3:4]
+}
+OK1 <- interpolate(r, gOK, fun=fg, debug.level=0, crs=crs(r), na.rm=TRUE)
+OK2 <- interpolate(r, gOK, fun=fg, debug.level=0, crs=crs(r), na.rm=FALSE)
+OK3 <- interpolate(x, gOK, fun=fg, debug.level=0, crs=crs(x))
+plot(c(OK1[[1]], OK2[[1]], OK3[[1]]))
+
+
+## universial kriging
+vu <- variogram(log(zinc)~elev, meuse)
+mu <- fit.variogram(vu, vgm(1, "Sph", 300, 1))
+gUK <- gstat(NULL, "log.zinc", log(zinc)~elev, meuse, model=mu)
+names(r) <- "elev"
+UK <- interpolate(r, gUK, fun=fg, debug.level=0, crs=crs(r))
+
+## co-kriging
+gCoK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse)
+gCoK <- gstat(gCoK, "elev", elev~1, meuse)
+gCoK <- gstat(gCoK, "cadmium", cadmium~1, meuse)
+gCoK <- gstat(gCoK, "copper", copper~1, meuse)
+coV <- variogram(gCoK)
+plot(coV, type="b", main="Co-variogram")
+coV.fit <- fit.lmc(coV, gCoK, vgm(model="Sph", range=1000))
+coV.fit
+plot(coV, coV.fit, main="Fitted Co-variogram")
+coK <- interpolate(r, coV.fit, fun=fg, debug.level=0, crs=crs(r))
+plot(coK)
+```
+

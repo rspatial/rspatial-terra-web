@@ -1,47 +1,40 @@
 
-```{r, echo=FALSE, message=FALSE}
-library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-datadir <- file.path(dirname(tempdir()), "agrin/modis")
-mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
-library(terra)
-```
 
 # Quality control
 
-We will now mask out bad quality pixels (e.g. clouds and shadows)
+Not all pixels in a MODIS land product image can be used for analysis. For example, some pixels may by cloudy such that the land area was not observed. For that reason, each image needs to be pre-processed to remove low quality pixels. 
 
-Not all pixels in a MODIS image are of good quality. We need to pre-process the data to remove bad pixels. 
+To do so, we can create a "mask" that indentifies the pixels affected by, for example, clouds, and shadows. Fortunately, the quality of each pixel has been assessed for us, and the results, are made available together with the reflectance data. Unfortunately, the way this quality assessment (QA) is made available is a bit complicated --- the information it is highly compressed in order to not use much disk space. Several observations are stored as 1, 2, or 4 bit values (a bit can be either a zero or a one, so with 2 bits you can identify four cases (00, 01, 10, 11). These values are appended into a single 32 bit value. 
 
-To do so we can create a mask for e.g., clouds, shadows, and pixels with low quality, using Surface reflectance 500 m state quality assessment (QA) bits (see Table below).
-
-500 m, 1 km and Coarse Resolution Surface Reflectance Band Quality Description (32-bit). 
+The table below indicates what it stored in each set of bits (for 500 m, 1 km and lower resolution MODIS surface reflectance data).
 
 ```{r StateQA, echo=FALSE}
-table <- read.table("MODIS_State_QA.txt", header=TRUE, sep = "\t", colClasses = "character", encoding ="UTF-8")
-dm <- data.frame(table, stringsAsFactors = FALSE)
+dm <- read.table("MODIS_State_QA.txt", header=TRUE, sep = "\t", colClasses = "character", encoding ="UTF-8", stringsAsFactors = FALSE)
 colnames(dm) <- c("bit", "variable", "value", "description")
 dm[,4] = gsub("\n", " ", dm[,4])
 knitr::kable(dm, align="l")
 ```
 
-Specify a matrix ("se") with the start and end of the quality assessment (QA) bits considered, and specify a list ("reject") with the values to be rejected (in the image) matching the rows in `se`.
+Note that the first bit is referred as "1". That may seem obvious, but in other documentation, "0" may be used as the position of the first bit. In the luna package it is always "1". 
+
+The `luna` package has a function to create a mask from the QA data. You need to specify a matrix ("qabits") with the start and end of the quality assessment (QA) bits considered, and specify a list ("reject") with the values to be rejected (in the image) matching the rows in `qabits`.
 
 ```{r qcconst}
-se <- matrix(c(1,2,3,6,11,11,12,14,16,16), ncol=2, byrow=TRUE)
+qa_bits <- matrix(c(1,2,3,6,11,11,12,14,16,16), ncol=2, byrow=TRUE)
 reject <- list(c("10", "11"), c("1100","1101","1110","1111"), "1", c("000","110","111"), "11")
-se
+qa_bits
 str(reject)
 ```
 
-Thus, if bytes 1 and 2 have values "10" or "11", these are rejected. All other combinations ("00" and "01" in this case) are not rejected.
+Thus, if bits 1 and 2 have values "10" or "11", these are rejected. All other combinations ("00" and "01" in this case) are not rejected.
 
+We use the downloaded MODIS file that, in a previouse step, we saved in the `datadir` directory.
 
-We use the downloaded MODIS file that we save in the `datadir` directory.
-
-```{r mod}
+```{r mod, message=FALSE}
 library(terra)
-mf 
+datadir <- file.path(dirname(tempdir()), "modis")
+mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
+
 r <- rast(mf)
 ```
 
@@ -58,12 +51,12 @@ The luna package has the `modis_mask` method creates a mask from the quality ban
 ```{r qc2}
 library(luna)
 
-quality_mask <- modis_mask(qc, 16, se, reject)
+quality_mask <- modis_mask(qc, 16, qa_bits, reject)
 
-plot(quality_mask, main="Quality mask with pixles to be retained")  
+plot(quality_mask, main="Quality mask")  
 ```
 
-Now that we have the quality mask, we cna apply it to all the bands. 
+The plot shows the pixels we want to retain. Now that we have the quality mask, we can apply it to all the bands. 
 
 ```{r qcmask}
 rmask <- mask(r, quality_mask)
@@ -78,8 +71,6 @@ plotRGB(rmask, r = 2, g = 1, b = 4, main='False color composite', stretch="lin")
 Finally we save the result after cloud masking.
 
 ```{r savefile, echo=FALSE}
-datadir <- file.path(dirname(tempdir()), "agrin/modis")
-
 mf <- file.path(datadir, "modis_qualmasked.tif")
 
 writeRaster(rmask, mf, overwrite=TRUE)

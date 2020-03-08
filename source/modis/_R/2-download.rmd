@@ -1,10 +1,3 @@
-```{r, echo=FALSE, message=FALSE}
-library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-library(agrin)
-library(terra)
-library(luna)
-```
 
 # Downloading MODIS data
 
@@ -15,7 +8,7 @@ Here we show how to use the R package `luna` to download MODIS data for a geogra
 
 As mentioned earlier, large number of MODIS products are currently available for various scientific applications. We first need to find the product best suited for our study.
 
-```{r product}
+```{r product, message=FALSE}
 library(terra)
 library(luna)
 
@@ -48,46 +41,55 @@ Once we finalize the product we want to use, we define some parameters for the d
 start <- "2010-01-01" 
 end <- "2010-01-07"
 ```
-We will download an example MODIS 8-day composite tile for Kenya. 
 
-Our area of interest is Marsabit, Kenya. To define the area of interest, we use polygons data that comes with the `agrin` package
+We will download an example MODIS 8-day composite tile. Our area of interest is Marsabit county, Kenya. To define the area of interest, we can define a spatial extent, or use an object that has an extent. Here we use a polygon for Marsabit.
 
 
 ```{r aoi1}
-if (!require(agrin)) {
-	devtools::install_github("aginsurance/agrin")
-}
-library(agrin)
-ken <- ibli_data("kenya") 
+ken <- geodata::gadm("Kenya", level=1, path=".") 
 ken
 ```
 
-`ken` is a `SpatVector` of polygons. We can subset it like this to only get the polygon for Marsabit:
+`ken` is a `SpatVector` of polygons. We can subset it get the polygon for Marsabit:
 
 ```{r aoi2}
 i <- ken$NAME_1 == "Marsabit"
 aoi <- ken[i,]
+```
+
+And the check our results we make a map
+
+```{r aoi3}
 plot(ken, col="light gray")
 lines(aoi, col="red", lwd=2)
 ```
 
+Let's now find out what MODIS data is available for this area. We can search the data available from a NASA server
 
-Let's now find out what MODIS data is available for this area. We will search the available tiles from a NASA server that requires login credentials. You can create a free account in [EarthData](https://urs.earthdata.nasa.gov/) portal. You need to enter the login credentials when prompted in the R-console or pass them to the function. You can save the credentials to your computer so that they can automatically be used in future requests.
-
-
-```{r getfiles}
+```{r getfilenames}
 mf <- luna::getModis(product, start, end, aoi=aoi, download = FALSE)
 mf
 ```
 
+To download the tiles, usually you would download them to a folder where you save the data for your project. Here we use the temporary directory. You should use a specific direcory of your choice instead.
 
-To download the tiles, usually you would download them to a folder where you save the data for your project. Here we use the temporary directory. You can use a specific direcory of your choice instead.
+```{r downloaddir}
+datadir <- file.path(dirname(tempdir()), "modis")
+dir.create(datadir, showWarnings=FALSE)
+```
+
+You also need to provide the username and password for your (free) EOSDIS account. If you do not have an account, you can sign up [here](https://urs.earthdata.nasa.gov/users/new). My passwords are stored in a file that I read below (sorry, I cannot show you the values).
+
+```{r pwd}
+up <- readRDS("../../../../pwds.rds")
+up <- up[up$service == "EOSDIS", ]
+```
+
+Now we are ready to get the data
 
 ```{r download}
-datadir <- file.path(dirname(tempdir()), "agrin/modis")
-dir.create(datadir, showWarnings=FALSE, recursive=TRUE)
-mf <- luna::getModis(product, start, end,
-            aoi=aoi, download=TRUE, path=datadir)
+mf <- luna::getModis(product, start, end, aoi=aoi, download=TRUE,
+                     path=datadir, username=up$user, password=up$pwd)
 mf
 ```
 

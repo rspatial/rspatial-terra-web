@@ -1,8 +1,6 @@
 
 ```{r, echo=FALSE, message=FALSE}
 library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-library(terra)
 ```
 
 # Processing
@@ -12,6 +10,7 @@ Here we crop an image to get an exact area of interest, and then we compute the 
 Get the polygon boundary
 
 ```{r boundary, messages=FALSE}
+library(terra)
 library(geodata)
 ken <- gadm(country="KEN", level=1, path=".")
 pol <- ken[ken$NAME_1 == "Marsabit", ]
@@ -21,7 +20,7 @@ pol <- ken[ken$NAME_1 == "Marsabit", ]
 Change vector boundary coordinate reference system, so that it matches that of the MODIS data. 
 
 ```{r prj}
-datadir <- file.path(dirname(tempdir()), "agrin/modis")
+datadir <- file.path(dirname(tempdir()), "modis")
 mf <- file.path(datadir, "modis_qualmasked.tif")
 rmask <- rast(mf)
 

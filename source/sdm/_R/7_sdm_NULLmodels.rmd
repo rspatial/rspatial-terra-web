@@ -1,14 +1,9 @@
 # Geographic Null models
 
-
 ```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 6,fig.height = 6,fig.cap = '',collapse = TRUE)
 library(dismo)
 library(maptools)
-
 ```
-
 
 The 'geographic Null models' described here are not commonly used in species distribution modeling. They use the geographic location of known occurrences, and do not rely on the values of predictor variables at these locations. We are exploring their use in comparing and contrasting them with the other approaches (Bahn and McGill, 2007); in model evaluation as as null-models (Hijmans 2012); to sample background points; and generally to help think about the duality between geographic and environmental space (Collwel and Rangel, 2009). Below we show examples of these different types of models.
 
