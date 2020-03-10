@@ -1,11 +1,10 @@
 ```{r, echo=FALSE}
-datadir <- file.path(dirname(tempdir()), "modis")
-mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
 ```
-
 # Image exploration
 
-Now that we have successfully downloaded one MODIS tile, we can use `terra` package to explore and visualize it. Please note that MODIS tiles are distributed in HDF format that may include subdatasets. The subdataset and processing steps might be different for various MODIS collections (e.g. daily scenes, vegetation indices products).
+## Introduction
+
+Now that we have successfully downloaded one MODIS tile, we can use `terra` package to explore and visualize it. Please note that MODIS tiles are distributed in HDF format that may include sub-datasets. The sub-dataset and processing steps might be different for various MODIS collections (e.g. daily scenes, vegetation indices).
 
 Now that we have donwload some MODIS data, we can explore and visualize it.
 
@@ -14,7 +13,6 @@ First create a SpatRaster object from the file created on the previous page.
 ```{r mplot, message=FALSE}
 datadir <- file.path(dirname(tempdir()), "modis")
 mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
-
 
 library(terra)
 r <- rast(mf[1])
@@ -28,40 +26,43 @@ r
 
 The code below illustrates how you can load HDF files and access image properties of a SpatRaster object. 
 
-
-```{r imgproperties}
-# Check coordinate reference system (CRS)
+The coordinate reference system (CRS)
+```{r imgp1}
 crs(r)
+```
 
-# Number of cells, rows, columns
-ncell(r)
+And the number of cells, rows, columns
+```{r imgp2}
 dim(r)
-
-# spatial resolution ~ 500 m
-res(r)
-
-# Number of bands/layers/subdatasets
+nrow(r)
+ncol(r)
+# Number of layers (bands)
 nlyr(r)
+ncell(r)
+```
 
-# Let's find the name of the layers within this HDF file
+The spatial resolution is about 500 m
+```{r imgp3}
+res(r)
+```
+
+The layer (band) names. Since the names are quite long we can shorten them to be more easy to read.
+
+```{r imgp5}
 names(r)
-
-# Since the names are quite long we can shorten them to be more meaningful
 sub1 <- substr(names(r), 86, 120)
+sub1
 
 # In case you don't want to count the number of characters
 sub2 <- sapply(strsplit(names(r), ":"), "[[", 3)
 
 names(r) <- sub1
+names(r)
 ```
 
-## Plot!
+## Plot
 
-
-Let's learn more about the product before we start plotting the bands. Read the layer description in the webpage you just opened with `productInfo` function.
-
-*Exercise:* make a table of the band names based on the wavelength information.
-Hint: Surface Reflectance Band 1 (620-670 nm) is red band.
+Now let's make some simple plots to see if things look reasonable. 
 
 ```{r plotrgb}
 
@@ -73,6 +74,6 @@ plotRGB(r, r = 1, g = 4, b = 3)
 plotRGB(r, r = 1, g = 4, b = 3, stretch="lin")
 ```
 
-*Exercise:* Create False Color Composite plot using the same data. Hint: try `plotRGB` and specify the bands you need to make the False Color Composite.    
+*Exercise:* Create False Color Composite plot using the same data. Hint: try `plotRGB` and specify the bands you need.    
 
-*Exercise:* Save the plots to files. Hint: try `?png`.
+*Exercise:* Save the plots to grahics files. Hint: have a look at `?png`.

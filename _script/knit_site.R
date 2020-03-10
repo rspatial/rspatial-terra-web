@@ -52,9 +52,9 @@ do_knit <- function(option, quiet=TRUE) {
 			fig.width  = 6,	fig.height = 6,
 			fig.path = 'figures/',
 			fig.cap="",
-			collapse   = TRUE
+			collapse   = TRUE,
+			tidy.opts=list(width.cutoff=60)
 		)
-		#opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 		
 		for (i in 1:length(ff)) {
