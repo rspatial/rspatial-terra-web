@@ -25,7 +25,7 @@ modis <- getProducts("^MOD|^MYD|^MCD")
 head(modis)
 ```
 
-We will use "MOD09A1"
+We will use "MOD09A1" for this turorial.
 
 ```{r prod}
 product <- "MOD09A1"
