@@ -1,16 +1,18 @@
 # Quality control
 
-Not all pixels in a MODIS image are not suitable for analysis related to land surafces. For example, pixels can be affected by cloud or other atmospheric conditions. For that reason, each image needs to be pre-processed to remove non-desirable pixels. 
+Not all pixels in a MODIS image are not suitable for analysis of land areas. For example, pixel quality can be negatively affected by clouds or other atmospheric conditions. For that reason, each image needs to be pre-processed to remove the values that cannot be used. 
 
-Each MODIS tile contains quality assurance (QA) information that can be used to identify the pixels affected by, for example, clouds, and shadows. However the QA information are stored in bit-encoding format to represent different possibile combinations of quality issues. In binary notation, a single bit represent two values --- 0 (no) or 1(yes), two bits represent four values (all possible combination of 0 & 1: 00, 01, 10, 11). [This video by USGS](https://www.usgs.gov/media/videos/getting-started-modis-v6-surface-reflectance-data-part-3) explains the QA encoding.     
+Each MODIS file contains quality assurance (QA) information that can be used to identify the pixels to remove. The QA information is stored in a somewhat complicated bit-encoding format. This allows for very efficient storage, but it makes it much harder to use. 
 
-The table below shows State QA description (16-bit) for 500 m, 1 km and coarser resolution MODIS surface reflectance products. For product specific QA attribute, follow the [MODIS Surface Reflectance User’s Guide](https://lpdaac.usgs.gov/documents/306/MOD09_User_Guide_V6.pdf).
+A single bit can represent two values --- 0 (no) or 1 (yes); a combination of two bits can represent 2^2^ = 4 values (00, 01, 10, and 11), and with three bits you can store 2^3^ = 8 values. [This video by USGS](https://www.usgs.gov/media/videos/getting-started-modis-v6-surface-reflectance-data-part-3) explains the QA encoding.     
+
+The table below shows State QA description (16-bit) for 500 m, 1 km and lower resolution MODIS surface reflectance products. For product specific QA attribute, follow the [MODIS Surface Reflectance User’s Guide](https://lpdaac.usgs.gov/documents/306/MOD09_User_Guide_V6.pdf).
 
 ```{r StateQA, echo=FALSE}
 table <- read.csv("sur_refl_state.txt", header=TRUE, sep = "\t", colClasses = "character", encoding ="UTF-8")
 dm <- data.frame(table, stringsAsFactors = FALSE)
 colnames(dm) <- c("bit", "variable", "value", "description")
-dm[,4] = gsub("\n", " ", dm[,4])
+#dm[,4] = gsub("\n", " ", dm[,4])
 knitr::kable(dm, align="l")
 ```
 
