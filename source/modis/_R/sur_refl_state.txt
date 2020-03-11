@@ -1,0 +1,35 @@
+Bit No. 	Parameter Name	Bit Comb.	state_1km / Coarse Resolution State QA /surf_refl_state_500m / 1km Reflectance/ Data State QA
+0-1	cloud state	00	clear
+		01	cloudy
+		10	mixed
+		11	"not set, assumed clear"
+2	cloud shadow	1	yes
+		0	no
+3-5	land/water flag	000	shallow ocean
+		001	land
+		010	ocean coastlines and lake shorelines
+		011	shallow inland water
+		100	ephemeral water
+		101	deep inland water
+		110	continental/moderate ocean
+		111	deep ocean
+6-7	aerosol quantity	00	climatology
+		01	low
+		10	average
+		11	high
+8-9	cirrus detected	00	none
+		01	small
+		10	average
+		11	high
+10	internal cloud algorithm flag	1	cloud
+		0	no cloud
+11	internal fire algorithm flag	1	fire
+		0	no fire
+12	MOD35 snow/ice flag	1	yes
+		0	no
+13	Pixel is adjacent to cloud	1	yes
+		0	no
+14	Salt pan	1	yes
+		0	no
+15	internal snow mask	1	yes
+		0	no

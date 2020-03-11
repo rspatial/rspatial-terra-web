@@ -1,33 +1,33 @@
 # Quality control
 
-Not all pixels in a MODIS land product image can be used for analysis. For example, some pixels may by cloudy such that the land area was not observed. For that reason, each image needs to be pre-processed to remove low quality pixels. 
+Not all pixels in a MODIS image are not suitable for analysis related to land surafces. For example, pixels can be affected by cloud or other atmospheric conditions. For that reason, each image needs to be pre-processed to remove non-desirable pixels. 
 
-To do so, we can create a "mask" that identifies the pixels affected by, for example, clouds, and shadows. Fortunately, the quality of each pixel has been assessed for us, and the results, are made available together with the reflectance data. Unfortunately, the way this quality assessment (QA) is made available is a bit complicated --- the information it is highly compressed in order to not use much disk space. Several observations are stored as 1, 2, or 4 bit values (a bit can be either a zero or a one, so with 2 bits you can identify four cases (00, 01, 10, 11). These values are appended into a single 32 bit value. 
+Each MODIS tile contains quality assurance (QA) information that can be used to identify the pixels affected by, for example, clouds, and shadows. However the QA information are stored in bit-encoding format to represent different possibile combinations of quality issues. In binary notation, a single bit represent two values --- 0 (no) or 1(yes), two bits represent four values (all possible combination of 0 & 1: 00, 01, 10, 11). [This video by USGS](https://www.usgs.gov/media/videos/getting-started-modis-v6-surface-reflectance-data-part-3) explains the QA encoding.     
 
-The table below indicates what it stored in each set of bits (for 500 m, 1 km and lower resolution MODIS surface reflectance data).
+The table below shows State QA description (16-bit) for 500 m, 1 km and coarser resolution MODIS surface reflectance products. For product specific QA attribute, follow the [MODIS Surface Reflectance User’s Guide](https://lpdaac.usgs.gov/documents/306/MOD09_User_Guide_V6.pdf).
 
 ```{r StateQA, echo=FALSE}
-table <- read.table("MODIS_State_QA.txt", header=TRUE, sep = "\t", colClasses = "character", encoding ="UTF-8")
+table <- read.csv("sur_refl_state.txt", header=TRUE, sep = "\t", colClasses = "character", encoding ="UTF-8")
 dm <- data.frame(table, stringsAsFactors = FALSE)
 colnames(dm) <- c("bit", "variable", "value", "description")
 dm[,4] = gsub("\n", " ", dm[,4])
 knitr::kable(dm, align="l")
 ```
 
-Note that the first bit is referred as "1". That may seem obvious, but in other documentation, "0" may be used as the position of the first bit. In the luna package it is always "1". 
+Note that in R, the first bit will be referred as "1", whereas in many other languages (e.g. Python) it will follow the values as shown in table.  
 
-The `luna` package has a function to create a mask from the QA data. You need to specify a matrix ("qabits") with the start and end of the quality assessment (QA) bits considered, and specify a list ("reject") with the values to be rejected (in the image) matching the rows in `qabits`.
+To interpret the pixel level QA values, we need to convert them from decimal to binary format. The `luna` package offers a function for this conversion and create a mask from the QA band. The user need to specify a matrix ("qabits") with the start and end of the quality assessment (QA) bits considered, and specify a list ("reject") with the values to be rejected (in the image) matching the rows in `qabits`. Following the table above, we will define the "reject" values to exclude pixels affected by cloud and cloud shadow.  
 
 ```{r qcconst}
-from <- c(1,3,11,12) #,16)
-to   <- c(2,6,11,14) #,17)
-reject <- c("10,11", "1100,1101,1110,1111", "1", "000,110,111")
+from <- c(1,3,11,14)
+to   <- c(2,3,11,14)
+reject <- c("01,10", "1", "1", "1")
 
 qa_bits <- cbind(from, to, reject)
 qa_bits
 ```
 
-Thus, if bits 1 and 2 have values "10" or "11", these are rejected. All other combinations ("00" and "01" in this case) are not rejected.
+Pixels with bits 1 and 2 with values "01" or "10" will be rejected. All other combinations ("00" and "11" in this case) are not rejected. 
 
 We use the downloaded MODIS file that, in a previouse step, we saved in the `datadir` directory.
 
@@ -47,7 +47,7 @@ qc <- r[[12]]
 plot(qc, main = "Quality")
 ```
 
-The luna package has the `modis_mask` method creates a mask from the quality band and the parameters defined above. 
+The luna package has a `modis_mask` method to create a mask from the quality band and the parameters defined above. 
 
 ```{r qc2}
 library(luna)
@@ -57,7 +57,7 @@ quality_mask <- modis_mask(qc, 16, qa_bits)
 plot(quality_mask, main="Quality mask")  
 ```
 
-The plot shows the pixels we want to retain. Now that we have the quality mask, we can apply it to all the bands. 
+The plot shows the pixels we want to retain. Now that we have the quality mask, we can apply it to all the bands. It is always useful to visually check the result of the masking as many times pixels could be wrongly flagged as "poor" quality. Residual noises can be filtered in subsequent gap-filling and smoothing operations.   
 
 ```{r qcmask}
 rmask <- mask(r, quality_mask)
