@@ -115,7 +115,7 @@ nlyr(s)
 Create a multilayer SpatRaster  from file
 
 ```{r  raster-2bbb}
-filename <- system.file("exdata/logo.grd", package="terra")
+filename <- system.file("exdata/logo.tif", package="terra")
 filename
 b <- rast(filename)
 b

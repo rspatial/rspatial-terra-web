@@ -100,16 +100,18 @@ MODIS data is stored in "Hierarchical Data Format - Earth Observation System" (H
 
 Read more about use of HDF in NASA Earth Observation System data in [HDF-EOS Information Center](http://hdfeos.org/).
 
-Converting HDF files to a common format (e.g. GeoTiff) that can be read across different software libraries has been one of the major challenges with MODIS data processing. Until recently, commercial programs like ArcGIS, ENVI were not able to read and explore HDF files. Multiple R-packages have been developed for searching, downloading and processing MODIS collections. We will learn more about them in the next section.
+Converting HDF files to a common format (e.g. GeoTiff) that can be read across different software libraries has been one of the major challenges with MODIS data processing. Until recently, commercial programs like ArcGIS, ENVI were not able to read and explore HDF files. In the next section we will show how you can use R to search, download and process MODIS data..
 
 ## Geographic information
+
 Each file stores data for an area of 10 by 10 degrees, using the sinusoidal coordinate reference system. 
 
 ## Tiling Scheme
+
 The tiles are identified using rows "h" (for horizontal) and columns "v" (for vertical). MODIS uses a vertical horizontal tiling systems (e.g.tile h09v04 as shown in the figure below. A kmz file with MODIS Tile boundaries can be found [here](http://spatial-analyst.net/KML/MODIS_tiles.kmz)
 
 ```{r, echo=FALSE, fig.cap="MODIS tiles indexed horizontally and vertically"}
-knitr::include_graphics("img/MODIS_tiles.png")
+knitr::include_graphics("figures/MODIS_tiles.png")
 ```
 
 ## MOD09A1 product

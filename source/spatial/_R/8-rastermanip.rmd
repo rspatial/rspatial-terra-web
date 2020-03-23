@@ -430,7 +430,7 @@ rowFromY(r, 0)
 Cell values can be accessed with several methods. Use `getValues` to get all values or a single row; and `getValuesBlock` to read a block (rectangle) of cell values. 
 
 ```{r, raster-20}
-r <- rast(system.file("external/test.grd", package="raster"))
+r <- rast(system.file("exdata/test.tif", package="terra"))
 #v <- values(r, 50)
 #v[35:39]
 #getValuesBlock(r, 50, 1, 35, 5)

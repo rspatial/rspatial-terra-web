@@ -60,7 +60,7 @@ The raster package can read and write several raster file formats.
 
 Again we need to get a filename for an example file.
 ```{r, ras0}
-f <- system.file("exdata/logo.grd", package="terra")
+f <- system.file("exdata/logo.tif", package="terra")
 f
 ```
 

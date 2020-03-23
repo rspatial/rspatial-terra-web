@@ -52,9 +52,9 @@ do_knit <- function(option, quiet=TRUE) {
 			fig.width  = 6,	fig.height = 6,
 			fig.path = 'figures/',
 			fig.cap="",
-			collapse   = TRUE,
-			tidy.opts=list(width.cutoff=60)
+			collapse   = TRUE
 		)
+		#opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 		
 		for (i in 1:length(ff)) {
@@ -92,7 +92,8 @@ if (tolower(Sys.info()["sysname"])=="windows"){
 }
 
 args <- commandArgs(TRUE)
-ch <- grep("_R$", list.dirs(recursive=T), value=TRUE)
+ch <- grep("_R$", list.dirs(recursive=TRUE), value=TRUE)
+chapters <- grep("/source/", ch, value=TRUE)
 chapters <- gsub("\\./source/", "", gsub("/_R", "", ch))
 
 if (length(args) < 1) {

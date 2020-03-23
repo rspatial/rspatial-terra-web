@@ -82,8 +82,6 @@ classcolor <- c("#5475A8", "#B50000", "#D2CDC0", "#38814E", "#AF963C", "#D1D182"
 
 nlcd2011 <- nlcd[[2]]
 
-# Robert: how can we change legend labels in terra::plot? related to RAT discussion we had.
-
 # plot the locations over the original nlcd raster
 plot(nlcd2011) #, main = 'NLCD 2011', col = classcolor, add = TRUE)
 points(ptsamp) # hides previous plot
@@ -93,15 +91,18 @@ points(ptsamp) # hides previous plot
 set.seed(99)
 
 # Sampling
-samp2011 <- sampleRegular(nlcd2011, size = 500)
+samp2011 <- spatSample(nlcd2011, size = 500)
 
 samp2011val <- values(samp2011)
 # Number of samples in each class
 table(samp2011val)
 
-# Robert: to get coordinates of the sampled cell, use as.points or as.data.frame(x[[1]], xy=TRUE, cells=TRUE)? required as sampleRegular/Random returns SpatRaster
 
 ```
+
+Todo: show how can we change legend labels in terra::plot
+Todo: show how to get coordinates of the sampled cells
+
 
 ## Extract spectral values for the training sites
 

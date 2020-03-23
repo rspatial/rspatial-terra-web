@@ -1,27 +1,27 @@
-Spatial Data Science with R
-============================
+Spatial Data Science with R and "terra"
+=======================================
 
-This website provides materials to learn about spatial data analysis and modeling with *R*. *R* is a widely used programming language and software environment for data science. *R* has advanced capabilities for managing spatial data; and it provides unparalleled opportunities for analyzing such data. 
+These resources teach spatial data analysis and modeling with *R*. *R* is a widely used programming language and software environment for data science. *R* also provides unparalleled opportunities for analyzing spatial data and for spatial modeling. 
+
+**This is the "terra" version of this resource. You can also use the more elaborate** `"raster" <https://rspatial.org/raster/index.html>`_ **version.** 
 
 
-.. topic:: 1. `Introduction to R <intr/index.html>`__  
+If you have never used *R*, or if you need a refresher, you should start with our `Introduction to R <../intr/index.html>`__ 
 
-  | Start here if you have never used *R*, or if you need a refresher. (`pdf </intr/IntroductiontoR.pdf>`__)
-  | 
-  
-.. topic:: 2. `Spatial data manipulation with R <spatial/index.html>`__
+ 
+.. topic:: 1. `Spatial data manipulation with R <spatial/index.html>`__
 
   | Read this to learn about the basics of reading, writing, and manipulating spatial data. (`pdf </spatial/Spatialdata.pdf>`__)
   | 
 
   
-.. topic:: 3. `Remote sensing image analysis <rs/index.html>`__
+.. topic:: 2. `Remote sensing image analysis <rs/index.html>`__
 
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </rs/rs.pdf>`__)
   |
 
 
-.. topic:: 4. `Processing MODIS data <modis/index.html>`__
+.. topic:: 3. `Processing MODIS data <modis/index.html>`__
 
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </modis/modis.pdf>`__)
   |
@@ -43,7 +43,6 @@ Manuals
    :maxdepth: 5
    :hidden:
 
-   intr/index.rst
    spatial/index.rst
    rs/index.rst
    modis/index.rst

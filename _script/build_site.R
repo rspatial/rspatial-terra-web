@@ -29,6 +29,13 @@ h <- file.path("build/html/_sources", g)
 h <- gsub("\\.txt$", ".R.txt", h)
 y <- file.copy(f, h, overwrite=TRUE)
 
+#cat("copying images\n\n")
+#f <- list.files("source", patt='\\.png$', recursive=TRUE, full=TRUE)
+#g <- file.path("build/html/images", basename(f))
+#y <- file.copy(f, g, overwrite=TRUE)
+
+
+
 
 # copy pdf manuals
 # shell("make pdf")
