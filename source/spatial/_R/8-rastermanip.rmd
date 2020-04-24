@@ -169,7 +169,7 @@ r <- rast(ncol=10, nrow=10)
 values(r) <- 1:ncell(r)
 ```
 
-Now some algebra.
+Now some raster algebra.
 
 ```{r, raster-3a2}
 s <- r + 10

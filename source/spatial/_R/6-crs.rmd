@@ -119,7 +119,7 @@ plot(r)
 Simplest approach
 ```{r}
 newcrs
-pr1 <- terra::project(r, crs=newcrs)
+pr1 <- terra::project(r, newcrs)
 crs(pr1)
 plot(pr1)
 ```
@@ -135,7 +135,7 @@ res(x) <- 200000
 
 Now project, and note the change in the coordinates.
 ```{r, prj3}
-pr3 <- warp(r, x)
+pr3 <- project(r, x)
 pr3
 plot(pr3)
 ```
