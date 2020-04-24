@@ -50,7 +50,7 @@ Extracting a variable.
 p$NAME_2
 ```
 
-Sub-setting by variable. Note how this is different from the above example. Above a vector of values is returned. With the approach below you get a new SpatialPolygonsDataFrame with only one variable. 
+Sub-setting by variable. Note how this is different from the above example. Above a vector of values is returned. With the approach below you get a new SpatVector with only one variable. 
 ```{r}
 p[, 'NAME_2']
 ```
@@ -62,10 +62,10 @@ p$new <- sample(letters, nrow(p))
 p
 ```
 
-Note that to get the number of spatial object ('features'), of SpatVector `p`, you need can use `nrow(p)`, or `size(p)`. You can also do `length(p)` but that returns the length of the spatial objects (either zero for points the lenght of the lines, or the perimeter of the polygons).
+Note that to get the number of spatial object ("features"), of SpatVector `p`, you need can use `nrow(p)`, or `size(p)`. You can also do `perimeter(p)` to get the "length" of the spatial objects (zero for points, the length of the lines, or the perimeter of the polygons).
 
 ```{r}
-length(p)
+perimeter(p)
 ```
 
 Assigning a new value to an existing variable.
@@ -82,7 +82,7 @@ p$new <- NULL
 
 ### Merge
 
-You can join a table (data.frame) with a Spatial* object with `merge`.
+You can join a table (data.frame) with a SpatialVector object with `merge`.
 
 ```{r}
 dfr <- data.frame(District=p$NAME_1, Canton=p$NAME_2, Value=round(runif(length(p), 100, 1000)))

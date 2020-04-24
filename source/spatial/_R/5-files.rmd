@@ -33,7 +33,7 @@ s <- vect(filename)
 s
 ```
 
-The `rast` function returns `SpatVector` objects. It is important to recognise the difference between this type of *R* object (SpatVector), and the file (shapefile) that was used to create it. (Do not say "I have a shapefile in R", say "I have a SpatVector of polygons in R" ("created from a shapefile").
+The `vect` function returns `SpatVector` objects. It is important to recognise the difference between this type of *R* object (SpatVector), and the file (shapefile) that was used to create it. (Do not say "I have a shapefile in R", say "I have a SpatVector of polygons in R" ("created from a shapefile").
 
 
 ### Writing
@@ -45,16 +45,14 @@ You can also write new shapefiles using the `writeVector` method. You can add ar
 #writeVector(s, outfile, overwrite=TRUE)
 ```
 
-
 ```{r, echo=FALSE, include=FALSE}
 ff <- list.files(patt="^shptest")
 file.remove(ff)
 ```
 
-
 ## Raster files
 
-The raster package can read and write several raster file formats. 
+The terra package can read and write several raster file formats. 
 
 ### Reading raster data
 
@@ -82,7 +80,7 @@ The same approach holds for other raster file formats, including GeoTiff, NetCDF
 
 ### Writing raster data
 
-Use `writeRaster` to write raster data. You must provide a Raster* object and a filename. The file format will be guessed from the filename extension (if that does not work you can provide an argument like `format=GTIFF`). Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the datatype (e.g., integer, float).
+Use `writeRaster` to write raster data. You must provide a SpatRaster object and a filename. The file format will be guessed from the filename extension (if that does not work you can provide an argument like `format=GTIFF`). Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the datatype (e.g., integer, float).
 
 ```{r, ras5}
 x <- writeRaster(r, "output.tif", overwrite=TRUE)

@@ -35,7 +35,7 @@ We use the downloaded MODIS file that, in a previouse step, we saved in the `dat
 
 ```{r mod, message=FALSE}
 library(terra)
-datadir <- file.path(dirname(tempdir()), "modis")
+datadir <- file.path(dirname(tempdir()), "_modis")
 mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
 
 r <- rast(mf)

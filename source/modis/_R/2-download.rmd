@@ -6,11 +6,11 @@ editor_options:
 # Downloading MODIS data
 
 
-MODIS data can be acquired through multiple services. This is one of the reasons why beginners as well as well experienced users often get confused about which one to use. While graphical user interfaces (GUI) are great for preliminary data exploration, they are not ideal for accessing large number of files or when automatic updates are required. Please visit this [website](https://modis.gsfc.nasa.gov/tools/) to learn more about the tools and resources that related to MODIS Data use. 
+MODIS data can be acquired through multiple services, and it can be confusing to find out what to get where. This [website](https://modis.gsfc.nasa.gov/tools/) has a lot of information on MODIS resources. 
 
-Here we show how to use the R package `luna` to download MODIS data for a geographic area and time period. 
+Websites are great for preliminary data exploration, they are not ideal for accessing large number of files or when automatic updates are required. Manually downloading also makes workflows less reproducible. So once you know what data you need, it is better to use automatic downloading methods. Here we show how to use *R* package `luna` to download MODIS data for a geographic area and time period. 
 
-As mentioned earlier, large number of MODIS products are currently available for various scientific applications. We first need to find the product best suited for our study.
+A large number of MODIS products is available. We first need to find data for the product that we deem best suited for our study.
 
 ```{r product, message=FALSE}
 library(terra)
@@ -31,9 +31,9 @@ We will use "MOD09A1" for this turorial.
 product <- "MOD09A1"
 ```
 
-To learn about specific product you can launch a webpage
+To learn more about a specific product you can launch a webpage
 
-```{r productweb, eval=FALSE}
+```
 productInfo(product)
 ```
 
@@ -78,7 +78,7 @@ mf
 To download the tiles, usually you would download them to a folder where you save the data for your project. Here we use the temporary directory. You should use a specific direcory of your choice instead.
 
 ```{r downloaddir}
-datadir <- file.path(dirname(tempdir()), "modis")
+datadir <- file.path(dirname(tempdir()), "_modis")
 dir.create(datadir, showWarnings=FALSE)
 ```
 
@@ -89,7 +89,7 @@ up <- readRDS("../../../../pwds.rds")
 up <- up[up$service == "EOSDIS", ]
 ```
 
-Now we are ready to get the data
+Now we are ready to download the data
 
 ```{r download}
 mf <- luna::getModis(product, start, end, aoi=aoi, download=TRUE,
@@ -97,3 +97,4 @@ mf <- luna::getModis(product, start, end, aoi=aoi, download=TRUE,
 mf
 ```
 
+In the next chapters we will use the downloaded files. 

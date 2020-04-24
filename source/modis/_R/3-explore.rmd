@@ -11,7 +11,7 @@ Now that we have donwload some MODIS data, we can explore and visualize it.
 First create a SpatRaster object from the file created on the previous page.
 
 ```{r mplot, message=FALSE}
-datadir <- file.path(dirname(tempdir()), "modis")
+datadir <- file.path(dirname(tempdir()), "_modis")
 mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
 
 library(terra)
@@ -46,17 +46,9 @@ The spatial resolution is about 500 m
 res(r)
 ```
 
-The layer (band) names. Since the names are quite long we can shorten them to be more easy to read.
+The layernames tell us what "bands" we have
 
 ```{r imgp5}
-names(r)
-sub1 <- substr(names(r), 86, 120)
-sub1
-
-# In case you don't want to count the number of characters
-sub2 <- sapply(strsplit(names(r), ":"), "[[", 3)
-
-names(r) <- sub1
 names(r)
 ```
 

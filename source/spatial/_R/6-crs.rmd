@@ -78,7 +78,7 @@ Note that you should __not__ use this approach to change the CRS of a data set f
 ## Transforming vector data
 
 
-We can transform these data to a new data set with another CRS using the `spTransform` function from the `rgdal` package. 
+We can transform these data to a new data set with another CRS using the `project` method.  
 
 Here we use the Robinson projection. First we need to find the correct notation. 
 

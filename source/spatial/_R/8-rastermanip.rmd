@@ -12,7 +12,7 @@ In this chapter general aspects of the design of the `raster` package are discus
 
 ## Creating SpatRaster objects
 
-A `SpatRaster` can easily be created from scratch using the function `rast`. The default settings will create a global raster data structure with a longitude/latitude coordinate reference system and 1 by 1 degree cells. You can change these settings by providing additional arguments such as `xmn`, `nrow`, `ncol`, and/or `crs`, to the function. You can also change these parameters after creating the object. If you set the projection, this is only to properly define it, not to change it. To transform a `SpatRaster` to another coordinate reference system (projection) you can use the function 1projectRaster1. 
+A `SpatRaster` can easily be created from scratch using the function `rast`. The default settings will create a global raster data structure with a longitude/latitude coordinate reference system and 1 by 1 degree cells. You can change these settings by providing additional arguments such as `xmin`, `nrow`, `ncol`, and/or `crs`, to the function. You can also change these parameters after creating the object. If you set the projection, this is only to properly define it, not to change it. To transform a `SpatRaster` to another coordinate reference system (projection) you can use the function 1projectRaster1. 
 
 Here is an example of creating and changing a `SpatRaster` object 'r' from scratch.
 
@@ -189,7 +189,7 @@ You can also use replacement functions.
 #s[s == 5] <- 15
 ```
 
-If you use multiple `SpatRaster` objects (in functions where this is relevant, such as range), these must have the same resolution and origin. The origin of a `Raster` object is the point closest to (0, 0) that you could get if you moved from a corners of a `SpatRaster` object toward that point in steps of the `x` and `y` resolution. Normally these objects would also have the same extent, but if they do not, the returned object covers the spatial intersection of the objects used.
+If you use multiple `SpatRaster` objects (in functions where this is relevant, such as range), these must have the same resolution and origin. The origin of a `Raster` object is the point closest to (0, 0) that you could get if you moved from a corner of a `SpatRaster` toward that point in steps of the `x` and `y` resolution. Normally these objects would also have the same extent, but if they do not, the returned object covers the spatial intersection of the objects used.
 
 When you use multiple multi-layer objects with different numbers or layers, the 'shorter' objects are 'recycled'. For example, if you multiply a 4-layer object (a1, a2, a3, a4) with a 2-layer object (b1, b2), the result is a four-layer object (a1b1, a2b2, a3b1, a3b2). 
 
@@ -240,7 +240,7 @@ The `merge` function lets you merge 2 or more `Raster` objects into a single new
 
 `aggregate` and `disaggregate` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disaggregate` are the best functions when adjusting cells size only, with an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible. 
 
-For example, you may need nearly the same cell size, while shifting the cell centers. In those cases, the `resample` function can be used. It can do either nearest neighbor assignments (for categorical data) or bilinear interpolation (for numerical data). Simple linear shifts of a Raster object can be accomplished with the `shift` function or with the `extent` function. `resample` should not be used to create a Raster* object with much larger resolution. If such adjustments need to be made then you can first use aggregate. 
+For example, you may need nearly the same cell size, while shifting the cell centers. In those cases, the `resample` function can be used. It can do either nearest neighbor assignments (for categorical data) or bilinear interpolation (for numerical data). Simple linear shifts of a Raster object can be accomplished with the `shift` function or with the `extent` function. 
 
 With the `warp` function you can transform values of `SpatRaster` object to a new object with a different coordinate reference system.
 
@@ -286,7 +286,7 @@ With `overlay` you can combine multiple Raster objects (e.g. multiply them). The
 
 
 ### Reclassify
-You can use `cut` or `reclassify` to replace ranges of values with single values, or `subs` to substitute (replace) single values with other values. 
+You can use `classify` to replace ranges of values with single values, or to substitute (replace) single values with other values. 
 
 ```{r, raster-6a}
 r <- rast(ncol=3, nrow=2)
@@ -364,7 +364,7 @@ The package has two functions to make model predictions to (potentially very lar
 
 ### Vector to raster conversion
 
-The raster package supports point, line, and polygon to raster conversion with the `rasterize` function. For vector type data (points, lines, polygons), objects of Spatial* classes defined in the `sp` package are used; but points can also be represented by a two-column matrix (x and y). 
+The terra package supports point, line, and polygon to raster conversion with the `rasterize` function. For vector type data (points, lines, polygons), SpatVector objects are used; but points can also be represented by a two-column matrix (x and y). 
 
 Point to raster conversion is often done with the purpose to analyze the point data. For example to count the number of distinct species (represented by point observations) that occur in each raster cell. `rasterize` takes a `SpatRaster` object to set the spatial extent and resolution, and a function to determine how to summarize the points (or an attribute of each point) by cell. 
 
@@ -408,7 +408,7 @@ Cross-tabulate
 
 ## Helper functions
 
-The cell number is an important concept in the raster package. Raster data can be thought of as a matrix, but in a `SpatRaster` it is more commonly treated as a vector. Cells are numbered from the upper left cell to the upper right cell and then continuing on the left side of the next row, and so on until the last cell at the lower-right side of the raster. There are several helper functions to determine the column or row number from a cell and vice versa, and to determine the cell number for x, y coordinates and vice versa.
+The cell number is an important concept in the terra package. Raster data can be thought of as a matrix, but in a `SpatRaster` it is more commonly treated as a vector. Cells are numbered from the upper left cell to the upper right cell and then continuing on the left side of the next row, and so on until the last cell at the lower-right side of the raster. There are several helper functions to determine the column or row number from a cell and vice versa, and to determine the cell number for x, y coordinates and vice versa.
 
 ```{r, raster-15}
 library(terra)
@@ -483,5 +483,5 @@ You can convert `SpatRaster` objects to `Raster*` objects defined in the `raster
 r <- rast(ncol=36, nrow=18)
 values(r) <- runif(ncell(r))
 library(raster)
-x <- rast(r)
+x <- raster(r)
 ```
