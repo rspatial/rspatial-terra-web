@@ -36,7 +36,7 @@ There is not one best projection. Some projections can be used for a map of the 
 ### Notation
 
 
-A planar CRS is defined by a projection, datum, and a set of parameters. The parameters determine things like where the center of the map is. The number of parameters depends on the projection. It is therefore not trivial to document a projection used, and several systems exist. In *R* we use the [PROJ.4[(ftp://ftp.remotesensing.org/proj/OF90-284.pdf
+A planar CRS is defined by a projection, datum, and a set of parameters. The parameters determine things like where the center of the map is. The number of parameters depends on the projection. It is therefore not trivial to document a projection used, and several systems exist. In *R* we use the [PROJ.4](ftp://ftp.remotesensing.org/proj/OF90-284.pdf
 ) notation. PROJ.4 is the name of an open source software library that is commonly used for CRS transformation. 
 
 Here is a list of [commonly used projections](http://www.remotesensing.org/geotiff/proj_list/) and their parameters in PROJ4 notation. You can find many more of these on [spatialreference.org](http://spatialreference.org/ref/epsg/4326/)
