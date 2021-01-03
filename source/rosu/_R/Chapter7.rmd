@@ -10,7 +10,7 @@ editor_options:
 
 This handout accompanies Chapter 7 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
 
-First load the `rspatial` package, to get access to the data we will use.
+First load the `rspat` package, to get access to the data we will use.
 
 ```{r getData, echo=TRUE}
 if (!require("rspat")) devtools::install_github('rspatial/rspat')
@@ -71,6 +71,7 @@ area(sppol)
 ## Contact numbers
 
 "Contact numbers" for the lower 48 states. Get the polygons:
+
 ```{r}
 library(geodata)
 usa <- geodata::gadm(country='USA', level=1, path=".")
@@ -123,16 +124,7 @@ legend('bottomleft', levels(cuts), fill=cols)
 
 Find "rook" connetected areas.
 ```{r}
-wr <- relate(pols, relation="rook")
-rownames(wr) <- colnames(wr) <- pols$AU_NAME
-wr[1:5,1:5]
-``` 
-
-Anotehr way, to get the IDs
-
-```{r}
-wr <- relate(v, relation="rook", wide=FALSE, symmetrical=TRUE)
-wr <- wr[wr[,3]==1, ]
+wr <- adjacent(pols, relation="rook", symmetrical=TRUE)
 head(wr)
 ``` 
 
@@ -154,7 +146,7 @@ Now let's recreate Figure 7.6 (page 202).
 
 We already have the first one (Rook's case adjacency, plotted above). Queen's case adjacency:
 ```{r}
-wq <- adjacent(v, "queen", symmetrical=TRUE)
+wq <- adjacent(pols, "queen", symmetrical=TRUE)
 ``` 
 
 Distance based:
@@ -253,16 +245,19 @@ yiyj <- yi * yj
 ``` 
 
 Make a matrix of the multiplied pairs
+
 ```{r}
 pm <- matrix(yiyj, ncol=n)
 round(pm[1:6, 1:9])
 ``` 
 
 And multiply this matrix with the weights to set to zero the value for the pairs that are not adjacent.
+
 ```{r}
+wm <- adjacent(pols, "rook", pairs=FALSE)
+wm[1:9, 1:11]
 pmw <- pm * wm
-wm[1:6, 1:9]
-round(pmw[1:6, 1:9])
+round(pmw[1:9, 1:11])
 ``` 
 
 We sum the values, to get this bit of Moran's *I*:
@@ -293,55 +288,39 @@ MI <- vr * sw
 MI
 ``` 
 
+After doing this 'by hand', now let's use the terra package to compute Moran's *I*. 
+
+```{r}
+autocor(y, wm)
+``` 
+
+
 This is how you can (theoretically) estimate the expected value of Moran's *I*. That is, the value you would get in the absence of spatial autocorrelation. Note that it is not zero for small values of *n*.
+
 ```{r}
 EI <- -1/(n-1)
 EI
 ``` 
 
-
-After doing this 'by hand', now let's use the terra package to compute Moran's *I* and do a significance test. 
-
-```{r}
-#ww <- nb2listw(wr, style='B')
-#ww
-``` 
-
-
-On to the `moran` function. Have a look at ?moran. The function is defined as `moran(y, ww, n, Szero(ww))`. Note the odd arguments `n` and `S0`. I think they are odd, because `ww` has that information. Anyway, we supply them and it works. There probably are cases where it makes sense to use other values.
-
+So is the value we found significant, in the sense that is it not a value you would expect to find by random chance? Significance can be tested analytically (see `spdep::moran.test`) but it is much better to use Monte Carlo simulation. We test the (one-sided) probability of getting a value as high as the observed *I*.
 
 ```{r}
-#moran(pols$TB, ww, n=length(ww$neighbours), S0=Szero(ww))
-```
+I <- autocor(pols$TB, wm)
+nsim <- 99
+mc <- sapply(1:nsim, function(i) autocor(sample(pols$TB), wm))
 
-Note that the global sum ow weights
-```{r}
-#Szero(ww)
-``` 
-Should be the same as
-```{r}
-#sum(pmw != 0)
-``` 
-
-Now we can test for significance. First analytically, using linear regression based logic and assumptions.
-
-```{r}
-#moran.test(pols$TB, ww, randomisation=FALSE)
-``` 
-
-And now using Monte Carlo simulation --- which is the preferred method. In fact, the only good method to use.
-
-```{r}
-#moran.mc(pols$TB, ww, nsim=99)
+P <- 1 - sum((I > mc) / (nsim+1))
+P
 ``` 
 
 
 __Question 2__: *How do you interpret these results (the significance tests)?*
 
 
-
 __Question 3__: *What would a good value be for `nsim`?*
+
+
+__Question 4__: *Show a figure similar to Figure 7.9 in OSU.
 
 
 
@@ -382,28 +361,12 @@ coefficients(reg)[2]
 is almost the same as Moran's *I*.
  
 
-Here is a more direct approach to accomplish the same thing (but hopefully the above makes it clearer how this is actually computed). Note the row standardisation of the weights matrix:
-
-```{r}
-rwm <- mat2listw(wm, style='W')
-# Checking if rows add up to 1
-mat <- listw2mat(rwm)
-apply(mat, 1, sum)[1:15]
-``` 
-
-Now we can plot
-
-```{r, mplot}
-moran.plot(y, rwm)
-```  
+See `spdep::moran.plot` for a more direct approach to accomplish the same thing (but hopefully the above makes it clearer how this is actually computed). 
 
 __Question 4__: *Show how to use the 'geary' function to compute Geary's C*
 
 
-__Question 5__: *Write your own Monte Carlo simulation test to compute p-values for Moran's *I*, replicating the results we obtained with the function from spdep*. Show a figure similar to Figure 7.9 in OSU.
-
-
-__Question 6__: *Write your own Geary C function, by completing the function below*
+__Question 5__: *Write your own Geary C function, by completing the function below*
 
 ```
 gearyC <- ((n-1)/sum(( "----")\^2)) * sum(wm * (" --- ")\^2) / (2 * sum(wm))

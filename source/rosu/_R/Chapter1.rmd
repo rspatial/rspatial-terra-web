@@ -1,12 +1,11 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # The length of a coastline
 
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 4, fig.height = 5, fig.cap = '', collapse = TRUE)
-```
-
 This page accompanies Chapter 1 of [O'Sullivan and Unwin (2010)](https://www.wiley.com/en-us/Geographic+Information+Analysis%2C+2nd+Edition-p-9780470288573). 
-
 There is only one numerical example in this chapter, and it is a complicated one. I reproduce it here anyway, perhaps you can revisit it when you reach the end of the book (and you will be amazed to see how much you have learned!).
 
 On page 13 the fractional dimension of a part of the New Zealand coastline is computed. First we get a high spatial resolution (30 m) coastline. 
@@ -92,14 +91,14 @@ par(mfrow=c(1,3))
 for (i in 1:length(y)) {
 	plot(mcoast)
 	stops <- y[[i]]
-	points(g[stops, ], col="red", pch=20 cex=2)
+	points(g[stops, ], col="red", pch=20, cex=2)
 	lines(g[stops, ], col="red", lwd=3)
 	text(1715000, 5860000, paste(n[i], "x", sticks[i], "=", n[i] * sticks[i], "km"), cex=1.5) 
 }
 ```
 
 
-Now the fractal (log-log) plot. 
+The fractal (log-log) plot. 
 
 ```{r, fracplot2, fig.width=6, fig.height=6}
 plot(sticks, n, log="xy", cex=3, pch=20, col="red", 

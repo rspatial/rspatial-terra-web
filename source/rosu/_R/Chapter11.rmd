@@ -1,11 +1,5 @@
 # Map overlay
 
-```{r, include=FALSE}
-library(knitr)
-opts_chunk$set(
-  fig.width = 5, fig.height = 5, fig.cap = '', collapse   = TRUE
-)
-```
 
 ## Introduction
 
@@ -49,16 +43,13 @@ You can interactively select counties this way:
 I want to select the railroads in the city of Davis from the railroads in Yolo county. First read the data, and do an important sanity check: are the coordinate reference systems (crs) the same?
 
 ```{r}
-rail <- spat_data('yolo-rail.rds')
+rail <- spat_data("yolo-rail")
 rail
-# removing attributes that I do not care about
-rail <- geometry(rail)
 class(rail)
+# removing attributes that I do not care about
+values(rail) <- NULL
 
-city <- spat_data('city.rds')
-class(city)
-city <- geometry(city)
-class(city)
+city <- spat_data("city")
 
 crs(yolo, TRUE)
 crs(rail, TRUE)
@@ -68,7 +59,6 @@ crs(city, TRUE)
 Ay, we are dealing with two different coordinate reference systems (projections)! Let's settle for yet another one: Teale Albers (this is really the "Albers Equal Area projection with parameters suitable for California". This particular set of parameters was used by an California State organization called the Teale Data Center, hence the name.
 
 ```{r}
-library(rgdal)
 TA <- CRS("+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m)
 countiesTA <- project(counties, TA)
 yoloTA <- project(yolo, TA)
@@ -127,16 +117,16 @@ round(100 * area(rail_buf) / area(cityTA))
 
 Which park in Davis is furthest, and which is closest to the railroad? First get the parks data. 
 ```{r}
-parks <- spat_data('parks.rds')
-proj4string(parks)
-parksTA <- spTransform(parks, TA)
+parks <- spat_data("parks")
+crs(parks, TRUE)
+parksTA <- transform(parks, TA)
 ```
 
 Now plot the parks that are the furthest and the nearest from a railroad.
 ```{r, over12}
-plot(cityTA, col='light gray', border='light gray')
-plot(railTA, add=T, col='blue', lwd=4)
-plot(parksTA, col='dark green', add=TRUE)
+plot(cityTA, col="light gray", border="light gray")
+plot(railTA, add=TRUE, col="blue", lwd=4)
+plot(parksTA, col="dark green", add=TRUE)
 
 d <- distance(parksTA, railTA)
 dmin <- apply(d, 2, min)
@@ -144,11 +134,11 @@ parksTA$railDist <- dmin
 
 i <- which.max(dmin)
 data.frame(parksTA)[i,]
-plot(parksTA[i, ], add=TRUE, col='red', lwd=3, border='red')
+plot(parksTA[i, ], add=TRUE, col="red", lwd=3, border="red")
 
 j <- which.min(dmin)
 data.frame(parksTA)[j,]
-plot(parksTA[j, ], add=TRUE, col='red', lwd=3, border='orange')
+plot(parksTA[j, ], add=TRUE, col="red", lwd=3, border="orange")
 ```
 
 
@@ -176,7 +166,7 @@ dp <- dp[order(dp$dist), ]
 
 plot(d)
 plot(parksTA, add=TRUE)
-plot(railTA, add=T, col='blue', lty=2)
+plot(railTA, add=T, col="blue", lty=2)
 ```
 
 
@@ -188,15 +178,15 @@ Here I compute Voronoi (or Thiessen) polygons for the centroids of the Davis par
 centr <- centroids(parksTA)
 v <- voronoi(centroids)
 plot(v)
-points(centroids, col='blue', pch=20)
+points(centroids, col="blue", pch=20)
 ```
 
 To keep the polygons within Davis.
 
 ```{r, over18, fig.width=8}
 vc <- intersect(v, cityTA)
-plot(vc, border='red')
-plot(parksTA, add=T, col='green')
+plot(vc, border="red")
+plot(parksTA, add=T, col="green")
 ``` 
   
 
@@ -209,7 +199,6 @@ raster data can be read with the rast methods. See the terra package for more de
 
 
 ```{r}
-library(terra)
 alt <- spat_data("elevation")
 alt
 ```
@@ -218,10 +207,10 @@ alt
 Shaded relief is always nice to look at.
 
 ```{r, over22, fig.width=7}
-slope <- terrain(alt, opt='slope')
-aspect <- terrain(alt, opt='aspect')
+slope <- terrain(alt, opt="slope")
+aspect <- terrain(alt, opt="aspect")
 hill <- hillShade(slope, aspect, 40, 270)
-plot(hill, col=grey(0:100/100), legend=FALSE, main='Elevation')
+plot(hill, col=grey(0:100/100), legend=FALSE, main="Elevation")
 plot(alt, col=rainbow(25, alpha=0.35), add=TRUE)
 ```
 
@@ -234,7 +223,7 @@ Now extract elevation data for Yolo county.
 
 ```{r, over24}
 v <- extract(alt, yolo)
-hist(unlist(v), main='Elevation in Yolo county')
+hist(unlist(v), main="Elevation in Yolo county")
 ```
 
 
@@ -242,7 +231,7 @@ Another approach:
 ```{r, over26}
 # cut out a rectangle (extent) of Yolo
 yalt <- crop(alt, yolo)
-# 'mask' out the values outside Yolo
+# "mask" out the values outside Yolo
 ymask <- mask(yalt, yolo)
 
 # summary of the raster cell values

@@ -107,7 +107,7 @@ Because projection of rasters affects the cell values, in most cases you will wa
 
 
 ```{r, prj1}
-r <- rast(xmn=-110, xmx=-90, ymn=40, ymx=60, ncols=40, nrows=40)
+r <- rast(xmin=-110, xmax=-90, ymin=40, ymax=60, ncols=40, nrows=40)
 values(r) <- 1:ncell(r)
 r
 plot(r)

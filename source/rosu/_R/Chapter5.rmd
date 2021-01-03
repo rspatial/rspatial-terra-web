@@ -37,7 +37,7 @@ tb <- sort(table(crime$CATEGORY))[-1]
 tb
 ``` 
 
-Let's get the coordinates of the crime data, and for this exercise, remove duplicate crime locations. These are the 'events' we will use below (later we'll go back to the full data set).
+Let's get the coordinates of the crime data, and for this exercise, remove duplicate crime locations. These are the "events" we will use below (later we'll go back to the full data set).
 
 ```{r}
 xy <- geom(crime)[, c("x", "y")]
@@ -341,13 +341,13 @@ A ppp object has the coordinates of the points **and** the analysis 'window' (st
 Coerce from SpatVector to SpatialPolygons to an object of class "owin" (observation window)
 
 ```{r, message=FALSE}
-library(maptools)
-cityOwin <- as.owin(as(city, "Spatial"))
+cityOwin <- maptools::as.owin.SpatialPolygons(as(city, "Spatial"))
 class(cityOwin)
 cityOwin
 ``` 
 
 Extract coordinates from the SpatVector
+
 ```{r}
 pts <- geom(crime)[, c("x", "y")]
 head(pts)
@@ -393,6 +393,7 @@ Here's another, lengthy, example of generalization. We can interpolate populatio
 
 ```{r}
 census <- spat_data("census2000")
+census
 ``` 
 
 To compute population density for each census block, we first need to get the area of each polygon. I transform density from persons per feet^2^ to persons per mile^2^, and then compute population density from POP2000 and the area
@@ -422,9 +423,9 @@ points(p, col='red', pch=20, cex=.25)
 plot(win, add=TRUE, border='blue', lwd=3)
 ``` 
 
-Now we can use 'Smooth.ppp' to interpolate. Population density at the points is referred to as the 'marks'
+Now we can use `Smooth.ppp` to interpolate. Population density at the points is referred to as the 'marks'
 ```{r}
-owin <- as.owin(as(win, "Spatial"))
+owin <- maptools::as.owin.SpatialPolygons(as(win, "Spatial"))
 pxy <- geom(p)[, c("x", "y")]
 pp <- ppp(pxy[,1], pxy[,2], window=owin, marks=census$dens)
 pp
@@ -486,13 +487,14 @@ for (offense in c("Auto Theft", "Drunk in Public", "DUI", "Arson")) {
 }
 ``` 
 
+
 Create a marked point pattern object (ppp) for all crimes. It is important to coerce the marks to a factor variable.
 
 ```{r}
 fcat <- as.factor(crime$CATEGORY)
-w <- as.owin(as(city, "Spatial"))
+#cityOwin <- maptools::as.owin.SpatialPolygons(as(city, "Spatial"))
 xy <- geom(crime)[, c("x", "y")]
-mpp <- ppp(xy[,1], xy[,2], window = w, marks=fcat)
+mpp <- ppp(xy[,1], xy[,2], window = cityOwin, marks=fcat)
 ``` 
 
 We can split the mpp object by category (crime)
