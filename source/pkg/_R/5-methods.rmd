@@ -1,9 +1,8 @@
 # High-level methods
 
-```{r, global_options, tidy = TRUE, echo=FALSE, message=FALSE}
-library(knitr)
+
+```{r, echo=FALSE, include=FALSE}
 library(terra)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
 ```
 
 Several 'high level' methods (functions) have been implemented for `SpatRaster` objects. 'High level' refers to methods that you would normally find in a GIS program that supports raster data. Here we briefly discuss some of these. See the help files for more detailed descriptions.
@@ -45,11 +44,11 @@ plot(m)
 `bf` lets you flip the data (reverse order) in horizontal or vertical direction -- typically to correct for a 'communication problem' between different R packages or a misinterpreted file. `rotate` lets you rotate longitude/latitude rasters that have longitudes from 0 to 360 degrees (often used by climatologists) to the standard -180 to 180 degrees system. With `t` you can rotate a `SpatRaster` object 90 degrees.
 
 
-## Overlay
+## lapp
 
-The `overlay` method can be used as an alternative to the raster algebra discussed above. Overlay, like the methods discussed in the following subsections provide either easy to use short-hand, or more efficient computation for large (file based) objects. 
+The `lapp` (for layer-apply) method can be used as an alternative to the raster algebra discussed above. Like the methods discussed in the following subsections provide either easy to use short-hand, or more efficient computation for large (file based) objects. 
 
-With `overlay` you can combine multiple Raster objects (e.g. multiply them). The related method `mask` removes all values from one layer that are `NA` in another layer, and `cover` combines two layers by taking the values of the first layer except where these are `NA`.
+With `lapp` you can combine multiple Raster objects (e.g. multiply them). The related method `mask` removes all values from one layer that are `NA` in another layer, and `cover` combines two layers by taking the values of the first layer except where these are `NA`.
 
 
 ## app
@@ -67,7 +66,7 @@ values(r) <- 1:ncell(r)
 values(r)
 s <- app(r, fun=function(x){ x[x < 4] <- NA; return(x)} )
 as.matrix(s)
-t <- overlay(r, s, fun=function(x, y){ x / (2 * sqrt(y)) + 5 } )
+t <- lapp(c(r, s), fun=function(x, y){ x / (2 * sqrt(y)) + 5 } )
 as.matrix(t)
 u <- mask(r, t)
 as.matrix(u)
@@ -98,7 +97,7 @@ The `clump` method identifies groups of cells that are connected. `boundaries` i
 ```{r  raster-7}
 r <- rast(nrow=45, ncol=90)
 values(r) <- round(runif(ncell(r))*3)
-a <- area(r)
+a <- area(r, sum=FALSE)
 zonal(a, r, "sum")
 ```
 

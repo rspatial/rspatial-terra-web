@@ -9,7 +9,7 @@ Importing occurrence data into *R* is easy. But collecting, georeferencing, and 
 
 In most cases you will have a file with point locality data representing the known distribution of a species. Below is an example of using `read.table` to read records that are stored in a text file. 
 
-We are using an example file that is installed with the `predicts`  package, and for that reason we use a complex way to construct the filename, but you can replace that with your own filename. (remember to use forward slashes in the path of filenames!).  `system.file` inserts the file path to where predicts is installed. 
+We are using an example file that is installed with the `predicts`  package, and for that reason we use a complex way to construct the filename, but you can replace that with your own filename. (remember to use forward slashes in the path of filenames!).  `system.file` inserts the file path to where the `predicts` package is installed. 
 
 ```{r, sdm10A, message=FALSE}
 library(predicts)
@@ -18,7 +18,7 @@ filename <- file.path(system.file(package="predicts"), "ex/bradypus.csv")
 filename
 ```
 
-Now read it and inspect the values of the file
+Now read the file and inspect the values.
 
 ```{r, sdm11A}
 bradypus <- read.csv(filename)
@@ -34,14 +34,17 @@ You can also read such data from Excel files with the `readxl` package. No matte
 If you do not have any species distribution data you can get started by downloading data from the [Global Biodiversity Inventory Facility (GBIF)](http://www.gbif.org/). In the predicts package there is a function `gbif` that you can use for this. The data used below were downloaded, and saved to a permanent data set for use in this chapter, using the `gbif` function like this: 
 
 
-```{r, sdm11B, evaluate=FALSE}
-acaule <- gbif("solanum", "acaule*", geo=FALSE)
+```{r, sdm11B, eval=FALSE}
+acaule <- predicts::gbif("solanum", "acaule*", geo=FALSE)
+## Loading required namespace: jsonlite
+## 7238 records found
+## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200
 ```
 
 If you want to understand the order of the arguments given here to `gbif` or find out what other arguments you can use with this function, check out the help file (remember you can't access help files if the library is not loaded), by typing: `?gbif` or `help(gbif)`. Note the use of the asterix in "acaule*" to not only request `Solanum acaule`, but also variations such as the full name, *Solanum acaule* Bitter, or subspecies such as *Solanum acaule* subsp. *aemulans*.
 
  
-Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (January 2013), there were 1082 records with coordinates (this was 699 and 54 in March 2010, a tremendous improvement!)
+Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (January 2013), there were 1082 records with coordinates,
 
 ```{r, sdm2}
 # load the saved S. acaule data
@@ -57,22 +60,17 @@ acgeo <- subset(acaule, !is.na(lon) & !is.na(lat))
 dim(acgeo)
 
 # show some values
-acgeo[1:4, c(1:5,7:10)]
+acgeo[1:5, c(1:5,7:10)]
 ```
 
 Below is a simple way to make a map of the occurrence localities of *Solanum acaule*. It is important to make such maps to assure that the points are, at least roughly, in the right location.
 
 ```{r, sdm3}
 library(geodata)
-data(wrld)
-plot(wrld, xlim=c(-80,70), ylim=c(-60,10), axes=TRUE, col="light yellow")
-# restore the box around the map
-box()
-
+wrld <- world(path=".")
+plot(wrld, xlim=c(-110,60), ylim=c(-80,40), col="light yellow", border="light gray")
 # add the points
-points(acgeo$lon, acgeo$lat, col='orange', pch=20, cex=0.75)
-# plot points again to add a border, for better visibility 
-points(acgeo$lon, acgeo$lat, col='red', cex=0.75)
+points(acgeo$lon, acgeo$lat, col='red', pch=20)
 ```
 
 The `wrld` dataset contains rough country outlines. You can use other datasets of polygons (or lines or points) as well. For example, you can download higher resolution data country and subnational administrative boundaries data with the `gadm` function of the `geodata` package. You can also read your own shapefile data using the `vect` function in the `terra` package.
@@ -87,12 +85,13 @@ Data 'cleaning' is particularly important for data sourced from species distribu
 There are a few records that map in the ocean just south of Pakistan. Any idea why that may have happened? It is a common mistake, missing minus signs. The coordinates are around (65.4, 23.4) but they should in Northern Argentina, around (-65.4, -23.4) (you can use the "click" function to query the coordintates on the map). There are two records (rows 303 and 885) that map to the same spot in Antarctica (-76.3, -76.3). The locality description says that is should be in Huarochiri, near Lima, Peru. So the longitude is probably correct, and erroneously copied to the latitude. Interestingly the record occurs twice. The orignal source is the International Potato Center, and a copy is provided by "SINGER" that aling the way appears to have "corrected" the country to Antarctica:
 
 ```{r, sdm4a}
-acaule[c(303,885),1:10]
+acgeo[c(303,885),1:10]
 ```
 
 The point in Brazil (record acaule[98,]) should be in soutern Bolivia, so this is probably due to a typo in the longitude. Likewise, there are also three records that have plausible latitudes, but longitudes that are clearly wrong, as they are in the Atlantic Ocean, south of West Africa. It looks like they have a longitude that is zero. In many data-bases you will find values that are 'zero' where 'no data' was intended.  The `gbif` function (when using the default arguments) sets coordinates that are (0, 0) to `NA`, but not if one of the coordinates is zero. Let's see if we find them by searching for records with longitudes of zero.
 
 Let's have a look at these records:
+
 ```{r, sdm4b}
 lonzero = subset(acgeo, lon==0)
 # show all records, only the first 13 columns
@@ -113,6 +112,7 @@ dups <- duplicated(lonzero[, 1:10])
 lonzero  <-  lonzero[dups, ]
 lonzero[,1:13]
 ```
+
 
 Another approach might be to detect duplicates for the same species and some coordinates in the data, even if the records were from collections by different people or in different years. (in our case, using species is redundant as we have data for only one species)
 
@@ -140,49 +140,50 @@ acg <- acg[acg$lon < -50 & acg$lat > -50, ]
 
 ## Cross-checking
 
-It is important to cross-check coordinates by visual and other means. One approach is to compare the country (and lower level administrative subdivisions) of the site as specified by the records, with the country implied by the coordinates (Hijmans *et al.*, 1999). In the example below we use the `coordinates` function from the `sp` package to create a `SpatialPointsDataFrame`, and then the `over` function, also from `sp`, to do a point-in-polygon query with the countries polygons.
+It is important to cross-check coordinates by visual and other means. One approach is to compare the country (and lower level administrative subdivisions) of the site as specified by the records, with the country implied by the coordinates (Hijmans *et al.*, 1999). 
 
-We can make a SpatialPointsDataFrame using the statistical function notation (with a tilde):
+We first make a `SpatVector` 
 ```{r, sdm6a}
-library(sp)
-coordinates(acg) <- ~lon+lat
-crs(acg) <- crs(wrld_simpl)
-class(acg)
+library(terra)
+acv <- vect(acg, geom=c("lon", "lat"), crs="+proj=longlat +datum=WGS84")
+class(acv)
 ```
 
-We can now  use the coordinates to do a spatial query of the polygons in wrld_simpl (a SpatialPolygonsDataFrame)
+We can now use do a spatial query of the polygons in `wrld`
+
 ```{r, sdm6b}
-class(wrld)
-ovr <- over(acg, wrld_simpl)
+ovr <- extract(acv, wrld)
 ```
 
-Object 'ov' has, for each point, the matching record from wrld_simpl. We need the variable 'NAME' in the data.frame of wrld_simpl
+Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of wrld_simpl
 
 
 ```{r, sdm6c}
 head(ovr)
-cntr <- ovr$NAME
+cntr <- ovr$NAME_0
 ```
 
-We should ask these two questions: (1) Which points (identified by their record numbers) do not match any country (that is, they are in an ocean)? (There are none (because we already removed the points that mapped in the ocean)). (2) Which points have coordinates that are in a different country than listed in the 'country' field of the gbif record
+We should ask these two questions: (1) Which points (identified by their record numbers) do not match any country (that is, they are in an ocean)? (There are none (because we already removed the points that mapped in the ocean)). (2) Which points have coordinates that are in a different country than listed in the 'country' field of the GBIF record
 
 ```{r, sdm6d}
 i <- which(is.na(cntr))
 i
-j <- which(cntr != acg$country)
+j <- which(cntr != acv$country)
 # for the mismatches, bind the country names of the polygons and points
-cbind(cntr, acg$country)[j,]
+m <- cbind(cntr[j], acg$country[j])
+colnames(m) <- c("polygons", "acaule")
+m
 ```
 
 In this case the mismatch is probably because wrld_simpl is not very precise as the records map to locations very close to the border between Bolivia and its neighbors.
 
 ```{r, sdm6e}
-plot(acg)
-plot(wrld_simpl, add=T, border='blue', lwd=2)
-points(acg[j, ], col='red', pch=20, cex=2)
+plot(acv)
+lines(wrld, col='blue', lwd=2)
+points(acv[j, ], col='red', pch=20, cex=2)
 ```
 
-See the sp package for more information on the `over` function. The wrld_simpl polygons that we used in the example above are not very precise, and they probably should not be used in a real analysis. See [GADM](http://www.gadm.org/) for more detailed administrative division files, or use the `getData` function from the raster package (e.g. `getData('gadm', country='BOL', level=0)` to get the national borders of Bolivia; and `getData('countries')` to get all country boundaries).
+The wrld polygons that we used in the example above are not very precise, and they probably should not be used in a real analysis. See [GADM](http://www.gadm.org/) for more detailed administrative division files, or use functions from the `predicts` package (e.g. `predicts::gadm(country='BOL', level=0)` to get the national borders of Bolivia; and `?predicts::world to get more precise boundaries for all countries).
 
 
 ## Georeferencing
@@ -200,7 +201,7 @@ For georeferencing, you can try to use the predicts package function `geocode` t
 
 Here is an example for one of the records with longitude = 0, using Google's geocoding service. We put the function into a 'try' function, to assure elegant error handling if the computer is not connected to the Internet. Note that we use the "cloc" (concatenated locality) field.
 
-```{r, sdm9}
+```{r, sdm9, eval=FALSE}
 georef$cloc[4]
 #b <- geocode(georef$cloc[4], geo_key="abcdef" )
 #b
@@ -214,24 +215,25 @@ Before using the geocode function it is best to write the records to a table and
 Sampling bias is frequently present in occurrence records (Hijmans *et al.*, 2001). One can attempt to remove some of the bias by subsampling records, and this is illustrated below. However, subsampling reduces the number of records, and it cannot correct the data for areas that have not been sampled at all. It also suffers from the problem that locally dense records might in fact be a true reflection of the relative suitable of habitat. As in many steps in SDM, you need to understand something about your data and species to implement them well. See Phillips *et al.* (2009) for an approach with MaxEnt to deal with bias in occurrence records for a group of species.
 
 ```{r, sdm100A}
-# create a RasterLayer with the extent of acgeo
-r <- raster(acg)
+# create a SpatRaster with the extent of acveo
+r <- rast(acg)
 # set the resolution of the cells to (for example) 1 degree
 res(r) <- 1
 
 # expand (extend) the extent of the RasterLayer a little
-r <- extend(r, extent(r)+1)
+r <- expand(r, extent(r)+1)
 
 # sample:
-acsel <- gridSample(acg, r, n=1) 
+acsel <- spatSample(acv, n=1, "stratified", strata=r) 
 
 # to illustrate the method and show the result
-p <- rasterToPolygons(r)
+p <- as.polygons(r)
 plot(p, border='gray')
-points(acg)
+points(acv)
 # selected points in red
 points(acsel, cex=1, col='red', pch='x')
 ```
+
 
 Note that with the `gridSample` function you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
 

@@ -1,12 +1,5 @@
 # Spatial data
 
-
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap='',  collapse = TRUE)
-
-```
-
 ## Introduction
 
 Spatial phenomena can generally be thought of as either discrete objects with clear boundaries or as a continuous phenomenon that can be observed everywhere, but does not have natural boundaries. Discrete spatial objects may refer to a river, road, country, town, or a research site. Examples of continuous phenomena, or "spatial fields", include elevation, temperature, and air quality.
@@ -93,7 +86,6 @@ However, `wst` is a data.frame and *R* does not automatically understand the spe
 
 Moreover, it is non-trivial to do some basic spatial operations. For example, the blue polygon drawn on the map above might represent a state, and a next question might be which of the 10 stations fall within that polygon. And how about any other operation on spatial data, including reading from and writing data to files? To facilitate such operation a number of *R* packages have been developed that define new spatial data types that can be used for this type of specialized operations. 
 
-The foundational packages in R that define such spatial data structures are `sp`, `sf`, and `raster`.
+Packages in R that define such spatial data structures include `sp` and `raster`; but these havee become obsolete and replaced with `sf` and `terra`. 
 
-We use the `terra` package. It is a replacement for the `raster` package (it is faster and easier to use).
-
+We mostly use the `terra` package in these materials. You can install the latest released version of *terra* from CRAN with `install.packages(`terra`) and the development version from [github](https://www.github.com/rspatial/terra). For the same material with the *raster* and *sp* packages, go [here](https://rspatial.org/spatial/). 

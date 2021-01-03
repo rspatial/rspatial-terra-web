@@ -2,9 +2,6 @@
 
 
 ```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap = '', collapse = TRUE
-)
 library(terra)
 ```
 
@@ -48,7 +45,7 @@ Now let's look at an example with a spatial data set in *R*.
 
 ```{r, crs1}
 library(terra)
-f <- system.file("exdata/lux.shp", package="terra")
+f <- system.file("ex/lux.shp", package="terra")
 p <- vect(f)
 p
 ```
@@ -117,6 +114,7 @@ plot(r)
 ```
 
 Simplest approach
+
 ```{r}
 newcrs
 pr1 <- terra::project(r, newcrs)

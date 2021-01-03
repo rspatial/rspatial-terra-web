@@ -1,10 +1,9 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Downloading MODIS data
 
+
+```{r, echo=FALSE, include=FALSE}
+library(terra)
+```
 
 MODIS data can be acquired through multiple services, and it can be confusing to find out what to get where. This [website](https://modis.gsfc.nasa.gov/tools/) has a lot of information on MODIS resources. 
 

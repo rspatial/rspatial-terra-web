@@ -86,7 +86,7 @@ It is more common, however, to create a `SpatRaster` object from a file. The ras
 ```{r  raster-2a, fig=TRUE , echo=TRUE}
 # get the name of an example file installed with the package
 # do not use this construction of your own files
-filename <- system.file("exdata/test.tif", package="terra")
+filename <- system.file("ex/test.tif", package="terra")
 filename
 r <- rast(filename)
 sources(r)
@@ -115,7 +115,7 @@ nlyr(s)
 Create a multilayer SpatRaster  from file
 
 ```{r  raster-2bbb}
-filename <- system.file("exdata/logo.tif", package="terra")
+filename <- system.file("ex/logo.tif", package="terra")
 filename
 b <- rast(filename)
 b

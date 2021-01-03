@@ -1,8 +1,10 @@
+
 # Raster data manipulation
 
+
+
 ```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap = '', collapse = TRUE)
+library(terra)
 ```
 
 ## Introduction
@@ -111,7 +113,7 @@ A notable feature of the `raster` package is that it can work with raster datase
 For this example, we first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction of your own files (just type the file name; don't forget the forward slashes).
 
 ```{r, raster-2a1 }
-filename <- system.file("exdata/test.tif", package="terra")
+filename <- system.file("ex/test.tif", package="terra")
 filename
 ```
 
@@ -144,7 +146,7 @@ nlyr(s)
 
 You can also create a multilayer object from a file.
 ```{r, raster-2b5}
-filename <- system.file("exdata/logo.tif", package="terra")
+filename <- system.file("ex/logo.tif", package="terra")
 filename
 b <- rast(filename)
 b
@@ -184,9 +186,9 @@ You can also use replacement functions.
 
 ```{r, raster-3b}
 #Not yet implemented
-#s[r] <- -0.5
-#s[!r] <- 5
-#s[s == 5] <- 15
+s[r] <- -0.5
+s[!r] <- 5
+s[s == 5] <- 15
 ```
 
 If you use multiple `SpatRaster` objects (in functions where this is relevant, such as range), these must have the same resolution and origin. The origin of a `Raster` object is the point closest to (0, 0) that you could get if you moved from a corner of a `SpatRaster` toward that point in steps of the `x` and `y` resolution. Normally these objects would also have the same extent, but if they do not, the returned object covers the spatial intersection of the objects used.
@@ -304,7 +306,8 @@ as.matrix(s)
 Divide the first raster with two times the square root of the second raster and add five.
 
 ```{r, raster-6c}
-w <- overlay(r, s, fun=function(x, y){ x / (2 * sqrt(y)) + 5 } )
+rs <- c(r, s)
+w <- lapp(rs, fun=function(x, y){ x / (2 * sqrt(y)) + 5 } )
 as.matrix(w)
 ```
 
@@ -354,7 +357,7 @@ Function `clump` identifies groups of cells that are connected. `boundaries` ide
 ```{r, raster-7}
 r <- rast(nrow=45, ncol=90)
 values(r) <- round(runif(ncell(r))*3)
-a <- area(r)
+a <- area(r, sum=FALSE)
 zonal(a, r, "sum")
 ```
 
@@ -371,7 +374,6 @@ Point to raster conversion is often done with the purpose to analyze the point d
 Polygon to raster conversion is typically done to create a `SpatRaster` that can act as a mask, i.e. to set to `NA` a set of cells of a `SpatRaster` object, or to summarize values on a raster by zone. For example a country polygon is transferred to a raster that is then used to set all the cells outside that country to `NA`; whereas polygons representing administrative regions such as states can be transferred to a raster to summarize raster values by region. 
 
 It is also possible to convert the values of a `SpatRaster` to points or polygons, using `as.points` and `as.polygons`. Both functions only return values for cells that are not `NA`. Unlike `rasterToPolygons`, `rasterToPoints` is reasonably efficient and allows you to provide a function to subset the output before it is produced (which can be necessary for very large rasters as the point object is created in memory). 
-
 
 ## Summarizing functions
 
@@ -430,7 +432,7 @@ rowFromY(r, 0)
 Cell values can be accessed with several methods. Use `getValues` to get all values or a single row; and `getValuesBlock` to read a block (rectangle) of cell values. 
 
 ```{r, raster-20}
-r <- rast(system.file("exdata/test.tif", package="terra"))
+r <- rast(system.file("ex/test.tif", package="terra"))
 #v <- values(r, 50)
 #v[35:39]
 #getValuesBlock(r, 50, 1, 35, 5)
@@ -465,8 +467,8 @@ Note that in the above examples values are retrieved using cell numbers. That is
 ```{r, raster-33}
 r[1]
 r[2,2]
-r[1,]
-r[,2]
+r[1, 1:5]
+r[1:5, 2]
 r[1:3,1:3]
 
 # keep the matrix structure

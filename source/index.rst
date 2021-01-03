@@ -37,6 +37,13 @@ Manuals
   | 
 
 
+
+.. topic:: II. `Geographic Information Analysis <rosu/index.html>`__ 
+
+   | R companion to Geographic Information Analysis by O'Sullivan and Unwin. (`pdf <rosu/ROSU.pdf>`__)
+   |
+
+     
   
 
 .. toctree::

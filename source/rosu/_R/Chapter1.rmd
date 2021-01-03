@@ -1,0 +1,127 @@
+# The length of a coastline
+
+```{r, echo=FALSE, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.width = 4, fig.height = 5, fig.cap = '', collapse = TRUE)
+```
+
+This page accompanies Chapter 1 of [O'Sullivan and Unwin (2010)](https://www.wiley.com/en-us/Geographic+Information+Analysis%2C+2nd+Edition-p-9780470288573). 
+
+There is only one numerical example in this chapter, and it is a complicated one. I reproduce it here anyway, perhaps you can revisit it when you reach the end of the book (and you will be amazed to see how much you have learned!).
+
+On page 13 the fractional dimension of a part of the New Zealand coastline is computed. First we get a high spatial resolution (30 m) coastline. 
+
+Throughout this book, we will use data that is installed with the `rspat` package. To install this package (from github) you can use the `install_github` function from the `remotes` package (so you may need to run `install.packages("remotes")` first.
+
+```{r getDataOSU1, echo=TRUE}
+if (!require("remotes")) install.packages('remotes')
+if (!require("rspat")) remotes::install_github('rspatial/rspatial')
+```
+
+Now you should have the data for all chapters. 
+
+```{r, nzfrac1}
+library(rspat)
+coast <- spat_data("nz_coastline")
+coast
+plot(coast)
+```
+
+To speed up the distance computations, we transform the CRS from longitude/latitude to a planar system. 
+
+```{r crs}
+prj <- "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +datum=WGS84 +units=m"
+mcoast <- project(coast, prj) 
+mcoast
+```
+
+On to the tricky part. A function to follow the coast with a yardstick of a certain length.
+
+Argument `x` is a matrix with two columns (x and y coordinates)
+
+```{r yardfun}
+stickpoints <- function(x, sticklength, lonlat) {
+	nr <- nrow(x)
+	pts <- 1
+	pt <- 0
+	sticklength <- sticklength * 1000
+	while(TRUE) {
+		pd <- distance(x[1,], x)
+		# i is the first point further than the yardstick
+		i <- which(pd > sticklength)[1]
+		
+		# if we cannot find a point within yardsitck distance we 
+		# break out of the loop
+		if (is.na(i)) break
+		
+		# remove the all points we have passed
+		x <- x[(i+1):nrow(x), ]
+		pt <- pt + i
+		pts <- c(pts, pt)
+	}
+	pts
+}
+```
+
+With this function we can compute the length of the coastline with yardsticks of different lengths. 
+
+```{r computen}
+# get the x and y coordinates of the nodes
+g <- as.points(mcoast)
+# reverse the order (to start at the top rather than at the bottom)
+g <- rev(g)
+
+# three yardstick lengths
+sticks <- c(50, 25, 10) # km
+# create an empty list for the results
+y <- list()
+# loop over the yardstick lengths
+for (i in 1:length(sticks)) {
+	y[[i]] <- stickpoints(g, sticks[i], FALSE)
+}
+# These last four lines are equivalent to:
+# y <- lapply(sticks, function(s) stickpoints(g, s, FALSE))
+```
+
+Object `y` has the indices of `g` where the stick reached the coastline. 
+We can now make plots as in Figure 1.1. First the first three panels. 
+
+```{r, fracplot1, fig.width = 10, fig.height = 6}
+n <- sapply(y, length)
+par(mfrow=c(1,3))
+for (i in 1:length(y)) {
+	plot(mcoast)
+	stops <- y[[i]]
+	points(g[stops, ], col="red", pch=20 cex=2)
+	lines(g[stops, ], col="red", lwd=3)
+	text(1715000, 5860000, paste(n[i], "x", sticks[i], "=", n[i] * sticks[i], "km"), cex=1.5) 
+}
+```
+
+
+Now the fractal (log-log) plot. 
+
+```{r, fracplot2, fig.width=6, fig.height=6}
+plot(sticks, n, log="xy", cex=3, pch=20, col="red", 
+	xlab="stick length", ylab="number of measures", las=1)
+m <- lm(log(n) ~ log(sticks))
+lines(sticks, exp(predict(m)), lwd=2, col="blue")
+cf <- round(coefficients(m) , 3)
+txt <- paste("log N =", cf[2], "log L +", cf[1])
+text(6, 222, txt)
+```
+
+The fractal dimension *D* is the (absolute value of the) slope of the regression line.
+
+```{r}
+-cf[2]
+```
+
+Pretty close to the 1.44 that OSU found. 
+
+__Question 1__: *Compare the results in OSU and computed here for the three yardsticks. How and why are they different?*
+
+
+
+For a more detailed and complex example, see the [fractal dimension of the coastline of Britain](https://rspatial.org/cases/2-coastline.html) page. 
+

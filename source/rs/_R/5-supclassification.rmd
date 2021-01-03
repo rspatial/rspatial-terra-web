@@ -1,7 +1,6 @@
 # Supervised Classification
 
 ```{r setup, echo=TRUE, include=FALSE}
-library(knitr)
 library(terra)
 ```
 
@@ -112,7 +111,7 @@ Once we have the training sites, we can extract the cell values from `landsat` l
 # We use the x-y coordinates to extract the spectral values for the locations 
 xy <- as.matrix(geom(ptsamp)[,c('x','y')])
 
-df <- extract(landsat, xy)
+df <- extract(landsat, xy)[,-1]
 
 # Quick check for the extracted values
 head(df)

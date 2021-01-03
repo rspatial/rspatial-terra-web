@@ -1,14 +1,20 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Spatial prediction
 
 Some examples for prediction. 
 
 ## Predict 
 
+
 ### GLM
 
 ```{r glm, message=FALSE}
 library(terra)
-logo <- rast(system.file("exdata/logo.tif", package="terra"))   
+logo <- rast(system.file("ex/logo.tif", package="terra"))   
 names(logo) <- c("red", "green", "blue")
 p <- matrix(c(48, 48, 48, 53, 50, 46, 54, 70, 84, 85, 74, 84, 95, 85, 
    66, 42, 26, 4, 19, 17, 7, 14, 26, 29, 39, 45, 51, 56, 46, 38, 31, 
@@ -24,7 +30,7 @@ xy <- rbind(cbind(1, p), cbind(0, a))
 e <- extract(logo, xy[,2:3])
 
 # combine with response 
-v <- data.frame(cbind(pa=xy[,1], e))
+v <- data.frame(cbind(pa=xy[,1], e[,-1]))
 
 #build a model, here with glm 
 model <- glm(formula=pa~., data=v)
@@ -116,7 +122,7 @@ pc <- predict(logo, m, OOB=TRUE, fun=predfun)
 # knn, using "app" instead of "predict"
 library(class)
 cl <- factor(c(rep(1, nrow(p)), rep(0, nrow(a))))
-train <- extract(logo, rbind(p, a))
+train <- extract(logo, rbind(p, a))[, -1]
 k <- app(logo, function(x) as.integer(as.character(knn(train, x, cl))))
 ```
 
@@ -125,10 +131,11 @@ k <- app(logo, function(x) as.integer(as.character(knn(train, x, cl))))
 
 
 ### Thin plate spline interpolation with x and y only
+
 ```{r tps, message=FALSE}
 library(terra)
 # example data
-r <-rast(system.file("exdata/test.tif", package="terra"))
+r <-rast(system.file("ex/test.tif", package="terra"))
 ra <- aggregate(r, 10)
 xy <- data.frame(xyFromCell(ra, 1:ncell(ra)))
 v <- values(ra)
@@ -147,13 +154,18 @@ plot(p)
 se <- interpolate(x, tps, fun=predictSE)
 se <- mask(se, r)
 plot(se)
+```
 
-# another variable; let"s call it elevation
+
+Add another predictor variable; let"s call it elevation
+
+```{r tps2, message=FALSE}
 elevation <- (init(r, "x") * init(r, "y")) / 100000000
 names(elevation) <- "elev"
 elevation <- mask(elevation, r)
 
 z <- extract(elevation, vect(xy), fun=function(x)x[1])
+z <- z[,2,drop=FALSE]
 
 # add as another independent variable
 vv <- na.omit(cbind(xy, z, v))
@@ -171,6 +183,7 @@ pfun <- function(model, x, ...) {
    predict(model, x[,1:2], Z=x[,3], ...)
 }
 p3 <- interpolate(elevation, tps3, fun=pfun)
+plot(p3)
 ```
 
 ### kriging 
@@ -184,7 +197,7 @@ library(gstat)
 data(meuse)
 
 # inverse distance weighted (IDW)
-r <-rast(system.file("exdata/test.tif", package="terra"))
+r <-rast(system.file("ex/test.tif", package="terra"))
 mg <- gstat(id = "zinc", formula = zinc~1, locations = ~x+y, data=meuse, 
             nmax=7, set=list(idp = .5))
 f <- function(model, data, ...) predict(model, data, ...)[,3,drop=FALSE]
