@@ -298,7 +298,7 @@ autocor(y, wm)
 This is how you can (theoretically) estimate the expected value of Moran's *I*. That is, the value you would get in the absence of spatial autocorrelation. Note that it is not zero for small values of *n*.
 
 ```{r}
-EI <- -1/(n-1)
+  EI <- -1/(n-1)
 EI
 ``` 
 

@@ -1,14 +1,5 @@
 # Fields
 
-```{r, include=FALSE}
-library(knitr)
-opts_chunk$set(
-  fig.width = 5, fig.height = 5, fig.cap = '', collapse = TRUE
-)
-library(rspat)
-library(rasterVis)
-```
-
 ## Introduction
 
 This handout accompanies Chapter 9 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
@@ -33,7 +24,7 @@ Now use it
 
 ```{r fields5}
 library(terra)
-r <- rast(xmn=0.5, xmx=1.4, ymn=0.6, ymx=1.5, ncol=9, nrow=9, crs=NA)
+r <- rast(xmin=0.5, xmax=1.4, ymin=0.6, ymax=1.5, ncol=9, nrow=9, crs="")
 z <- interpolate(r, model=NULL, fun=zf)
 names(z) <- 'z'
 
@@ -43,7 +34,7 @@ vt <- persp(z, theta=30, phi=30, ticktype='detailed', expand=.8)
 Note that persp returned something _invisibly_ (it won't be printed when not captured as a  variable, `vt`, in this case), the 3D transformation matrix that we use later. This is not uncommon in `R`. For example `hist` and `barplot` have similar behaviour.
 
 ```{r fields6}
-pts <- as.points(z)
+pts <- as.data.frame(z, xy=TRUE)
 pt <- trans3d(pts[,1], pts[,2], pts[,3], vt)
 plot(pt, col=rainbow(9, .75, start=.2)[round(pts[,3]/10)-2], pch=20, cex=2)
 ```
@@ -54,7 +45,7 @@ For a more interactive experience, try:
 library(rasterVis)
 library(rgl)
 # this opens a new window
-plot3D(z, zfac=5)
+plot3D(raster::raster(z), zfac=5)
 ```
 
 
@@ -62,7 +53,7 @@ We will be working with temperature data for California. You can [download](/dat
 
 ```{r fields10}
 library(rspat)
-d <- spat_data("precipitation.csv")
+d <- spat_data("precipitation")
 head(d)
 d$prec <- rowSums(d[, c(6:17)])
 plot(sort(d$prec), ylab='Annual precipitation (mm)', las=1, xlab='Stations')
@@ -70,7 +61,7 @@ plot(sort(d$prec), ylab='Annual precipitation (mm)', las=1, xlab='Stations')
 
 
 ```{r fields15}
-dsp <- vect(d[,4:3], atts=d, crs("+proj=longlat +datum=WGS84"))
+dsp <- vect(d, c("LONG", "LAT"), crs= "+proj=longlat +datum=WGS84")
 CA <- spat_data("counties")
 
 cuts <- c(0,200,300,500,1000,3000)
@@ -83,7 +74,6 @@ blues <- colorRampPalette(c('yellow', 'orange', 'blue', 'dark blue'))
 Transform longitude/latitude to planar coordinates
 ```{r}
 TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
-library(rgdal)
 dta <- project(dsp, TA)
 cata <- project(CA, TA)
 ```

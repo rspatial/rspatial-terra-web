@@ -1,11 +1,9 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Kriging
-
-```{r, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap = '', collapse = TRUE)
-library(gstat)
-library(fields)
-```
 
 
 ## Alberta Rainfall
@@ -14,13 +12,13 @@ Recreating Figures 10.2, 10.13 & 10.14 in [O'Sullivan and Unwin (2010)](http://w
 
 We need the rspatial packge to get the data we will use.
 ```{r, krig0}
-if (!require("rspatial")) devtools::install_github('rspatial/rspatial')
+if (!require("rspat")) devtools::install_github('rspatial/rspat')
 ```
 
 Figure 10.2
 ```{r, krig1}
 library(rspat)
-a <- spat_data('alberta.csv')
+a <- spat_data('alberta')
 
 m <- lm(z ~ x + y, data=a)
 summary(m)
@@ -40,7 +38,8 @@ contour(x, y, z, add=TRUE, labcex=1.25)
 On to distances. First get a distance matrix for locations
 ```{r}
 library(terra)
-dp <- distance(a[,2:3], lonlat=FALSE)
+m <- as.matrix(a[, c("x", "y")])
+dp <- as.matrix(distance(m, lonlat=FALSE))
 dim(a)
 dim(dp)
 dp[1:5, 1:5]

@@ -30,7 +30,7 @@ xy <- rbind(cbind(1, p), cbind(0, a))
 e <- extract(logo, xy[,2:3])
 
 # combine with response 
-v <- data.frame(cbind(pa=xy[,1], e[,-1]))
+v <- data.frame(cbind(pa=xy[,1], e))
 
 #build a model, here with glm 
 model <- glm(formula=pa~., data=v)
@@ -118,12 +118,16 @@ m <- cforest(pa~., control=cforest_unbiased(mtry=3), data=v)
 predfun <- function(m, d, ...) predict(m, newdata=d, ...)
 
 pc <- predict(logo, m, OOB=TRUE, fun=predfun)
+```
 
-# knn, using "app" instead of "predict"
+With a knn model, we can use "app" instead of "predict"
+
+```{r knn}
 library(class)
 cl <- factor(c(rep(1, nrow(p)), rep(0, nrow(a))))
-train <- extract(logo, rbind(p, a))[, -1]
+train <- extract(logo, rbind(p, a))
 k <- app(logo, function(x) as.integer(as.character(knn(train, x, cl))))
+plot(k)
 ```
 
 
@@ -164,7 +168,7 @@ elevation <- (init(r, "x") * init(r, "y")) / 100000000
 names(elevation) <- "elev"
 elevation <- mask(elevation, r)
 
-z <- extract(elevation, vect(xy), fun=function(x)x[1])
+z <- extract(elevation, vect(xy, c("x", "y")), fun=function(x)x[1])
 z <- z[,2,drop=FALSE]
 
 # add as another independent variable
@@ -186,18 +190,18 @@ p3 <- interpolate(elevation, tps3, fun=pfun)
 plot(p3)
 ```
 
-### kriging 
+### Kriging 
 
 Kriging with gstat examples. Examples provided by Maurizio Marchi
 
 
-```{r gstat}
+```{r gstat, warning = FALSE}
 library(sp)
 library(gstat)
 data(meuse)
 
 # inverse distance weighted (IDW)
-r <-rast(system.file("ex/test.tif", package="terra"))
+r <- rast(system.file("ex/test.tif", package="terra"))
 mg <- gstat(id = "zinc", formula = zinc~1, locations = ~x+y, data=meuse, 
             nmax=7, set=list(idp = .5))
 f <- function(model, data, ...) predict(model, data, ...)[,3,drop=FALSE]
@@ -213,7 +217,7 @@ m <- fit.variogram(v, vgm(1, "Sph", 300, 1))
 gOK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse, model=m)
 
 fg <- function(model, d, crs, ...) {
-	sp <- SpatialPointsDataFrame(d[,1:2,drop=FALSE], data.frame(d), proj4string=CRS(crs))
+	sp <- SpatialPointsDataFrame(d[,1:2,drop=FALSE], data.frame(d), proj4string=CRS(crs(r, T)))
 	data.frame(predict(model, sp, ...))[,3:4]
 }
 OK1 <- interpolate(r, gOK, fun=fg, debug.level=0, crs=crs(r), na.rm=TRUE)

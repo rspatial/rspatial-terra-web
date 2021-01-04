@@ -54,4 +54,4 @@ Manuals
    rs/index.rst
    modis/index.rst
    pkg/index.rst
-   
+   rosu/index.rst

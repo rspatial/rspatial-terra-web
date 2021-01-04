@@ -1,18 +1,9 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Local statistics
-
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(
-  fig.width = 8, fig.height = 5,  fig.cap='',  collapse = TRUE
-)
-opts_knit$set(
-  progress = FALSE,
-  global.par = TRUE
-)
-
-library(spdep)
-library(rspat)
-```
 
 ## Introduction
 
@@ -26,9 +17,10 @@ This handout accompanies Chapter 8 in [O'Sullivan and Unwin (2010)](http://www.w
 Read the Auckland data.
 
 ```{r, loca1}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
+if (!require("rspat")) devtools::install_github("rspatial/rspat")
 library(rspat)
-auck <- spat_data('auctb')
+auck <- spat_data("auctb")
+auck <- as(auck, "Spatial")
 ``` 
 
 Local Getis *Gi*
@@ -36,7 +28,7 @@ Local Getis *Gi*
 ```{r, loca2}
 library(spdep)
 wr <- poly2nb(auck, row.names=auck$Id, queen=FALSE)
-lstw <- nb2listw(wr, style='B')
+lstw <- nb2listw(wr, style="B")
 Gi <- localG(auck$TB, lstw)
 head(Gi)
 ```
@@ -48,20 +40,20 @@ Gcuts <- cut(Gi, 5)
 Gcutsi <- as.integer(Gcuts)
 cols <- rev(gray(seq(0,1,.2)))
 plot(auck, col=cols[Gcutsi])
-legend('bottomleft', levels(Gcuts), fill=cols)
+legend("bottomleft", levels(Gcuts), fill=cols)
 ```
 
-To get the *Gi* * we need to include each polygon as its own 'neighbor'
+To get the *Gi* * we need to include each polygon as its own "neighbor"
 
 ```{r, loca4}
 ws <- include.self(wr)
-lstws <- nb2listw(ws, style='B')
+lstws <- nb2listw(ws, style="B")
 Gis <- localG(auck$TB, lstws)
 Gscuts <- cut(Gis, 5)
 Gscutsi <- as.integer(Gscuts)
 cols <- rev(gray(seq(0,1,.2)))
 plot(auck, col=cols[Gscutsi])
-legend('bottomleft', levels(Gscuts), fill=cols)
+legend("bottomleft", levels(Gscuts), fill=cols)
 ```
 
 
@@ -72,7 +64,7 @@ m <- sapply(ws, function(i) mean(auck$TB[i]))
 cts <- cut(m, 5)
 mcts <- as.integer(cts)
 plot(auck, col=cols[mcts])
-legend('bottomleft', levels(cts), fill=cols)
+legend("bottomleft", levels(cts), fill=cols)
 ```
 
 
@@ -83,7 +75,7 @@ Ii <- localmoran(auck$TB, lstw)
 Icuts <- cut(Ii, 5)
 Icutsi <- as.integer(Icuts)
 plot(auck, col=cols[Icutsi])
-legend('bottomleft', levels(Icuts), fill=cols)
+legend("bottomleft", levels(Icuts), fill=cols)
 ```
 
 ## Geographically weighted regression
@@ -92,12 +84,12 @@ Here is an example of GWR with California precipitation data (you can download t
 
 
 ```{r, loca10}
-cts <- spat_data('counties.rds')
-p <- spat_data('precipitation.csv')
+cts <- spat_data("counties")
+p <- spat_data("precipitation")
 head(p)
 
 plot(cts)
-points(p[,c('LONG', 'LAT')], col='red', pch=20)
+points(p[,c("LONG", "LAT")], col="red", pch=20)
 ```
 
 Compute annual average precipitation
@@ -114,12 +106,11 @@ m
 Create `Spatial*` objects with a planar crs.
 
 ```{r, loca13}
-alb <- CRS("+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-sp <- p
-coordinates(sp) = ~ LONG + LAT
-crs(sp) <- "+proj=longlat +datum=NAD83"
-spt <- spTransform(sp, alb)
-ctst <- spTransform(cts, alb)
+alb <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84"
+sp <- vect(p, c("LONG", "LAT"), crs="+proj=longlat +datum=NAD83")
+spt <- as(terra::project(sp, alb), "Spatial")
+vctst <- terra::project(cts, alb)
+ctst <- as(vctst, "Spatial")
 ```
 
 
@@ -132,9 +123,9 @@ bw
 
 Create a regular set of points to estimate parameters for.
 ```{r, loca16}
-r <- raster(ctst, res=10000)
-r <- rasterize(ctst, r)
-newpts <- as.points(r)
+r <- rast(vctst, res=10000)
+r <- rasterize(vect(ctst), r)
+newpts <- geom(as.points(r))[, c("x", "y")]
 ```
 
 
@@ -149,9 +140,9 @@ Link the results back to the raster
 slope <- r
 intercept <- r
 slope[!is.na(slope)] <- g$SDF$ALT 
-intercept[!is.na(intercept)] <- g$SDF$'(Intercept)'
-s <- stack(intercept, slope)
-names(s) <- c('intercept', 'slope')
+intercept[!is.na(intercept)] <- g$SDF$"(Intercept)"
+s <- c(intercept, slope)
+names(s) <- c("intercept", "slope")
 plot(s)
 ```
 

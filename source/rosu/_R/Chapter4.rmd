@@ -46,7 +46,7 @@ Now, let's do the same thing as above, but now by using a spatial data approach.
 
 ```{r, p4-2, fig.width=9, fig.height=2.5}
 library(terra)
-r <- rast(xmn=0, xmx=7, ymn=0, ymx=7, ncol=8, nrow=8)
+r <- rast(xmin=0, xmax=7, ymin=0, ymax=7, ncol=8, nrow=8)
 X <- init(r, "x")
 Y <- init(r, "y")
 par(mfrow=c(1,2))

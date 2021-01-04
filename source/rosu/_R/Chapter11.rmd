@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Map overlay
 
 
@@ -7,19 +12,18 @@ This document shows some example *R* code to do "overlays" and associated spatia
 
 ### Get the data
 
-You can get the data for this tutorial with the "rspatial" package that you can install with the line below. 
+You can get the data for this tutorial with the "rspat" package that you can install with the line below. 
 
-```{r getData, echo=TRUE}
+```{r getData}
 if (!require("rspat")) devtools::install_github('rspatial/rspat')
 ```
 
 ## Selection by attribute
 
-By now, you are well aware that in *R*, polygons and their attributes can be represented by a 'SpatVector'. Here we use a SpatVector of California counties.
+By now, you are well aware that in *R*, polygons and their attributes can be represented by a `SpatVector`. Here we use a `SpatVector` of California counties.
 
-```{r}
+```{r, warning=FALSE}
 library(rspat)
-library(terra)
 counties <- spat_data('counties')
 ```
 
@@ -46,9 +50,6 @@ I want to select the railroads in the city of Davis from the railroads in Yolo c
 rail <- spat_data("yolo-rail")
 rail
 class(rail)
-# removing attributes that I do not care about
-values(rail) <- NULL
-
 city <- spat_data("city")
 
 crs(yolo, TRUE)
@@ -59,7 +60,7 @@ crs(city, TRUE)
 Ay, we are dealing with two different coordinate reference systems (projections)! Let's settle for yet another one: Teale Albers (this is really the "Albers Equal Area projection with parameters suitable for California". This particular set of parameters was used by an California State organization called the Teale Data Center, hence the name.
 
 ```{r}
-TA <- CRS("+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m)
+TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
 countiesTA <- project(counties, TA)
 yoloTA <- project(yolo, TA)
 railTA <- project(rail, TA)
@@ -69,15 +70,16 @@ cityTA <- project(city, TA)
 Another check, let's see what county Davis is in, using two approaches. In the first one we get the centroid of Davis and do a point-in-polygon query.
 
 ```{r}
-davis <- centroid(cityTA)
-relate(davis, countiesTA, "intersects")
+davis <- centroids(cityTA)
+i <- which(relate(davis, countiesTA, "intersects"))
+countiesTA$NAME[i]
 ```
 
 An alternative approach is to intersect the two polygon datasets.
 ```{r, over5}
 i <- intersect(cityTA, countiesTA)
-
-data.frame(i, area=area(i, byid=TRUE))
+i$area <- area(i)
+as.data.frame(i)
 
 plot(cityTA, col='blue')
 plot(yoloTA, add=TRUE, border='red', lwd=3)
@@ -119,7 +121,7 @@ Which park in Davis is furthest, and which is closest to the railroad? First get
 ```{r}
 parks <- spat_data("parks")
 crs(parks, TRUE)
-parksTA <- transform(parks, TA)
+parksTA <- project(parks, TA)
 ```
 
 Now plot the parks that are the furthest and the nearest from a railroad.
@@ -133,11 +135,11 @@ dmin <- apply(d, 2, min)
 parksTA$railDist <- dmin
 
 i <- which.max(dmin)
-data.frame(parksTA)[i,]
+as.data.frame(parksTA)[i,]
 plot(parksTA[i, ], add=TRUE, col="red", lwd=3, border="red")
 
 j <- which.min(dmin)
-data.frame(parksTA)[j,]
+as.data.frame(parksTA)[j,]
 plot(parksTA[j, ], add=TRUE, col="red", lwd=3, border="orange")
 ```
 
@@ -145,7 +147,6 @@ plot(parksTA[j, ], add=TRUE, col="red", lwd=3, border="orange")
 Another way to approach this is to first create a raster with distance to the railroad values. Here we compute the average distance to any place inside the park, not to its border. You could also compute the distance to the centroid of a park.
  
 ```{r, over14, fig.width=8, fig.height=4.5}
-library(terra)
 # use cityTA to set the geogaphic extent
 r <- rast(cityTA)
 
@@ -153,7 +154,7 @@ r <- rast(cityTA)
 dim(r) <- c(50, 100)
 
 # rasterize the railroad lines
-r <- rasterize(railTA, r, field=1)
+r <- rasterize(railTA, r)
 
 # compute distance
 d <- distance(r)
@@ -161,8 +162,8 @@ d <- distance(r)
 # extract distance values for polygons
 dp <- extract(d, parksTA, fun=mean, small=TRUE)
 
-dp <- data.frame(parksTA$PARK, dist=dp)
-dp <- dp[order(dp$dist), ]
+dp <- cbind(park=parksTA$PARK, dp)
+dp <- dp[order(dp$value), ]
 
 plot(d)
 plot(parksTA, add=TRUE)
@@ -176,9 +177,9 @@ Here I compute Voronoi (or Thiessen) polygons for the centroids of the Davis par
 
 ```{r, over16, fig.width=8}
 centr <- centroids(parksTA)
-v <- voronoi(centroids)
+v <- voronoi(centr)
 plot(v)
-points(centroids, col="blue", pch=20)
+points(centr, col="blue", pch=20)
 ```
 
 To keep the polygons within Davis.
@@ -207,9 +208,11 @@ alt
 Shaded relief is always nice to look at.
 
 ```{r, over22, fig.width=7}
-slope <- terrain(alt, opt="slope")
-aspect <- terrain(alt, opt="aspect")
-hill <- hillShade(slope, aspect, 40, 270)
+library(raster)
+ralt <- raster(alt)
+slope <- raster::terrain(ralt, opt="slope")
+aspect <- raster::terrain(ralt, opt="aspect")
+hill <- raster::hillShade(slope, aspect, 40, 270)
 plot(hill, col=grey(0:100/100), legend=FALSE, main="Elevation")
 plot(alt, col=rainbow(25, alpha=0.35), add=TRUE)
 ```
