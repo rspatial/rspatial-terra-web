@@ -54,7 +54,7 @@ plot(X, main="x")
 plot(Y, main="y")
 ```
 
-We can use algebraic exprssions with RasterLayer objects 
+We can use algebraic exprssions with SpatRaster objects 
 ```{r}
 Z <- 2*X + 3*Y
 ```

@@ -13,7 +13,7 @@ The main reason for defining classes is to create a standard representation of a
 
 Package `terra` introduces a number of classes with names that start with `Spat`. For vector data, the relevant class is `SpatVector`. These classes represent geometries as well as attributes (variables) describing the geometries. 
 
-It is possible to create `SpatVector` objects from scratch with *R* code. It can be very useful to create small self contained example to illustrate something, for example to ask a question about how to do a particular operation without needing to give access to the real data you are using (which is always cumbersome). But in real life you will read these from a file or database [see Chapter 5](./5-files.html). 
+It is possible to create `SpatVector` objects from scratch with *R* code. It can be very useful to create small self contained example to illustrate something, for example to ask a question about how to do a particular operation without needing to give access to the real data you are using (which is always cumbersome). But in real life you will read these from a file or database, [see Chapter 5](./5-files.html) for examples. 
 
 To get started, let's make some SpatVector objects from scratch anyway, using the same data as were used in the previous chapter. 
 
@@ -44,7 +44,7 @@ pts
 geom(pts)
 ```
 
-So we see that the object has the coordinates we supplied, but also an `extent`. This spatial extent was computed from the coordinates. There is also a coordinate reference system ("crs", discussed in more detail later). We did not provide the crs so it is unknown (`NA`). That is not good, so let's recreate the object, and now provide a crs. 
+So we see that the object has the coordinates we supplied, but also an `extent`. This spatial extent was computed from the coordinates. There is also a coordinate reference system ("crs", discussed in more detail later). We did not provide the cis when we created `pts` so it is unknown. That is not good, so let's recreate the object, and now provide a crs. 
  
 ```{r}
 crdref <- "+proj=longlat +datum=WGS84"
@@ -72,7 +72,7 @@ ptsdf
 
 To see what is inside:
 ```{r}
-show(ptsdf)
+ptsdf
 ```
 
 ## Lines and polygons

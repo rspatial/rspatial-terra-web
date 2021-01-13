@@ -96,7 +96,7 @@ tr
 ```
 
 
-And we use the RasterStack with predictor variables to make a prediction to a RasterLayer:
+And we use the RasterStack with predictor variables to make a prediction to a SpatRaster:
 
 ```{r, sdm62, fig.width=9, fig.height=6}
 pb <- predict(pred_nf, bc, ext=ext, progress='')

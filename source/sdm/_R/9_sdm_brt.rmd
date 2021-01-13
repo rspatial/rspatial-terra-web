@@ -260,7 +260,7 @@ plot(tree.list, angaus.pred.deviance, ylim=c(0.7,1), xlim=c(-100,5000),
 
 ## Spatial prediction
 
-Here we show how to predict to a whole map (technically to a RasterLayer object) using the predict version in the ```raster``` package. The predictor variables are available as a RasterBrick (multi-layered raster) in ```Anguilla_grids```. 
+Here we show how to predict to a whole map (technically to a SpatRaster) using the predict version in the ```raster``` package. The predictor variables are available as a multi-layered raster SpatRaster in ```Anguilla_grids```. 
 
 
 ```{r brt-14, fig.width = 9}

@@ -47,7 +47,7 @@ nr <- values(ndvi)
 str(nr)
 ```
 
-Please note that `getValues` converted the `ndvi` RasterLayer to an array (matrix). Now we will perform the `kmeans` clustering on the matrix and inspect the output. 
+Please note that `getValues` converted the `ndvi` SpatRaster to an array (matrix). Now we will perform the `kmeans` clustering on the matrix and inspect the output. 
 
 ```{r kmeansobject}
 # It is important to set the seed generator because `kmeans` initiates the centers in random locations
@@ -60,7 +60,7 @@ kmncluster <- kmeans(na.omit(nr), centers = 10, iter.max = 500, nstart = 5, algo
 str(kmncluster)
 ```
 
-`kmeans` returns an object with 9 elements. The length of the `cluster` element within `kmncluster` is `r length(kmncluster$cluster)` which same as length of `nr` created from the `ndvi`. The cell values of `kmncluster$cluster` range between 1 to 10 corresponding to the input number of cluster we provided in the `kmeans` function. `kmncluster$cluster` indicates the cluster label for corresponding pixel. We need to convert the `kmncluster$cluster` values back to RasterLayer of the same dimension as the `ndvi`.
+`kmeans` returns an object with 9 elements. The length of the `cluster` element within `kmncluster` is `r length(kmncluster$cluster)` which same as length of `nr` created from the `ndvi`. The cell values of `kmncluster$cluster` range between 1 to 10 corresponding to the input number of cluster we provided in the `kmeans` function. `kmncluster$cluster` indicates the cluster label for corresponding pixel. We need to convert the `kmncluster$cluster` values back to a `SpatRaster` of the same dimension as the `ndvi`.
 
 ```{r kmeansraster}
 # Use the ndvi object to set the cluster values to a new raster
@@ -69,7 +69,7 @@ values(knr) <- kmncluster$cluster
 knr
 ```
 
-We can see that `knr` is a RasterLayer but we do not know which cluster (1-10) belongs to what land cover class (and if it does belong to a class that we would recognize). You can find that out by plotting them side-by-side with a reference layers and using unique color for each cluster.
+We can see that `knr` is a SpatRaster but we do not know which cluster (1-10) belongs to what land cover class (and if it does belong to a class that we would recognize). You can find that out by plotting them side-by-side with a reference layers and using unique color for each cluster.
 
 ```{r kmeansplot, fig.height=4, fig.width=8}
 

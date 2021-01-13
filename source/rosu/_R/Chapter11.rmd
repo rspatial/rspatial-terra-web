@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Map overlay
 
 
@@ -205,14 +201,12 @@ alt
 ```
 
 
-Shaded relief is always nice to look at.
+Shaded relief can be nice to look at.
 
 ```{r, over22, fig.width=7}
-library(raster)
-ralt <- raster(alt)
-slope <- raster::terrain(ralt, opt="slope")
-aspect <- raster::terrain(ralt, opt="aspect")
-hill <- raster::hillShade(slope, aspect, 40, 270)
+slope <- terrain(alt, "slope")
+aspect <- terrain(alt, "aspect")
+hill <- terra:::shade(slope, aspect, 40, 270)
 plot(hill, col=grey(0:100/100), legend=FALSE, main="Elevation")
 plot(alt, col=rainbow(25, alpha=0.35), add=TRUE)
 ```

@@ -220,7 +220,7 @@ r <- rast(acg)
 # set the resolution of the cells to (for example) 1 degree
 res(r) <- 1
 
-# expand (extend) the extent of the RasterLayer a little
+# expand (extend) the extent of the SpatRaster a little
 r <- expand(r, extent(r)+1)
 
 # sample:

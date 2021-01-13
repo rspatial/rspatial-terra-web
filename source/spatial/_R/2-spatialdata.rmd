@@ -75,7 +75,7 @@ points(stations, cex=psize, pch=20, col='red', main='Precipitation')
 
 The above illustrates how numeric vectors representing locations can be used to draw simple maps. It also shows how points can (and typically are) represented by pairs of numbers. A line and a polygon can be represented by a number of these points. Polygons need to "closed", that is, the first point must coincide with the last point, but the `polygon` function took care of that for us. 
 
-There are cases where a simple approach like this may suffice and you may come across this in older *R* code or packages. Likewise, raster data could be represented by a matrix or higher-order array. Particularly when only dealing with point data such an approach may be practical. For example, a spatial data set representing points and attributes could be made by combining geometry and attributes in a single 'data.frame`.
+There are cases where a simple approach like this may suffice and you may come across this in older *R* code or packages. Likewise, raster data could be represented by a matrix or higher-order array. Particularly when only dealing with point data such an approach may be practical. For example, a spatial data set representing points and attributes could be made by combining geometry and attributes in a single `data.frame`.
 
 ```{r}
 wst <- data.frame(longitude, latitude, name, precip)
@@ -86,6 +86,6 @@ However, `wst` is a data.frame and *R* does not automatically understand the spe
 
 Moreover, it is non-trivial to do some basic spatial operations. For example, the blue polygon drawn on the map above might represent a state, and a next question might be which of the 10 stations fall within that polygon. And how about any other operation on spatial data, including reading from and writing data to files? To facilitate such operation a number of *R* packages have been developed that define new spatial data types that can be used for this type of specialized operations. 
 
-Packages in R that define such spatial data structures include `sp` and `raster`; but these havee become obsolete and replaced with `sf` and `terra`. 
+Recent packages in R that define such spatial data structures include `terra` and `sf`. These packages replace a set of older packages including `sp`, `raster`, `rgdal` and `rgeos`.
 
 We mostly use the `terra` package in these materials. You can install the latest released version of *terra* from CRAN with `install.packages(`terra`) and the development version from [github](https://www.github.com/rspatial/terra). For the same material with the *raster* and *sp* packages, go [here](https://rspatial.org/spatial/). 

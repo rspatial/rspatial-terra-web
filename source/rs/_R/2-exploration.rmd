@@ -17,7 +17,7 @@ We will start by exploring and visualizing the data (See the instructions in [Ch
 ## Image properties 
 
 
-Create RasterLayer objects for single Landsat layers (bands)
+Create SpatRaster objects for single Landsat layers (bands)
 
 ```{r}
 library(terra)
@@ -65,7 +65,7 @@ nlyr(b2)
 compareGeom(b2,b3)
 ```
 
-You can create a RasterStack (an object with multiple layers) from the existing RasterLayer (single band) objects.
+You can create a SpatRaster with multiple layers from the existing SpatRaster (single layer) objects.
 
 ```{r}
 s <- c(b5, b4, b3)
@@ -85,7 +85,7 @@ landsat <- rast(filenames)
 landsat
 ```
 
-Above we created a RasterStack with 11 layers. The layers represent reflection intensity in the following wavelengths: Ultra Blue, Blue, Green, Red, Near Infrared (NIR), Shortwave Infrared (SWIR) 1, Shortwave Infrared (SWIR) 2, Panchromatic, Cirrus, Thermal Infrared (TIRS) 1, Thermal Infrared (TIRS) 2. We won't use the last four layers and you will see how to remove those in following sections. 
+Above we created a SpatRaster with 11 layers. The layers represent reflection intensity in the following wavelengths: Ultra Blue, Blue, Green, Red, Near Infrared (NIR), Shortwave Infrared (SWIR) 1, Shortwave Infrared (SWIR) 2, Panchromatic, Cirrus, Thermal Infrared (TIRS) 1, Thermal Infrared (TIRS) 2. We won't use the last four layers and you will see how to remove those in following sections. 
 
 
 ## Single band and composite maps

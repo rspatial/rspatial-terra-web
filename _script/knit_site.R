@@ -42,10 +42,10 @@ do_knit <- function(option, quiet=TRUE) {
 	if (length(ff) > 0) {
 		library(knitr)
 		outf <- gsub("_R/", "", ff)
-		md <-  raster::extension(outf, '.md')
-		rst <- raster::extension(outf, '.rst')
+		md <-  gsub(".rmd$", '.md', outf)
+		rst <-  gsub(".rmd$", ".rst", outf)
 		txtp <- file.path(dirname(outf), "txt", basename(outf))
-		rcd <- raster::extension(txtp, '.txt')
+		rcd <- gsub(".rmd$", ".txt", txtp)
 		
 		opts_chunk$set(
 			dev        = 'png',
@@ -68,7 +68,7 @@ do_knit <- function(option, quiet=TRUE) {
 			} else {
 				fdirclean <- FALSE
 			}
-			cat(paste("   ", raster::extension(outf[i], ""), "\n"))
+			cat(paste("   ", tools::file_path_sans_ext(outf[i]), "\n"))
 			knit(ff[i], md[i], envir = new.env(), encoding='UTF-8', quiet=quiet)
 			purl(ff[i], rcd[i], quiet=TRUE)
 			if (fdirclean) {

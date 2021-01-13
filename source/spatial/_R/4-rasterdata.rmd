@@ -1,21 +1,14 @@
 # Raster data 
 
 
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap='',  collapse = TRUE)
-
-```
-
-
 ## Introduction
 
 The `terra` package has functions for creating, reading, manipulating, and writing raster data. The package provides, among other things, general raster data manipulation functions that can easily be used to develop more specific functions. For example, there are functions to read a chunk of raster values from a file or to convert cell numbers to coordinates and back. The package also implements raster algebra and many other functions for raster data manipulation.
 
 
-## SpatRast
+## SpatRaster
 
-A `SpatRaster` represents multi-layer (variable) raster data. An object always stores a number of fundamental parameters that describe it. These include the number of columns and rows, the spatial extent, and the Coordinate Reference System. In addition, a `SpatRaster` can store information about the file in which the raster cell values are stored (if there is such a file). A `SpatRaster` can also hold (some of) the raster cell values in memory.
+A `SpatRaster` represents multi-layer (multi-variable) raster data. A SpatRaster always stores a number of fundamental parameters that describe it. These include the number of columns and rows, the spatial extent, and the Coordinate Reference System. In addition, a `SpatRaster` can store information about the file in which the raster cell values are stored (if there is such a file). A `SpatRaster` can also hold (some of) the raster cell values in memory.
 
 Here I create a `SpatRaster` from scratch. But note that in most cases where real data is analyzed, these objects are created from a file.
 
@@ -25,7 +18,7 @@ r <- rast(ncol=10, nrow=10, xmin=-150, xmax=-80, ymin=20, ymax=60)
 r
 ```
 
-Object `r` only has the skeleton of a raster data set. That is, it knows about its location, resolution, etc., but there are no values associated with it. Let's assign some values. In this case I assign a vector of random numbers with a length that is equal to the number of cells of the SpatRaster.
+SpatRaster `r` only has the geometry of a raster data set. That is, it knows about its location, resolution, etc., but there are no values associated with it. Let's assign some values. In this case I assign a vector of random numbers with a length that is equal to the number of cells of the SpatRaster.
  
 ```{r}
 values(r) <- runif(ncell(r))

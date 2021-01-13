@@ -1,12 +1,10 @@
 # Introduction
 
-This is an introduction to spatial data manipulation with *R* and the *terra* package. You can install the latest released version of *terra* from CRAN with `install.packages(`terra`) and the development version from [github](https://www.github.com/rspatial/terra). For the same material with the *raster* and *sp* packages, go [here](https://rspatial.org/spatial/). 
+This is an introduction to spatial data manipulation with *R* and the *terra* package. In this context "spatial data" refers to data about geographical locations, that is, places on earth. So to be more precise, we should speak about "geospatial" data, but we use the shorthand "spatial". 
 
-In this context "spatial data" refers to data about geographical locations, that is, places on earth. So to be more precise, we should speak about "geospatial" data, but we use the shorthand "spatial". 
+You can install the latest released version of *terra* from CRAN with `install.packages("terra")`. The development version is available from [github](https://www.github.com/rspatial/terra), and see the instructions there for installation. For the same material with the *raster* and *sp* packages, go [here](https://rspatial.org/spatial/). The github site is a good place to report what you believe to be bugs (errors in the software) or to request improvments such as new functions. You can ask questions on how to use `terra` on [gis.stackexchange](https://gis.stackexchange.com) or [stackoverflow](https://stackoverflow.com). 
 
 This is the introductory part of a [set of resources](/) for learning about spatial analysis and modeling with *R*. Here we cover the basics of data manipulation. 
 
 You need to know some of the basics of the *R* language before you can work with *spatial data* in *R*. If you have not worked with *R* before, or not recently, have a look at this brief [introduction to R](https://rspatial.org/intr). 
-
-
 

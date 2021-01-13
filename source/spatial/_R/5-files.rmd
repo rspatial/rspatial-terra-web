@@ -18,7 +18,7 @@ The `shapefile` is the most commonly used file format for vector data. It is tri
 
 ### Reading
 
-We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the raster package is installed. You should not use the `system.file` function for your own files. It only serves for creating examples with data that ships with *R*. 
+We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the raster package is installed. You should not use the `system.file` function for your own files. It only serves for creating examples with data that ship with *R*. 
 
 ```{r, shp1}
 library(terra)
@@ -33,17 +33,19 @@ s <- vect(filename)
 s
 ```
 
-The `vect` function returns `SpatVector` objects. It is important to recognise the difference between this type of *R* object (SpatVector), and the file (shapefile) that was used to create it. (Do not say "I have a shapefile in R", say "I have a SpatVector of polygons in R" ("created from a shapefile").
+The `vect` function returns `SpatVector` objects. It is important to recognise the difference between this type of *R* object (`SpatVector`), and the file ("shapefile") that was used to create it. Thus, you should never say "I have a shapefile in R", say "I have a SpatVector of polygons in R", (and in some cases you can add "created from a shapefile"). The shapefile is one of many file formats for vector data.
 
 
 ### Writing
 
-You can also write new shapefiles using the `writeVector` method. You can add argument `overwrite=TRUE` if you want to overwrite an existing file.
+You can write new files using the `writeVector` method. You need to add argument `overwrite=TRUE` if you want to overwrite an existing file.
 
 ```{r, shp3}
-#outfile <- 'shptest.shp'
-#writeVector(s, outfile, overwrite=TRUE)
+outfile <- "shp_test.shp"
+writeVector(s, outfile, overwrite=TRUE)
 ```
+
+To remove the file again:
 
 ```{r, echo=FALSE, include=FALSE}
 ff <- list.files(patt="^shptest")
@@ -68,7 +70,7 @@ r <- rast(f)
 r
 ```
 
-Note that `x` is a SpatRasterayer of three layers ("bands"). We can subset it to get a single layer.
+Note that `x` is a SpatRaster of three layers ("bands"). We can subset it to get a single layer.
 
 ```{r, ras2}
 r2 <- r[[2]]
@@ -80,14 +82,14 @@ The same approach holds for other raster file formats, including GeoTiff, NetCDF
 
 ### Writing raster data
 
-Use `writeRaster` to write raster data. You must provide a SpatRaster object and a filename. The file format will be guessed from the filename extension (if that does not work you can provide an argument like `format=GTIFF`). Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the datatype (e.g., integer, float).
+Use `writeRaster` to write raster data. You must provide a SpatRaster and a filename. The file format will be guessed from the filename extension. If that does not work you can provide an argument like `wopts=list(format=GTiff)`. Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the datatype (e.g., integer, float).
 
 ```{r, ras5}
-x <- writeRaster(r, "output.tif", overwrite=TRUE)
+x <- writeRaster(r, "test_output.tif", overwrite=TRUE)
 x
 ```
 
 ```{r, echo=FALSE, include=FALSE}
-file.remove("output.tif")
+file.remove("test_output.tif")
 ```
 

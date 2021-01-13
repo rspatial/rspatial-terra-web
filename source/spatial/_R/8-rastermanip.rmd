@@ -1,15 +1,9 @@
 
 # Raster data manipulation
 
-
-
-```{r, echo=FALSE, include=FALSE}
-library(terra)
-```
-
 ## Introduction
 
-In this chapter general aspects of the design of the `raster` package are discussed, notably the structure of the main classes, and what they represent. The use of the package is illustrated in subsequent sections. `raster` has a large number of functions, not all of them are discussed here, and those that are discussed are mentioned only briefly. See the help files of the package for more information on individual functions and `help("raster-package")` for an index of functions by topic.
+In this chapter general aspects of the design of the `terra` package are discussed, notably the structure of the main classes, and what they represent. The use of the package is illustrated in subsequent sections. `terra` has a large number of functions, not all of them are discussed here, and those that are discussed are mentioned only briefly. See the help files of the package for more information on individual functions and `help("terra-package")` for an index of functions by topic.
 
 
 ## Creating SpatRaster objects
@@ -52,7 +46,7 @@ crs(x) <- "+proj=utm +zone=48 +datum=WGS84"
 x
 ```
 
-The objects `x` created in the examples above only consist of the raster 'geometry', that is, we have defined the number of rows and columns, and where the raster is located in geographic space, but there are no cell-values associated with it. Setting and accessing values is illustrated below.
+The objects `x` created in the examples above only consist of the raster *geometry*, that is, we have defined the number of rows and columns, and where the raster is located in geographic space, but there are no cell-values associated with it. Setting and accessing values is illustrated below.
 
 First another example empty raster geometry.
 ```{r, raster-1h }
@@ -108,7 +102,7 @@ xmax(r)
 
 While we can create a `SpatRaster` from scratch, it is more common to do so from a file. The `terra` package can use raster files in several formats, including GeoTiff, ESRI, ENVI, and ERDAS. 
 
-A notable feature of the `raster` package is that it can work with raster datasets that are stored on disk and are too large to be loaded into memory (RAM). The package can work with large files because the objects it creates from these files only contain information about the structure of the data, such as the number of rows and columns, the spatial extent, and the filename, but it does not attempt to read all the cell values in memory. In computations with these objects, data is processed in chunks. If no output filename is specified to a function, and the output raster is too large to keep in memory, the results are written to a temporary file. 
+A notable feature of the `terra` package is that it can work with raster datasets that are stored on disk and are too large to be loaded into memory (RAM). The package can work with large files because the objects it creates from these files only contain information about the structure of the data, such as the number of rows and columns, the spatial extent, and the filename, but it does not attempt to read all the cell values in memory. In computations with these objects, data is processed in chunks. If no output filename is specified to a function, and the output raster is too large to keep in memory, the results are written to a temporary file. 
 
 For this example, we first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction of your own files (just type the file name; don't forget the forward slashes).
 
@@ -136,13 +130,13 @@ values(r2) <- runif(ncell(r2))
 values(r3) <- runif(ncell(r3))
 ```
 
-Combine three SpatRaster objects into a RasterStack.
+Combine three SpatRasters:
+
 ```{r, raster-2b2}
 s <- c(r1, r2, r3)
 s
 nlyr(s)
 ```
-
 
 You can also create a multilayer object from a file.
 ```{r, raster-2b5}
@@ -277,17 +271,14 @@ file.remove(ff)
 
 ### Overlay
 
-The `overlay` function can be used as an alternative to the raster algebra discussed above. Overlay, like the functions discussed in the following subsections provide either easy to use short-hand, or more efficient computation for large (file based) objects. 
+`app` allows you to do a computation for a single `SpatRaster` object by providing a function. For exaple, `sum`
 
-With `overlay` you can combine multiple Raster objects (e.g. multiply them). The related function `mask` removes all values from one layer that are `NA` in another layer, and  `cover` combines two layers by taking the values of the first layer except where these are `NA`.
+The `lapp` (layer-apply) function can be used as an alternative to the raster algebra discussed above. 
 
-
-### Calc
-
-`calc` allows you to do a computation for a single `SpatRaster` object by providing a function. If you supply a `SpatRaster`, another `SpatRaster` is returned. If you provide a multi-layer object you get a (single layer) `SpatRaster` if you use a summary type function (e.g. `sum` but a `RasterBrick` if multiple layers are returned. `stackApply` computes summary type layers for subsets of a `RasterStack` or `RasterBrick`.
 
 
 ### Reclassify
+
 You can use `classify` to replace ranges of values with single values, or to substitute (replace) single values with other values. 
 
 ```{r, raster-6a}
@@ -352,7 +343,8 @@ The `focal` function currently only work for (single layer) SpatRaster objects. 
 There are a number of distance related functions. `distance` computes the shortest distance to cells that are not `NA`. `pointDistance` computes the shortest distance to any point in a set of points. `gridDistance` computes the distance when following grid cells that can be traversed (e.g. excluding water bodies). `direction` computes the direction toward (or from) the nearest cell that is not `NA`. `adjacency` determines which cells are adjacent to other cells. See the `gdistance` package for more advanced distance calculations (cost distance, resistance distance)
 
 ### Spatial configuration
-Function `clump` identifies groups of cells that are connected. `boundaries` identifies edges, that is, transitions between cell values. `area` computes the size of each grid cell (for unprojected rasters), this may be useful to, e.g. compute the area covered by a certain class on a longitude/latitude raster. 
+
+`patches` identifies groups of cells that are connected. `boundaries` identifies edges, that is, transitions between cell values. `area` computes the size of each grid cell (for unprojected rasters), this may be useful to, e.g. compute the area covered by a certain class on a longitude/latitude raster. 
 
 ```{r, raster-7}
 r <- rast(nrow=45, ncol=90)
@@ -362,7 +354,8 @@ zonal(a, r, "sum")
 ```
 
 ### Predictions
-The package has two functions to make model predictions to (potentially very large) rasters. `predict` takes a multilayer raster and a fitted model as arguments. Fitted models can be of various classes, including glm, gam, and RandomForest. The function `interpolate` is similar but is for models that use coordinates as predictor variables, for example in Kriging and spline interpolation.
+
+The `terra` package has two functions to make model predictions to (potentially very large) rasters. `predict` takes a multilayer raster and a fitted model as arguments. Fitted models can be of various classes, including glm, gam, and RandomForest. The function `interpolate` is similar but is for models that use coordinates as predictor variables, for example in Kriging and spline interpolation.
 
 
 ### Vector to raster conversion

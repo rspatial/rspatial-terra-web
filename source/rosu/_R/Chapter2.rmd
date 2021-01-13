@@ -112,13 +112,13 @@ md <- matrix(dep, ncol=6, nrow=6, byrow=TRUE)
 __Question 1__: *Create these matrices from* `ind` *and* `dep` *without using* `byrow=TRUE`. *Hint: use the* `t` *function after you made the matrix.*
 
 
-The type of aggregation as shown in Figure 2.1 is not a very typical operation in the context of matrix manipulation. However, it is very common to do this with raster data. So let's first transform the matrices to objects that represent raster data, `RasterLayer` objects in this case. This class is defined in the `raster` package, so we need to load that first. If `library(raster)` gives this error: `Error in library("raster") : there is no package called ‘raster’` you need to install the package first, using this command: `install.packages('raster')`.
+The type of aggregation as shown in Figure 2.1 is not a very typical operation in the context of matrix manipulation. However, it is very common to do this with raster data. So let's first transform the matrices to objects that represent raster data, `SpatRaster` objects in this case. This class is defined in the `terra` package, so we need to load that first. If `library(raster)` gives this error: `Error in library("terra") : there is no package called ‘terra’` you need to install the package first, using this command: `install.packages("terra")`.
 
 ```{r, ch2-4a}
 # load package
 library(terra)
 
-# turn matrices into RasterLayer objects
+# turn matrices into SpatRaster objects
 ri <- rast(mi)
 rd <- rast(md)
 ```
@@ -142,17 +142,18 @@ ad1 <- aggregate(rd, c(2, 1), fun=mean)
 ```
 
 Inspect the results
+
 ```{r, ch2-5b}
 as.matrix(ai1)
 plot(ai1)
 text(ai1, digits=1)
 ```
 
-To be able to do the regression as we did above, I first combine the two `RasterLayer` objects into a (multi-layer) `RasterStack` object.
+To be able to do the regression as we did above, I first combine the two `SpatRaster` objects into a (multi-layer) object.
 
 ```{r, ch2-6, fig.width=9, fig.height=4}
 s1 <- c(ai1, ad1)
-names(s1) <- c('ind', 'dep')
+names(s1) <- c("ind", "dep")
 s1
 plot(s1)
 ```
@@ -164,10 +165,10 @@ d1 <- as.data.frame(s1)
 head(d1)
 ```
 
-To recap: each matrix was used to create a RasterLayer that we aggregated and then stacked. Each of the stacked and aggregated `RasterLayer` objects became a single variable (column) in the `data.frame`.
-If would perhaps have been more efficient to first make a `RasterStack` and then `aggregate`.
+To recap: each matrix was used to create a `SpatRaster` that we aggregated and then combined. Each of the aggregated `SpatRaster` layers became a single variable (column) in the `data.frame`.
+If would perhaps have been more efficient to first make a `SpatRaster` and then `aggregate`.
 
-__Question 3__: *There are other ways to do the above (converting two* `RasterLayer` *objects to a* `data.frame`*). Show how to obtain the same result (*`d1`*) using* `as.vector` *and* `cbind`.
+__Question 3__: *There are other ways to do the above (converting two* `SpatRaster` *objects to a* `data.frame`*). Show how to obtain the same result (*`d1`*) using* `as.vector` *and* `cbind`.
 
 
 Let's fit a regression model again, now with these aggregated data:

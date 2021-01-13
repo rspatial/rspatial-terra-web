@@ -1,19 +1,21 @@
 # Vector data manipulation
 
-Example SpatVector
+This chapter illustrates some ways in which we can manipulate vector data. We start with an example SpatVector that we read from a shapefile.
 
 ```{r, vec1}
 library(terra)
 f <- system.file("ex/lux.shp", package="terra")
 p <- vect(f)
 p
-par(mai=c(0,0,0,0))
-plot(p)
+```
+
+We can plot it in many ways
+
+```
+plot(p, "NAME_2")
 ```
 
 ## Basics
-
-Basic operations are pretty much like working with a data.frame. 
 
 ### Geometry and attributes
 
@@ -23,25 +25,37 @@ d <- as.data.frame(p)
 head(d)
 ```
 
-Extracting geometry (rarely needed).
+You can also extracting the geometry (rarely needed) as a a matrix.
+
 ```{r}
 g <- geom(p)
 head(g)
 ```
 
+Or as "well-known-text" 
+
+```{r}
+g <- geom(p, wkt=TRUE)
+substr(g, 1, 50)
+```
+
+
 ### Variables
 
-Extracting a variable.
+You can extracting a variable as you would do with a `data.frame`.
+
 ```{r}
 p$NAME_2
 ```
 
-Sub-setting by variable. Note how this is different from the above example. Above a vector of values is returned. With the approach below you get a new SpatVector with only one variable. 
+To sub-setting a SpatVector to one or more variables you can use the notation below. Note how this is different from the above example. Above a vector of values is returned. With the approach below you get a new SpatVector with only one variable. 
+
 ```{r}
-p[, 'NAME_2']
+p[, "NAME_2"]
 ```
 
-Adding a new variable.
+You can adding a new variable as with a `data.frame`.
+
 ```{r}
 set.seed(0)
 p$lets <- sample(letters, nrow(p))
@@ -50,17 +64,19 @@ p
 
 Note that to get the number of geometries of SpatVector `p`, you can use `nrow(p)`, or `size(p)`. You can also do `perimeter(p)` to get the "length" of the spatial objects (zero for points, the length of the lines, or the perimeter of the polygons).
 
+
 ```{r}
 perimeter(p)
 ```
 
 Assigning a new value to an existing variable.
+
 ```{r}
 p$lets <- sample(LETTERS, nrow(p))
 head(p)
 ```
 
-To get rid of a variable.
+To get rid of a variable, set it to `NULL`.
 
 ```{r}
 p$lets <- NULL
@@ -68,7 +84,7 @@ p$lets <- NULL
 
 ### Merge
 
-You can join a table (data.frame) with a SpatVector object with `merge`.
+You can assign an attributes table (data.frame) to a SpatVector with `values<-`. To add attributes to a SpatVector that already has attributes use `merge`.
 
 ```{r}
 dfr <- data.frame(District=p$NAME_1, Canton=p$NAME_2, Value=round(runif(length(p), 100, 1000)))
@@ -79,14 +95,14 @@ pm
 head(pm)
 ```
 
-Note that new variable `Value` added to `pm`
+Note the new variable `Value` added to `pm`
 
 
 ### Records
 
 Selecting rows (records).
 
-```{r}
+```{r recs}
 i <- which(p$NAME_1 == 'Grevenmacher')
 g <- p[i,]
 g
@@ -103,7 +119,9 @@ It is also possible to interactively select and query records by clicking on a p
 More example data. Object `z`, consisting of four polygons, and `z2` which is one of these four polygons.
 
 ```{r, zzz}
-z <- rast(p, nrow=2, ncol=2, vals=1:4)
+z <- rast(p)
+dim(z) <- c(2,2)
+values(z) <- 1:4
 names(z) <- 'Zone'
 # coerce SpatRaster to SpatVector polygons
 z <- as.polygons(z)
@@ -117,7 +135,7 @@ plot(z2, add=TRUE, border='red', lwd=2, col='red')
 
 To append SpatVector objects of the same (vector) type you can use `c`
 
-```
+```{r}
 b <- c(p, z)
 head(b)
 tail(b)
@@ -145,7 +163,7 @@ plot(zag, col="light gray")
 
 This is a structure that is similar to what you may get for an archipelago: multiple polygons represented as one entity (one row). Use `disaggregate` to split these up into their parts.
 
-```{r}
+```{r diis}
 zd <- disaggregate(zag)
 zd
 ```
@@ -156,14 +174,8 @@ zd
 ### Erase
 
 Erase a part of a SpatVector
-```{r}
+```{r raser}
 e <- erase(p, z2)
-```
-
-This is equivalent to 
-
-```{r, erase}
-e <- p - z2
 plot(e)
 ```
 
@@ -176,10 +188,6 @@ i <- intersect(p, z2)
 plot(i)
 ```
 
-This is equivalent to 
-```{r}
-i <- p * z2
-```
 
 You can also intersect with a SpatExtent (rectangle). 
 
@@ -187,8 +195,9 @@ You can also intersect with a SpatExtent (rectangle).
 e <- ext(6, 6.4, 49.7, 50)
 pe <- crop(p, e)
 plot(p)
+plot(e, add=TRUE, lwd=3, col="red")
 plot(pe, col='light blue', add=TRUE)
-plot(e, add=TRUE, lwd=3, col='red')
+plot(e, add=TRUE, lwd=3, border="blue")
 
 ```
 
@@ -199,18 +208,12 @@ Get the union of two SpatVectors.
 
 ```{r}
 u <- union(p, z)
-```
-
-This is equivalent to
-
-```{r}
-u <- p + z
+u
 ```
 
 Note that there are many more polygons now. One for each unique combination of polygons (and attributes in this case).
 
 ```{r unionplot}
-u
 set.seed(5)
 plot(u, col=sample(rainbow(length(u))))
 ```
@@ -220,7 +223,7 @@ plot(u, col=sample(rainbow(length(u))))
 Cover is a combination of intersect and union
 
 ```{r, cov}
-cov <- cover(p, z)
+cov <- cover(p, z[c(1,4),])
 cov
 plot(cov)
 ```
