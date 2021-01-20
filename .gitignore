@@ -1,5 +1,4 @@
 *.md
-*.html
 *~
 *.rds
 *.tif
@@ -12,6 +11,7 @@
 *.rst
 !index.rst
 sync.bat
+shp_test.*
 
 build
 _build
