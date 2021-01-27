@@ -42,9 +42,9 @@ contour(x, y, zm, add=TRUE, lty=2)
 ```
 
 
-Now, let's do the same thing as above, but now by using a spatial data approach. Instead of a matrix, we use RasterLayer objects. First we create an empty raster with eight rows and columns, and with x and y going from 0 to 7. The `init` function sets the values of the cells to either the x or the y coordinate (or something else, see `?init`).
+Now, let's do the same thing as above, but now by using a spatial data approach. Instead of a matrix, we use SpatRasters. First we create an empty raster with eight rows and columns, and with x and y coordinates going from 0 to 7. The `init` function sets the values of the cells to either the x or the y coordinate (or something else, see `?init`).
 
-```{r, p4-2, fig.width=9, fig.height=2.5}
+```{r, p4-2, fig.width=9, fig.height=3}
 library(terra)
 r <- rast(xmin=0, xmax=7, ymin=0, ymax=7, ncol=8, nrow=8)
 X <- init(r, "x")
@@ -54,27 +54,28 @@ plot(X, main="x")
 plot(Y, main="y")
 ```
 
-We can use algebraic exprssions with SpatRaster objects 
+We can use algebraic expressions with SpatRasters 
 ```{r}
 Z <- 2*X + 3*Y
 ```
 
-Do you think it is *possible* to do `Z <- detproc(X, Y)`*?*
+Do you think it is *possible* to do `Z <- detproc(X, Y)`*?* (try it).
 
 Plot the result.
-```{r, p4-3, fig.cap="", fig.width=9, fig.height=5}
+
+```{r, p4-3, fig.cap="", fig.width=6, fig.height=5}
 plot(Z)
 text(Z, cex=.75)
-contour(Z, add=T, labcex=1, lwd=2, col="red")
+contour(Z, add=TRUE, labcex=1, lwd=2, col="red")
 ```
 
-The above does not seem very interesting. But, if the process is complex, a map of the outcome of a deterministic process can actually be very interesting. For example, in ecology and associated sciences there are many "mechanistic" (= process) models that dynamically (= over time) simulate ecosystem processes such as vegetation dynamics and soil greenhouse gas emissions that depend on interaction of the weather, soil type, genotypes, and management; making it hard to predict the model outcome over space. In this context, stochasticity still exists through the input variables (e.g. rainfall). Many other models exist that have a deterministic and stochastic components (e.g. global climate models). 
+The above does not seem very interesting. But, if the process is complex, a map of the outcome of a deterministic process can actually be very interesting. For example, in ecology and associated sciences there are many "mechanistic" (= process) models that dynamically (= over time) simulate ecosystem processes such as vegetation dynamics and soil greenhouse gas emissions that depend on interaction of the weather, soil type, genotypes, and management; making it hard to predict the model outcome over space. In this context, stochasticity still exists through the input variables such as rainfall. Many other models exist that have a deterministic and stochastic components (for example, global climate models). 
 
-Below I follow the book by adding a stochastic element to the deterministic process about by adding variable `r` to the equation: `z = 2x + 3y + r`; where r is a random value that can be -1 or +1. You will see that many examples of *R* functions use randomly generated values to illustrate how they work. But much real data analysis also depends on randomly selected variables, often as a 'null model' (such as CSR) to compare with an observed data set. 
+Below I follow the book by adding a stochastic element to the deterministic process by adding variable `r` to the equation: `z = 2x + 3y + r`; where r is a random value that can be -1 or +1. Many examples in *R* manuals use randomly generated values to illustrate how a particular function work. But much real data analysis also depends on randomly selected variables, for example, to create a "null model" (such as CSR) to compare with an observed data set. 
 
-There are different ways to get random numbers, and you should pay attention to that. The `sample` function returns randomly selected values from a set that you provide (by default this is done without replacement). We need a random value for each cell of raster 'r', and assign these to a new RasterLayer with the same properties (spatial extent and resolution). When you work with using random values, the results will be different each time you run some code (that is the point); but sometimes it is desireable to recreate exactly the same random sequence. Function `set.seed` allows you to do that (after all, in computers we can only create pseudo-random values). 
+There are different ways to get random numbers, and you should pay attention to that. The `sample` function returns randomly selected values from a set that you provide (by default this is done without replacement). We need a random value for each cell of SpatRaster `r`, and assign these to a new SpatRaster with the same properties (spatial extent and resolution). When you work with random values, the results will be different each time you run some code (that is the point); but sometimes it is desireable to recreate exactly the same random sequence. The function `set.seed` allows you to do that --- to create the same random sequence over and over again. 
 
-```{r, p4-4, fig.height=3}
+```{r, p4-4, fig.height=4}
 set.seed(987)
 s <- sample(c(-1, 1), ncell(r), replace=TRUE)
 s[1:8]
@@ -83,7 +84,7 @@ plot(R)
 ```
 
 Now we can solve the formula and look at the result
-```{r, p4-5, fig.height=3}
+```{r, p4-5, fig.height=4}
 Z <- 2*X + 3*Y + R
 plot(Z)
 text(Z, cex=.75)
@@ -101,9 +102,9 @@ f <- function() {
 }
 ```
 
-We can call function `f` as many times as we like, below I use it four times. Note that the functions has no arguments, but we still need to use the parenthesis `f()` to distinguish it from `f`, the function definition.
+We can call function `f` as many times as we like, below I use it four times. Note that the function has no arguments, but we still need to use the parenthesis `f()` to distinguish it from `f`, which is the function itself.
 
-```{r, p4-6, fig.width=10, fig.height=5}
+```{r, p4-6, fig.width=9, fig.height=6}
 set.seed(777)
 par(mfrow=c(2,2), mai=c(0.5,0.5,0.5,0.5))
 for (i in 1:4) {
@@ -116,7 +117,7 @@ for (i in 1:4) {
 
 As you can see, there is variation between the four plots, but not much. The deterministic process has an overriding influence as the random component only adds or subtracts a value of 1.
 
-So far we have created regular, gridded, patterns. Locations of "events" normally do not follow such a pattern (but they may be summarized that way). Here is how you can create simple dot maps of random events (following box "All the way: a chance map"; OSU page 98). I first create a function for a complete spatial random (CSR) process. Note the use of the `runif` (probably pronounced as r-unif as it stands for "random uniform", there is also a `rnorm`, `rpois`, ...) function to create the x and y coordinates. For convenience, this function also plots the value. That is not typical, as in many cases you may want to create many random draws, but not plot them all. Therefore I added the Boolean argument "plot" (with default value `FALSE`) to the function.
+So far we have created regular, gridded, patterns. Locations of "events" normally do not follow such a pattern (but they may be summarized that way). Here is how you can create simple dot maps of random events (following box "All the way: a chance map"; OSU page 98). I first create a function for a complete spatial random (CSR) process. Note the use of the `runif` (pronounced as "r unif" as it stands for "random uniform", there is also a `rnorm`, `rpois`, ...) function to create the x and y coordinates. For convenience, this function also plots the value. That is not typical, as in many cases you may want to create many random draws, but not plot them all. Therefore I added the logical argument "plot" (with default value `FALSE`) to the function.
 
 ```{r, p4-7}
 csr <- function(n, r=99, plot=FALSE) {
@@ -130,15 +131,13 @@ csr <- function(n, r=99, plot=FALSE) {
 
 Let's run the function four times; to create four realizations. Again, I use `set.seed` to assure that the maps are always the same "random" draws.
 
-```{r, p4-8, fig.width=10, fig.height=10}
+```{r, p4-8, fig.width=8, fig.height=8}
 set.seed(0)
 par(mfrow=c(2,2), mai=c(.5, .5, .5, .5))
 for (i in 1:4) {
 	csr(50, plot=TRUE)
 }
 ```
-
-
 
 ## Predicting patterns
 
@@ -168,7 +167,7 @@ round(b, 8)
 
 Similar functions exists for other commonly used distributions such as the uniform, normal, and Poisson distribution. 
 
-Now, let's generate some quadrat counts and then compare the generated (observed) frequencies with the theoretical expectation. First the random points.
+Now generate some quadrat counts and then compare the generated (observed) frequencies with the theoretical expectation. First the random points.
 
 ```{r}
 set.seed(1234)
@@ -327,7 +326,7 @@ p <- as.polygons(r)
 chess <- function() {
 	s <- sample(c(-1, 1), 64, replace=TRUE)
 	values(r) <- s
-	plot(r, col=c("black", "white"), legend=FALSE, axes=FALSE, box=FALSE)
+	plot(r, col=c("black", "white"), legend=FALSE, axes=FALSE, mar=c(1,1,1,1))
 	plot(p, add=T, border="gray")
 }
 ```
@@ -336,7 +335,7 @@ And create four realizations:
 
 ```{r, p4-20}
 set.seed(0)
-par(mfrow=c(2,2), mai=c(0.2, 0.1, 0.2, 0.1))
+par(mfrow=c(2,2))
 for (i in 1:4) {
 	chess()
 }
