@@ -40,14 +40,16 @@ do_knit <- function(option, quiet=TRUE) {
 		}
 	}
 	if (length(ff) > 0) {
-		library(knitr)
+		##library(knitr)
+		loadNamespace("knitr")
+
 		outf <- gsub("_R/", "", ff)
 		md <-  gsub(".rmd$", '.md', outf)
 		rst <-  gsub(".rmd$", ".rst", outf)
 		txtp <- file.path(dirname(outf), "txt", basename(outf))
 		rcd <- gsub(".rmd$", ".txt", txtp)
 		
-		opts_chunk$set(
+		knitr::opts_chunk$set(
 			dev        = 'png',
 			fig.width  = 6,	fig.height = 6,
 			fig.path = 'figures/',
@@ -61,7 +63,7 @@ do_knit <- function(option, quiet=TRUE) {
 		
 			dn <- dirname(rst[i])
 			if (dn != ".") {
-				opts_chunk$set(
+				knitr::opts_chunk$set(
 					fig.path = paste0(dn, '/figures/')
 				)
 				fdirclean <- TRUE
@@ -69,8 +71,8 @@ do_knit <- function(option, quiet=TRUE) {
 				fdirclean <- FALSE
 			}
 			cat(paste("   ", tools::file_path_sans_ext(outf[i]), "\n"))
-			knit(ff[i], md[i], envir = new.env(), encoding='UTF-8', quiet=quiet)
-			purl(ff[i], rcd[i], quiet=TRUE)
+			knitr::knit(ff[i], md[i], envir = new.env(), encoding='UTF-8', quiet=quiet)
+			knitr::purl(ff[i], rcd[i], quiet=TRUE)
 			if (fdirclean) {
 				x <- readLines(md[i])
 				j <- grep("png", x)
