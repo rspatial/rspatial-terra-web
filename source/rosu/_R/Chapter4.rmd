@@ -225,7 +225,7 @@ These numbers indicate that you would expect that most quadrats would have a poi
 
 
 ```{r, p4-15, fig.cap=""}
-m <- rbind(f[,2]/100, expected[1:nrow(f)])
+m <- rbind(f[,3]/100, expected[1:nrow(f)])
 bp <- barplot(m, beside=T, names.arg =1:nrow(f), space=c(0.1, 0.5),
    ylim=c(0,0.7), col=c("red", "blue"))
 text(bp, m, labels=round(m, 2), pos = 3, cex = .75)
