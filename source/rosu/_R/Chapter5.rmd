@@ -316,7 +316,7 @@ plot(distance, Kd, type='l', lwd=2)
 ``` 
 
 
-__Question 4__: *Create a single random pattern of events for the city, with the same number of events as the crime data (object xy). Use function 'spsample'*
+__Question 4__: *Create a single random pattern of events for the city, with the same number of events as the crime data (object xy). Use function 'terra::spatSample'*
 
 
 __Question 5__: *Compute the G function for the observed data, and plot it on a single plot, together with the G function for the theoretical expectation (formula 5.12).*

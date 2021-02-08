@@ -1,16 +1,8 @@
 # Spatial autocorrelation
 
-
 ## Introduction
 
 This handout accompanies Chapter 7 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
-
-First load the `rspat` package, to get access to the data we will use.
-
-```{r getData, echo=TRUE}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
-library(rspat)
-```
 
 
 ## The area of a polygon
@@ -18,8 +10,8 @@ library(rspat)
 Create a polygon like in Figure 7.2 (page 192).
 
 ```{r}
-pol <- matrix(c(1.7, 2.6, 5.6, 8.1, 7.2, 3.3, 1.7, 4.9, 7, 7.6, 6.1, 2.7, 2.7, 4.9), ncol=2)
 library(terra)
+pol <- matrix(c(1.7, 2.6, 5.6, 8.1, 7.2, 3.3, 1.7, 4.9, 7, 7.6, 6.1, 2.7, 2.7, 4.9), ncol=2)
 sppol <- vect(pol, "polygons")
 ```
 
@@ -55,20 +47,22 @@ y <- (p[-1,2] + p[-nrow(p),2]) / 2
 sum(x * y)
 ```
 
-Or simply use an existing function
+Or simply use an existing function. To make sure that the coordinates are not interpreted as longitude/latitude I assign an arbitrary planar coordinate reference system.
+
 
 ```{r}
-# make sure that the coordinates are interpreted as planar (not longitude/latitude)
 crs(sppol) <- '+proj=utm +zone=1'
 area(sppol)
 ``` 
 
+
+
 ## Contact numbers
 
-"Contact numbers" for the lower 48 states. Get the polygons:
+"Contact numbers" for the lower 48 states. Get the polygons using the `geodata` package:
 
 ```{r}
-library(geodata)
+if (!require(geodata)) remotes::install_github('rspatial/geodata')
 usa <- geodata::gadm(country='USA', level=1, path=".")
 usa <- usa[! usa$NAME_1 %in% c('Alaska', 'Hawaii'), ]
 ```
@@ -82,6 +76,7 @@ wus <- relate(usa, relation="touches")
 rownames(wus) <- colnames(wus) <- usa$NAME_1
 wus[1:5,1:5]
 ```
+
 Compute the number of neighbors for each state.
 
 ```{r}
@@ -89,13 +84,13 @@ i <- rowSums(wus)
 round(100 * table(i) / length(i), 1)
 ```
 
-Apparently, I am using a different data set than OSU (compare the above with table 7.1). By changing the `level` argument to `2` in the `getData` function you can run the same for counties. Which county has 13 neighbors?
+Apparently, I am using a different data set than OSU (compare the above with table 7.1). By changing the `level` argument to `2` in the `getData` function you can run the same for counties. 
 
 
 ## Spatial structure
 
 
-Read the Auckland data.
+Read the Auckland data from the `rspat` package
 
 ```{r, auck1}
 if (!require("rspat")) devtools::install_github('rspatial/rspat')
@@ -104,7 +99,7 @@ pols <- spat_data("auctb")
 ``` 
 
 
-I did not have the tuberculosis data so I guesstimated them from figure 7.7. Compare:
+The tuberculosis data used here were estimated them from figure 7.7. Compare:
 
 ```{r, auck2, fig.width=8}
 par(mai=c(0,0,0,0))
@@ -118,13 +113,14 @@ legend('bottomleft', levels(cuts), fill=cols)
 
 
 Find "rook" connetected areas.
+
 ```{r}
-wr <- adjacent(pols, relation="rook", symmetrical=TRUE)
+wr <- adjacent(pols, type="rook", symmetrical=TRUE)
 head(wr)
 ``` 
 
-
 Plot the links between the polygons.
+
 ```{r, links, fig.width=6}
 v <- centroids(pols)
 p1 <- v[wr[,1], ]
@@ -136,10 +132,10 @@ lines(p1, p2, col='red', lwd=2)
 points(v)
 ``` 
 
-
 Now let's recreate Figure 7.6 (page 202).
 
 We already have the first one (Rook's case adjacency, plotted above). Queen's case adjacency:
+
 ```{r}
 wq <- adjacent(pols, "queen", symmetrical=TRUE)
 ``` 
@@ -163,14 +159,18 @@ d <- delauny(centroids(pols))
 
 Lag-two Rook:
 ```{r}
-#wr2 <- wr
-#for (i in 1:length(wr)) {
-#	lag1 <- wr[[i]]
-#	lag2 <- wr[lag1]
-#	lag2 <- sort(unique(unlist(lag2)))
-#	lag2 <- lag2[!(lag2 %in% c(wr[[i]], i))] 
-#	wr2[[i]] <- lag2
-#}
+wrs <- adjacent(pols, "rook", symmetrical=FALSE)
+uf <- sort(unique(wrs[,1]))
+wr2 <- list()
+for (i in 1:length(pols)) {
+	lag1 <- wrs[wrs[,1]==i, 2]
+  lag2 <- wrs[wrs[,1] %in% lag1, ] 	
+  lag2[,1] <- i
+	wr2[[i]] <- unique(lag2)
+}
+
+wr2 <- do.call(rbind, wr2)
+
 ```
 
 And now we plot them all using the `plotit` function. 
@@ -178,21 +178,25 @@ And now we plot them all using the `plotit` function.
 ```{r, weights, fig.height=12, fig.width=9}
 plotit <- function(nb, lab='') {
   plot(pols, col='gray', border='white')
-  plot(nb, xy, add=TRUE, pch=20)
+  v <- centroids(pols)
+  p1 <- v[nb[,1], ]
+  p2 <- v[nb[,2], ]
+  lines(p1, p2, col='red', lwd=2)
+  points(v)
   text(2659066, 6482808, paste0('(', lab, ')'), cex=1.25)
 }
 
-#par(mfrow=c(4, 2), mai=c(0,0,0,0))
-#plotit(wr, 'i')
-#plotit(wq, 'ii')
-#plotit(wd1, 'iii')
-#plotit(wd25, 'iv')
-#plotit(k3, 'v')
-#plotit(k6, 'vi')
-#plot(pols, col='gray', border='white')
-#plot(d, wlines='triang', add=TRUE, pch=20)
-#text(2659066, 6482808, '(vii)', cex=1.25)
-#plotit(wr2, 'viii')
+par(mfrow=c(4, 2), mai=c(0,0,0,0))
+plotit(wr, 'i')
+plotit(wq, 'ii')
+plotit(wd1, 'iii')
+plotit(wd25, 'iv')
+plotit(k3, 'v')
+plotit(k6, 'vi')
+plot(pols, col='gray', border='white')
+lines(d, col="red")
+text(2659066, 6482808, '(vii)', cex=1.25)
+plotit(wr2, 'viii')
 ```
 
 ## Moran's *I*
@@ -309,13 +313,13 @@ P
 ``` 
 
 
-__Question 2__: *How do you interpret these results (the significance tests)?*
+__Question 1__: *How do you interpret these results (the significance tests)?*
 
 
-__Question 3__: *What would a good value be for `nsim`?*
+__Question 2__: *What would a good value be for `nsim`?*
 
 
-__Question 4__: *Show a figure similar to Figure 7.9 in OSU.
+__Question 3__: *Show a figure similar to Figure 7.9 in OSU.
 
 
 
@@ -360,10 +364,4 @@ See `spdep::moran.plot` for a more direct approach to accomplish the same thing 
 
 __Question 4__: *Show how to use the 'geary' function to compute Geary's C*
 
-
-__Question 5__: *Write your own Geary C function, by completing the function below*
-
-```
-gearyC <- ((n-1)/sum(( "----")\^2)) * sum(wm * (" --- ")\^2) / (2 * sum(wm))
-```
 
