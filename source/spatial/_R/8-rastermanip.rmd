@@ -366,7 +366,7 @@ Point to raster conversion is often done with the purpose to analyze the point d
 
 Polygon to raster conversion is typically done to create a `SpatRaster` that can act as a mask, i.e. to set to `NA` a set of cells of a `SpatRaster` object, or to summarize values on a raster by zone. For example a country polygon is transferred to a raster that is then used to set all the cells outside that country to `NA`; whereas polygons representing administrative regions such as states can be transferred to a raster to summarize raster values by region. 
 
-It is also possible to convert the values of a `SpatRaster` to points or polygons, using `as.points` and `as.polygons`. Both functions only return values for cells that are not `NA`. Unlike `rasterToPolygons`, `rasterToPoints` is reasonably efficient and allows you to provide a function to subset the output before it is produced (which can be necessary for very large rasters as the point object is created in memory). 
+It is also possible to convert the values of a `SpatRaster` to points or polygons, using `as.points` and `as.polygons`. Both functions only return values for cells that are not `NA`. 
 
 ## Summarizing functions
 

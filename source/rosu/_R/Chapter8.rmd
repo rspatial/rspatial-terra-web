@@ -12,14 +12,18 @@ This handout accompanies Chapter 8 in [O'Sullivan and Unwin (2010)](http://www.w
 
 ## LISA
 
-### Get the data
+First get the Auckland data
 
-Read the Auckland data.
 
 ```{r, loca1}
 if (!require("rspat")) devtools::install_github("rspatial/rspat")
 library(rspat)
 auck <- spat_data("auctb")
+```
+
+We will be using the `sp`, `spdep` and related packages. And we transform the SpatVector data to a Spatial* object.
+
+```{r, locasp}
 auck <- as(auck, "Spatial")
 ``` 
 

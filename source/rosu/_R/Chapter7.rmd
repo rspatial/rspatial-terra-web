@@ -362,6 +362,6 @@ is almost the same as Moran's *I*.
 
 See `spdep::moran.plot` for a more direct approach to accomplish the same thing (but hopefully the above makes it clearer how this is actually computed). 
 
-__Question 4__: *Show how to use the 'geary' function to compute Geary's C*
+__Question 4__: *compute Geary's C for these data*
 
 

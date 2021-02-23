@@ -1,0 +1,396 @@
+# Interpolation
+
+## Introduction
+
+Almost any variable of interest has [spatial autocorrelation](/analysis/3-spauto.html). That can be a problem in statistical tests, but it is a very useful feature when we want to predict values at locations where no measurements have been made; as we can generally safely assume that values at nearby locations will be similar. There are several spatial interpolation techniques. We show some of them in this chapter.
+
+## Temperature in California 
+
+We will be working with temperature data for California. If have not yet done so, first install the rspatial package to get the data. You may need to install the devtools package first.
+
+```{r fields00}
+if (!require("rspat")) devtools::install_github('rspatial/rspat')
+```
+
+Now get the data
+
+```{r fields0}
+library(rspat)
+d <- spat_data('precipitation')
+head(d)
+```
+
+Compute annual precipitation
+
+```{r fields1}
+d$prec <- rowSums(d[, c(6:17)])
+plot(sort(d$prec), ylab="Annual precipitation (mm)", las=1, xlab="Stations")
+```
+
+Now make a quick map.
+```{r fields15}
+dsp <- vect(d, c("LONG", "LAT"), crs="+proj=longlat +datum=NAD83")
+CA <- spat_data("counties")
+
+# define groups for mapping
+cuts <- c(0,200,300,500,1000,3000)
+# set up a palette of interpolated colors
+blues <- colorRampPalette(c('yellow', 'orange', 'blue', 'dark blue'))
+
+plot(CA, col="light gray", lwd=3, border="dark gray")
+plot(dsp, "prec", type="interval", col=blues(10), legend=TRUE, cex=2,
+	breaks=cuts, add=TRUE, plg=list(x=-117.27, y=41.54))
+lines(CA)
+```
+
+Transform longitude/latitude to planar coordinates, using the commonly used coordinate reference system for California ("Teale Albers") to assure that our interpolation results will align with other data sets we have.
+ 
+```{r}
+TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
+dta <- project(dsp, TA)
+cata <- project(CA, TA)
+```
+
+
+### 9.2 NULL model 
+
+We are going to interpolate (estimate for unsampled locations) the precipitation values. The simplest way would be to take the mean of all observations. We can consider that a "Null-model" that we can compare other approaches to. We'll use the Root Mean Square Error (RMSE) as evaluation statistic. 
+
+```{r}
+RMSE <- function(observed, predicted) {
+  sqrt(mean((predicted - observed)^2, na.rm=TRUE))
+}
+```
+
+Get the RMSE for the Null-model
+```{r}
+null <- RMSE(mean(dsp$prec), dsp$prec)
+null
+```
+
+### proximity polygons
+
+Proximity polygons can be used to interpolate categorical variables. Another term for this is "nearest neighbour" interpolation.
+
+```{r fields25}
+v <- voronoi(dta, cata)
+plot(v)
+```
+
+
+Let's cut out what is not California
+
+```{r fields35}
+vca <- crop(v, cata)
+plot(vca, "prec")
+```
+
+
+Now we can `rasterize` the results like this.
+
+```{r fields45}
+r <- rast(vca, res=10000)
+vr <- rasterize(vca, r, "prec")
+plot(vr)
+```
+
+We can use cross-validation to evaluate this model.
+
+```{r}
+set.seed(5132015)
+kf <- sample(1:5, nrow(dta), replace=TRUE)
+
+rmse <- rep(NA, 5)
+for (k in 1:5) {
+  test <- dta[kf == k, ]
+  train <- dta[kf != k, ]
+  v <- voronoi(train)
+  p <- extract(test, v)
+  rmse[k] <- RMSE(test$prec, p$prec)
+}
+rmse
+mean(rmse)
+1 - (mean(rmse) / null)
+```
+
+__Question 1__: *Describe what each step in the code chunk above does (that is, how does cross-validation work?)*
+
+
+__Question 2__: *How does the proximity-polygon approach compare to the NULL model?*
+
+
+__Question 3__: *You would not typically use proximty polygons for rainfall data. For what kind of data would you use them?*
+
+
+
+### Nearest neighbour interpolation
+
+Here we do nearest neighbour interpolation considering multiple (5) neighbours. 
+
+We can use the `gstat` package for this. First we fit a model. `~1` means "intercept only". In the case of spatial data, that would be only 'x' and 'y' coordinates are used. We set the maximum number of points to 5, and the "inverse distance power" `idp` to zero, such that all five neighbors are equally weighted 
+
+
+```{r nneigh}
+library(gstat)
+d <- data.frame(geom(dta)[,c("x", "y")], as.data.frame(dta))
+head(d)
+gs <- gstat(formula=prec~1, locations=~x+y, data=d, nmax=5, set=list(idp = 0))
+nn <- interpolate(r, gs, debug.level=0)
+nnmsk <- mask(nn, vr)
+plot(nnmsk, 1)
+```
+
+Again we cross-validate the result. Note that we can use the `predict` method to get predictions for the locations of the test points.
+
+```{r}
+rmsenn <- rep(NA, 5)
+for (k in 1:5) {
+  test <- d[kf == k, ]
+  train <- d[kf != k, ]
+  gscv <- gstat(formula=prec~1, locations=~x+y, data=train, nmax=5, set=list(idp = 0))
+  p <- predict(gscv, test, debug.level=0)$var1.pred
+  rmsenn[k] <- RMSE(test$prec, p)
+}
+rmsenn
+mean(rmsenn)
+1 - (mean(rmsenn) / null)
+```
+
+
+### Inverse distance weighted
+
+A more commonly used method is "inverse distance weighted" interpolation. The only difference with the nearest neighbour approach is that points that are further away get less weight in predicting a value a location.
+
+```{r fields70}
+library(gstat)
+gs <- gstat(formula=prec~1, locations=~x+y, data=d)
+idw <- interpolate(r, gs, debug.level=0)
+idwr <- mask(idw, vr)
+plot(idwr, 1)
+```
+
+__Question 4__: *IDW generated rasters tend to have a noticeable artefact. What is that?*
+
+
+Cross-validate again. We can use `predict` for the locations of the test points
+
+```{r}
+rmse <- rep(NA, 5)
+for (k in 1:5) {
+  test <- d[kf == k, ]
+  train <- d[kf != k, ]
+  gs <- gstat(formula=prec~1, locations=~x+y, data=train)
+  p <- predict(gs, test, debug.level=0)
+  rmse[k] <- RMSE(test$prec, p$var1.pred)
+}
+rmse
+mean(rmse)
+1 - (mean(rmse) / null)
+```
+
+
+__Question 5__: *Inspect the arguments used for and make a map of the IDW model below. What other name could you give to this method (IDW with these parameters)? Why?*
+
+```{r}
+gs2 <- gstat(formula=prec~1, locations=~x+y, data=d, nmax=1, set=list(idp=1))
+```
+
+
+
+## Calfornia Air Pollution data
+
+We use California Air Pollution data to illustrate geostatistcal (Kriging) interpolation.
+
+### Data preparation
+
+We use the airqual dataset to interpolate ozone levels for California (averages for 1980-2009). Use the variable `OZDLYAV` (unit is parts per billion). [Original data source]( http://www.arb.ca.gov/aqd/aqdcd/aqdcddld.htm).
+
+Read the data file. To get easier numbers to read, I multiply OZDLYAV with 1000
+
+```{r aqual}
+x <- rspat::spat_data("airqual")
+x$OZDLYAV <- x$OZDLYAV * 1000
+x <- vect(x, c("LONGITUDE", "LATITUDE"), crs="+proj=longlat +datum=WGS84")
+```
+
+Create a SpatVector and transform to Teale Albers. Note the `units=km`, which was needed to fit the variogram.
+
+```{r}
+TAkm <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=km"
+aq <- project(x, TAkm)
+```   
+
+Create an template SpatRaster to interpolate to. 
+
+```{r}
+ca <- project(CA, TAkm)
+r <- rast(ca)
+res(r) <- 10  # 10 km if your CRS's units are in km
+```
+	
+
+### Fit a variogram
+
+Use gstat to create an emperical variogram 'v'
+```{r krig20}
+p <- data.frame(geom(aq)[, c("x", "y")], as.data.frame(aq))
+gs <- gstat(formula=OZDLYAV~1, locations=~x+y, data=p)
+v <- variogram(gs, width=20)
+v
+plot(v)
+```
+
+
+Now, fit a model variogram 
+```{r krig22}
+fve <- fit.variogram(v, vgm(85, "Exp", 75, 20))
+fve
+plot(variogramLine(fve, 400), type='l', ylim=c(0,120))
+points(v[,2:3], pch=20, col='red')
+```
+
+
+Try a different type (spherical in stead of exponential)
+```{r krig24}
+fvs <- fit.variogram(v, vgm(85, "Sph", 75, 20))
+fvs
+plot(variogramLine(fvs, 400), type='l', ylim=c(0,120) ,col='blue', lwd=2)
+points(v[,2:3], pch=20, col='red')
+```
+
+Both look pretty good in this case. 
+
+Another way to plot the variogram and the model
+```{r krig26}
+plot(v, fve)
+``` 
+  
+  
+### Ordinary kriging
+
+Use variogram `fve` in a kriging interpolation
+```{r krig28, fig.width=10}
+k <- gstat(formula=OZDLYAV~1, locations=~x+y, data=p, model=fve)
+# predicted values
+kp <- interpolate(r, k, debug.level=0)
+ok <- mask(kp, ca)
+names(ok) <- c('prediction', 'variance')
+plot(ok)
+```
+
+
+### Compare with other methods
+
+Let's use gstat again to do IDW interpolation. The basic approach first.
+
+```{r krig30}
+idm <- gstat(formula=OZDLYAV~1, locations=~x+y, data=p)
+idp <- interpolate(r, idm, debug.level=0)
+idp <- mask(idp, ca)
+plot(idp, 1)
+```
+
+We can find good values for the idw parameters (distance decay and number of neighbours) through optimization. For simplicity's sake I do not do that *k* times here. The optim function may be a bit hard to grasp at first. But the essence is simple. You provide a function that returns a value that you want to minimize (or maximize) given a number of unknown parameters. Your provide initial values for these parameters, and optim then searches for the optimal values (for which the function returns the lowest number).
+
+
+```{r}
+f1 <- function(x, test, train) {
+  nmx <- x[1]
+  idp <- x[2]
+  if (nmx < 1) return(Inf)
+  if (idp < .001) return(Inf)
+  m <- gstat(formula=OZDLYAV~1, locations=~x+y, data=train, nmax=nmx, set=list(idp=idp))
+  p <- predict(m, newdata=test, debug.level=0)$var1.pred
+  RMSE(test$OZDLYAV, p)
+}
+set.seed(20150518)
+i <- sample(nrow(aq), 0.2 * nrow(aq))
+tst <- p[i,]
+trn <- p[-i,]
+opt <- optim(c(8, .5), f1, test=tst, train=trn)
+opt
+```
+
+
+Our optimal IDW model
+```{r krig32}
+m <- gstat(formula=OZDLYAV~1, locations=~x+y, data=p, nmax=opt$par[1], set=list(idp=opt$par[2]))
+idw <- interpolate(r, m, debug.level=0)
+idw <- mask(idw, ca)
+plot(idw, 1)
+```
+
+
+A thin plate spline model
+```{r krig34}
+library(fields)
+m <- fields::Tps(p[,c("x", "y")], p$OZDLYAV)
+tps <- interpolate(r, m)
+tps <- mask(tps, idw[[1]])
+plot(tps)
+```
+
+
+### Cross-validate 
+
+Cross-validate the three methods (IDW, Ordinary kriging, TPS) and add RMSE weighted ensemble model.
+
+```{r}
+k <- sample(5, nrow(p), replace=TRUE)
+
+ensrmse <- tpsrmse <- krigrmse <- idwrmse <- rep(NA, 5)
+
+for (i in 1:5) {
+  test <- p[k!=i,]
+  train <- p[k==i,]
+  m <- gstat(formula=OZDLYAV~1, locations=~x+y, data=train, nmax=opt$par[1], set=list(idp=opt$par[2]))
+  p1 <- predict(m, newdata=test, debug.level=0)$var1.pred
+  idwrmse[i] <-  RMSE(test$OZDLYAV, p1)
+
+  m <- gstat(formula=OZDLYAV~1, locations=~x+y, data=train, model=fve)
+  p2 <- predict(m, newdata=test, debug.level=0)$var1.pred
+  krigrmse[i] <-  RMSE(test$OZDLYAV, p2)
+
+  m <- Tps(train[,c("x", "y")], train$OZDLYAV)
+  p3 <- predict(m, test[,c("x", "y")])
+  tpsrmse[i] <-  RMSE(test$OZDLYAV, p3)
+  
+  w <- c(idwrmse[i], krigrmse[i], tpsrmse[i])
+  weights <- w / sum(w)
+  ensemble <- p1 * weights[1] + p2 * weights[2] + p3 * weights[3]
+  ensrmse[i] <-  RMSE(test$OZDLYAV, ensemble)
+  
+}
+rmi <- mean(idwrmse)
+rmk <- mean(krigrmse)
+rmt <- mean(tpsrmse)
+rms <- c(rmi, rmt, rmk)
+rms
+rme <- mean(ensrmse)
+rme
+```
+
+__Question 6__: *Which method performed best?*
+
+We can use the rmse scores to make a weighted ensemble. Let's look at the maps
+
+```{r krig40}
+weights <- ( rms / sum(rms) )
+s <- c(idw[[1]], ok[[1]], tps)
+ensemble <- sum(s * weights)
+```
+
+And compare maps.
+```{r ensplot, fig.width=10, fig.height=10}
+s <- c(idw[[1]], ok[[1]], tps, ensemble)
+names(s) <- c('IDW', 'OK', 'TPS', 'Ensemble')
+plot(s)
+```
+
+
+__Question 7__: *Show where the largest difference exist between IDW and OK.*
+
+__Question 8__: *Show where the difference between IDW and OK is within the 95% confidence limit of the OK prediction.*
+
+__Question 9__: *Can you describe the pattern we are seeing, and speculate about what is causing it?*
+

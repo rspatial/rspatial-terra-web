@@ -1,9 +1,6 @@
 # Maps
 
-Like for other plots, there are different approaches in R to make maps. You can use "base plot" in many cases. Alternatively use levelplot, either via the `spplot` function (implemented in `sp` and `raster`) or via the `rasterVis` package.
-
-Here are some brief examples about making maps. You can also look elsewhere on the Internet, [like here](http://www.nickeubank.com/wp-content/uploads/2015/10/RGIS3_MakingMaps_part1_mappingVectorData.html), or this for [spplot](https://edzer.github.io/sp/) and [rasterVis](https://oscarperpinan.github.io/rastervis/).
-
+Like for other plots, there are different approaches in R to make maps. 
 
 ## Vector data
 
@@ -28,13 +25,6 @@ u
 m <- match(p$NAME_1, u)
 plot(p, col=rainbow(n)[m])
 #text(p, 'NAME_2', cex=.75, halo=TRUE)
-```
-
-### spplot
-
-```{r, maps_4}
-library(raster)
-spplot(p, "AREA")
 ```
 
 
