@@ -322,7 +322,7 @@ plot(idw, 1)
 
 
 A thin plate spline model
-```{r krig34}
+```{r krig34, message=FALSE}
 library(fields)
 m <- fields::Tps(p[,c("x", "y")], p$OZDLYAV)
 tps <- interpolate(r, m)
@@ -372,10 +372,15 @@ rme
 
 __Question 6__: *Which method performed best?*
 
-We can use the rmse scores to make a weighted ensemble. Let's look at the maps
+
+We can use the RMSE values to make a weighted ensemble. I use the inverse of the differnce between a model's RMSE and a NULL model.
 
 ```{r krig40}
-weights <- ( rms / sum(rms) )
+nullrmse <- RMSE(test$OZDLYAV, mean(test$OZDLYAV))
+w <- 1 / (nullrmse - rms)
+weights <- ( w / sum(w) )
+# check 
+sum(weights)
 s <- c(idw[[1]], ok[[1]], tps)
 ensemble <- sum(s * weights)
 ```
@@ -383,14 +388,12 @@ ensemble <- sum(s * weights)
 And compare maps.
 ```{r ensplot, fig.width=10, fig.height=10}
 s <- c(idw[[1]], ok[[1]], tps, ensemble)
-names(s) <- c('IDW', 'OK', 'TPS', 'Ensemble')
+names(s) <- c("IDW", "OK", "TPS", "Ensemble")
 plot(s)
 ```
 
 
 __Question 7__: *Show where the largest difference exist between IDW and OK.*
 
-__Question 8__: *Show where the difference between IDW and OK is within the 95% confidence limit of the OK prediction.*
-
-__Question 9__: *Can you describe the pattern we are seeing, and speculate about what is causing it?*
+__Question 8__: *Show the 95% confidence interval of the OK prediction.*
 

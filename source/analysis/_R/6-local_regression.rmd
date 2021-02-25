@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Local regression
 
 
@@ -14,7 +19,7 @@ if (!require("rspat")) devtools::install_github('rspat/rspatial')
 
 library(rspat)
 counties <- spat_data("counties")
-p <- sp_data("precipitation")
+p <- spat_data("precipitation")
 head(p)
 
 plot(counties)
@@ -36,7 +41,7 @@ Create a `SpatVector` objects with a planar crs.
 
 ```{r, loca13}
 alb <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
-sp <- vect(p, c("LONG", "LAT"), crs="+proj=longlat +datum=WGS83")
+sp <- vect(p, c("LONG", "LAT"), crs="+proj=longlat +datum=WGS84")
 spt <- project(sp, alb)
 ctst <- project(counties, alb)
 ```
@@ -45,7 +50,7 @@ ctst <- project(counties, alb)
 Get the optimal bandwidth
 ```{r, loca14}
 library( spgwr )
-bw <- gwr.sel(pan ~ ALT, data=spt)
+bw <- gwr.sel(pan ~ ALT, data=as.data.frame(spt), coords=geom(spt)[,c("x", "y")])
 bw
 ``` 
 
@@ -58,7 +63,7 @@ newpts <- as.points(r)
 
 Run the `gwr` function
 ```{r, loca17}
-g <- gwr(pan ~ ALT, data=spt, bandwidth=bw, fit.points=newpts[, 1:2])
+g <- gwr(pan ~ ALT, data=as.data.frame(spt), coords=geom(spt)[,c("x", "y")], bandwidth=bw, fit.points=geom(newpts)[,c("x", "y")])
 g
 ```
 
@@ -68,7 +73,7 @@ slope <- r
 intercept <- r
 slope[!is.na(slope)] <- g$SDF$ALT 
 intercept[!is.na(intercept)] <- g$SDF$'(Intercept)'
-s <- stack(intercept, slope)
+s <- c(intercept, slope)
 names(s) <- c('intercept', 'slope')
 plot(s)
 ```
@@ -80,7 +85,7 @@ We will use house prices data from the 1990 census, taken from "Pace, R.K. and R
 You can download the data [here](https://biogeo.ucdavis.edu/data/rspatial/houses1990.csv)
 
 ```{r}
-houses <- sp_data("houses1990.csv")
+houses <- spat_data("houses1990.csv")
 dim(houses)
 head(houses)
 ```
@@ -88,24 +93,22 @@ head(houses)
 Each record represents a census "blockgroup". The longitude and latitude of the centroids of each block group are available. We can use that to make a map and we can also use these to link the data to other spatial data. For example to get county-membership of each block group. To do that, let's first turn this into a SpatialPointsDataFrame to find out to which county each point belongs.
 
 ```{r}
-library(sp)
-coordinates(houses) <- ~longitude+latitude
+hvect <- vect(houses, c("longitude", "latitude"))
 ```
 
 ```{r, gwr1}
-plot(houses, cex=0.5, pch=1, axes=TRUE)
+plot(hvect, cex=0.5, pch=1, axes=TRUE)
 ```
 
 Now get the county boundaries and assign CRS of the houses data matches that of the counties (because they are both in longitude/latitude!).
 
 ```{r}
-library(raster)
-crs(houses) <- crs(counties)
+crs(hvect) <- crs(counties)
 ```
 
 Do a spatial query (points in polygon)
 ```{r}
-cnty <- over(houses, counties)
+cnty <- extract(hvect, counties)
 head(cnty)
 ```
 
@@ -191,7 +194,7 @@ res <- sapply(countynames, regfun)
 
 Plot of a single coefficient
 ```{r, gwr3, fig.height=10}
-dotchart(sort(res['income', ]), cex=0.65)
+dotchart(sort(res["income", ]), cex=0.65)
 ```
 
 There clearly is variation in the coefficient ($beta$) for income. How does this look on a map?
@@ -206,15 +209,15 @@ Fix the counties object. There are too many counties because of the presence of 
 
 ```{r}
 dim(counties)
-dcounties <- aggregate(counties, vars='NAME')
+dcounties <- aggregate(counties[, "NAME"], "NAME")
 dim(dcounties)
 ```
 
-Now we can merge this SpatialPolygonsDataFrame with data.frame with the regression results. 
+Now we can merge this SpatVector with the data.frame with the regression results. 
 
 ```{r, gwr5}
-cnres <- merge(dcounties, resdf, by='NAME')
-spplot(cnres, 'income')
+cnres <- merge(dcounties, resdf, by="NAME")
+plot(cnres, "income")
 ```
 
 To show all parameters in a 'conditioning plot', we need to first scale the values to get similar ranges.
@@ -224,23 +227,17 @@ To show all parameters in a 'conditioning plot', we need to first scale the valu
 cnres2 <- cnres
 
 # scale all variables, except the first one (county name)
-# assigning values to a "@data" slot is risky, but (I think) OK here
-cnres2@data = data.frame(scale(data.frame(cnres)[, -1]))
-spplot(cnres2)
+values(cnres2) <- as.data.frame(scale(as.data.frame(cnres)[,-1]))
+plot(cnres2, 1:6)
 ```
 
 
 Is this just random noise, or is there spatial autocorrelation?
 
 ```{r, gwr10}
-library(spdep)
-nb <- poly2nb(cnres)
-plot(cnres)
-plot(nb, coordinates(cnres), add=T, col='red')
-
-lw <- nb2listw(nb)
-moran.test(cnres$income, lw)
-moran.test(cnres$roomhead, lw, na.action=na.omit)
+lw <- adjacent(cnres2, pairs=FALSE)
+autocor(cnres$income, lw)
+autocor(cnres$houseAge, lw)
 ```
 
 
@@ -250,15 +247,13 @@ An alternative approach would be to compute a model for grid cells.
 Let's use the 'Teale Albers' projection (often used when mapping the entire state of California). 
 
 ```{r}
-TA <- CRS("+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000
-              +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-countiesTA <- spTransform(counties, TA)
+TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
+countiesTA <- project(counties, TA)
 ```
 
-Create a RasteLayer using the extent of the counties, and setting an arbitrary resolution of 50 by 50 km cells
+Create a SpatRaster using the extent of the counties, and setting an arbitrary resolution of 50 by 50 km cells
 ```{r}
-library(raster)
-r <- raster(countiesTA)
+r <- rast(countiesTA)
 res(r) <- 50000
 ```
 
@@ -271,8 +266,8 @@ For each cell, we need to select a number of observations, let's say within 50 k
 
 First transform the houses data to Teale-Albers
 ```{r}
-housesTA <- spTransform(houses, TA)
-crds <- coordinates(housesTA)
+housesTA <- project(hvect, TA)
+crds <- geom(housesTA)[, c("x", "y")]
 ```
 
 Set up a new regression function.
@@ -308,7 +303,7 @@ Use these values in a RasterLayer
 rinc <- setValues(r, inc)
 plot(rinc)
 plot(countiesTA, add=T)
-Moran(rinc)
+autocor(rinc)
 ```
 
 So that was a lot of 'home-brew-GWR'. 
@@ -322,9 +317,9 @@ Now use the spgwr package (and the the `gwr` function) to fit the model. You can
 
 This is how you can get the points to use:
 
-Create a RasterLayer with the correct extent
+Create a SpatRaster with the correct extent
 ```{r}
-r <- raster(countiesTA)
+r <- rast(countiesTA)
 ```
 
 Set to a desired resolution. I choose 25 km
@@ -340,13 +335,10 @@ ca <- rasterize(countiesTA, r)
 Extract the coordinates that are not `NA`.
 
 ```{r}
-fitpoints <- rasterToPoints(ca)
+fitpoints <- geom(as.points(ca))[, c("x", "y")]
+
 ```
 
-I don't want the third column
-```{r}
-fitpoints <- fitpoints[,-3]
-```
 
 Now specify the model
 
@@ -360,7 +352,8 @@ To extract the SpatialPointsDataFrame:
 
 ```
 sp <- gwr.model$SDF
-spplot(sp)
+v <- vect(sp)
+v
 ```
 
 To reconnect these values to the raster structure (etc.)
@@ -368,7 +361,7 @@ To reconnect these values to the raster structure (etc.)
 ```
 cells <- cellFromXY(r, fitpoints)
 dd <- as.matrix(data.frame(sp))
-b <- brick(r, values=FALSE, nl=ncol(dd))
+b <- rast(r, nl=ncol(dd))
 b[cells] <- dd
 names(b) <- colnames(dd)
 plot(b)
