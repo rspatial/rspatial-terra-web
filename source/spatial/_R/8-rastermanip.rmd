@@ -378,7 +378,7 @@ values(r) <- runif(ncell(r))
 global(r, mean)
 ```
 
-Zonal stats
+Zonal stats, below `r` has the cells we want to summarize, `s` defines the zones, and the last argument is the function to summarize the values of `r` for each zone in `s`.
 
 ```{r, raster-10b}
 s <- r
@@ -392,14 +392,13 @@ Count cells
 freq(s)
 freq(s, value=3)
 ```
+
 Cross-tabulate
 
 ```{r, raster-10d}
-#ctb <- crosstab(r*3, s)
-#head(ctb)
+ctb <- crosstab(c(r*3, s))
+head(ctb)
 ```
-
-
 
 ## Helper functions
 

@@ -101,10 +101,9 @@ p2 <- terra::project(rob, "+proj=longlat +datum=WGS84")
 
 ## Transforming raster data
 
-Vector data can be transformed from lon/lat coordinates to planar and back without loss of precision. This is not the case with raster data. A raster consists of rectangular cells of the same size (in terms of the units of the CRS; their actual size may vary). It is not possible to transform cell by cell. Rather estimates for the values of new cells must be made based on the values in the old cells. If the values are class data, the 'nearest neighbor' is commonly used. Otherwise some sort of interpolation (e.g. 'bilinear').
+Vector data can be transformed from lon/lat coordinates to planar and back without loss of precision. This is not the case with raster data. A raster consists of rectangular cells of the same size (in terms of the units of the CRS; their actual size may vary). It is not possible to transform cell by cell. For each new cell, values need to be estimated based on the values in the overlapping old cells. If the values are categorical data, the "nearest neighbor" method is commonly used. Otherwise some sort of interpolation is employed (e.g. "bilinear").
 
-Because projection of rasters affects the cell values, in most cases you will want to avoid projecting raster data and rather project vector data. But when you do project raster data, you want to assure that you project to exactly the raster definition you need (so that it lines up with other raster data you are using).  
-
+Because projection of rasters affects the cell values, in most cases you will want to avoid projecting raster data and rather project vector data. But here is how you can project raster data.
 
 ```{r, prj1}
 r <- rast(xmin=-110, xmax=-90, ymin=40, ymax=60, ncols=40, nrows=40)
@@ -113,7 +112,7 @@ r
 plot(r)
 ```
 
-Simplest approach
+The simplest approach is to provide a new crs (the Robinson crs in this case)
 
 ```{r}
 newcrs
@@ -122,8 +121,9 @@ crs(pr1)
 plot(pr1)
 ```
 
+But that is not a good method. As you should want to assure that you project to exactly the raster parameters  you need (so that it lines up with other raster data you are using).  
 
-But to have more control, provide an existing SpatRaster. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
+To have this kind of control, provide an existing SpatRaster. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
 
 ```{r}
 x <- rast(pr1)

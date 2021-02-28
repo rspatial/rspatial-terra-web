@@ -14,11 +14,13 @@ Reading and writing spatial data is complicated by the fact that there are many 
 
 ## Vector files
 
-The `shapefile` is the most commonly used file format for vector data. It is trivial to read and write such files. Here we use a shapefile that comes with the `terra` package. 
+The `shapefile` is the most commonly used file format for vector data (if you are not familiar with this file format, an important thing to understand is that a [shapefile](https://en.wikipedia.org/wiki/Shapefile) is really a set of at least three (ideally four) files, with all the same name, but different extension. For shapefile `x` you *must* have, in the same directory, these three files: `x.shp`, `x.shx`, `x.dbf`, and ideally also `x.prj`. 
+
+It is easy to read and write such files. Here we use a shapefile that comes with the `terra` package. 
 
 ### Reading
 
-We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the raster package is installed. You should not use the `system.file` function for your own files. It only serves for creating examples with data that ship with *R*. 
+We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the terra package is installed. You should not use the `system.file` function for your own files. It only serves for creating examples with data that ship with *R*. With your own files, just use the filename (and path if the file is not in your working directory).
 
 ```{r, shp1}
 library(terra)
@@ -26,7 +28,7 @@ filename <- system.file("ex/lux.shp", package="terra")
 filename
 ```
 
-Now we have the filename we need we use the `vect` function.
+Now we have the filename we can use the `vect` function to read the file.
 
 ```{r, shp2}
 s <- vect(filename)
@@ -45,9 +47,9 @@ outfile <- "shp_test.shp"
 writeVector(s, outfile, overwrite=TRUE)
 ```
 
-To remove the file again:
+To remove the file again you can use `file.remove` or `unlink` (be careful!)
 
-```{r, echo=FALSE, include=FALSE}
+```{r}
 ff <- list.files(patt="^shptest")
 file.remove(ff)
 ```

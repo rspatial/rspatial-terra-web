@@ -1,13 +1,9 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # 3. Analysing species distribution data
-
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(
-	fig.width = 6, fig.height = 6,	fig.cap = '', collapse = TRUE
-)
-library(rgdal)
-library(rgeos)
-```
 
 
 ## Introduction
@@ -19,14 +15,15 @@ In this case-study I show some techniques that can be used to analyze species di
 
 The data we will use is available in the rspatial package. First install that from github, using `devtools`.
 ```{r, a1}
-if (!require("rspatial")) devtools::install_github('rspatial/rspatial')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
+library(rspat)
 ```
 
 The extracted file is a tab delimited text file. Normally, you would read such a file with something like:
 
-```{r, a1b}
-f <- system.file("WILDPOT.txt", package="rspatial")
-f
+```{r a1b, error=TRUE}
+f <- system.file("WILDPOT.txt", package="rspat")
+basename(f)
 d <- read.table(f, header=TRUE)
 ```
 
@@ -34,9 +31,9 @@ But that does not work in this case because some lines are incomplete. So we hav
 
 ```{r, a2}
 # read all lines using UTF-8 encoding
-d <- readLines(f, encoding='UTF-8')
+d <- readLines(f, encoding="UTF-8")
 # split each line into elements using the tabs
-dd <- strsplit(d, '\t')
+dd <- strsplit(d, "\t")
 # show that the number of elements varies
 table(sapply(dd, length))
 
@@ -77,12 +74,9 @@ v$lat[v$LatH == 'S'] <- -1 * v$lat[v$LatH == 'S']
 head(v)
 ```
 
-Get a SpatialPolygonsDataFrame with most of the countries of the Americas.
+Get a SpatVector with most of the countries of the Americas.
 ```{r, a4}
-library(raster)
-library(rspatial)
-cn <- sp_data('pt_countries')
-proj4string(cn) <- CRS("+proj=longlat +datum=WGS84")
+cn <- spat_data("pt_countries")
 class(cn)
 ```
 
@@ -93,24 +87,15 @@ plot(cn, xlim=c(-120, -40), ylim=c(-40,40), axes=TRUE)
 points(v$lon, v$lat, cex=.5, col='red')
 ```
 
-And create a SpatialPointsDataFrame for the potato data with the formula approach
+And create a SpatVector for the potato data with the formula approach
 ```{r, a6}
-sp <- v
-coordinates(sp) <- ~lon + lat
-proj4string(sp) <- CRS("+proj=longlat +datum=WGS84")
+sp <- vect(v, crs="+proj=longlat +datum=WGS84")
 ```
 
-Alternatively, you can do
-
-```{r, a7}
-sp <- SpatialPoints( v[, c('lon', 'lat')], 
-             proj4string=CRS("+proj=longlat +datum=WGS84") )
-sp <- SpatialPointsDataFrame(sp, v)
-```
 
 ## Summary statistics
 
-We are first going to summarize the data by country. We can use the country variable in the data, or extract that from the countries SpatialPolygonsDataFrame.
+We are first going to summarize the data by country. We can use the country variable in the data, or extract that from the countries SpatVector.
 
 ```{r, b1}
 table(v$COUNTRY)
@@ -118,18 +103,17 @@ table(v$COUNTRY)
 v$COUNTRY <- toupper(v$COUNTRY)
 table(v$COUNTRY)
 
-# same fix for the SpatialPointsDataFrame
+# same fix for the SpatVector
 sp$COUNTRY <- toupper(sp$COUNTRY)
 ```
 
 
-Below we determine the country using a spatial query, using the "over" function.
+Below we determine the country using a spatial query, using the `intersect` method.
 ```{r, b2}
-ov <- over(sp, cn)
-colnames(ov) <- 'name'
-head(ov)
-v <- cbind(v, ov)
-table(v$COUNTRY)
+vv <- intersect(sp[, "COUNTRY"], cn)
+names(vv)[1] <- "ptCountry"
+head(vv)
+table(vv$COUNTRY)
 ```
 
 This table is similar to the previous table, but it is not the same. Let's find the records that are not in the same country according to the original data and the spatial query.
@@ -137,16 +121,18 @@ This table is similar to the previous table, but it is not the same. Let's find 
 ```{r, b3}
 # some fixes first
 # apparantly in the ocean (small island missing from polygon data)
-v$name[is.na(v$name)] <- ''
+vv$COUNTRY[is.na(vv$COUNTRY)] <- ""
 # some spelling differenes
-v$name[v$name=="UNITED STATES, THE"] <- "UNITED STATES"
-v$name[v$name=="BRASIL"] <- "BRAZIL"
+vv$COUNTRY[vv$COUNTRY=="UNITED STATES, THE"] <- "UNITED STATES"
+vv$COUNTRY[vv$COUNTRY=="BRASIL"] <- "BRAZIL"
 
-i <- which(toupper(v$name) != v$COUNTRY)
+i <- which(toupper(vv$ptCountry) != vv$COUNTRY)
 i
+as.data.frame(vv[i,])
 plot(cn, xlim=c(-120, -40), ylim=c(-40,40), axes=TRUE)
 points(sp, cex=.25, pch='+', col='blue')
-points(sp[i,], col='red', pch='x', cex=1.5)
+
+points(vv[i,], col='red', pch='x', cex=1.5)
 ```
 
 All observations that are in a different country than their attribute data suggests are very close to an international border, or in the water. That suggests that the coordinates of the potato locations are not very precise (or the borders are inexact). Otherwise, this is reassuring (and a-typical). There are often are several inconsistencies, and it can be hard to find out whether the locality coordinates are wrong or whether the borders are wrong; but further inspection is warranted in those cases.
@@ -156,9 +142,12 @@ We can compute the number of species for each country.
 spc <- tapply(v$SPECIES, sp$COUNTRY, function(x)length(unique(x)) )
 spc <- data.frame(COUNTRY=names(spc), nspp = spc)
 
-# merge with country SpatialPolygonsDataFrame
-cn <- merge(cn, spc, by='COUNTRY')
-print(spplot(cn, 'nspp', col.regions=rev(terrain.colors(25))))
+# merge with country SpatVector --- fix the names in the polygons this time
+cn$COUNTRY[cn$COUNTRY=="UNITED STATES, THE"] <- "UNITED STATES"
+cn$COUNTRY[cn$COUNTRY=="BRASIL"] <- "BRAZIL"
+
+cns <- merge(cn, spc, by="COUNTRY", all.x=TRUE)
+plot(cns, "nspp", col=rev(terrain.colors(25)), breaks=c(1,5,10,20,30,40,90))
 ```
 
 The map shows that Peru is the country with most potato species, followed by Bolivia and Mexico. We can also tabulate the number of occurrences of each species by each country.
@@ -182,14 +171,11 @@ To use a raster with equal-area cells, the data need to be projected to an equal
 For small areas, particularly if they only span a few degrees of longitude, UTM can be a good CRS, but it this case we will use a CRS that can be used for a complete hemisphere: Lambert Equal Area Azimuthal. For this CRS, you must choose a map origin for your data. This should be somewhere in the center of the points, to minimize the distance (and hence distortion) from any point to the origin. In this case, a reasonable location is (-80, 0).
 
 ```{r, c1}
-library(rgdal)
-# "proj.4" notation of CRS
-projection(cn) <- "+proj=longlat +datum=WGS84"
 # the CRS we want
-laea <- CRS("+proj=laea  +lat_0=0 +lon_0=-80")
-clb <- spTransform(cn, laea)
-pts <- spTransform(sp, laea)
-plot(clb, axes=TRUE)
+laea <-"+proj=laea  +lat_0=0 +lon_0=-80"
+clb <- project(cn, laea)
+pts <- project(sp, laea)
+plot(clb)
 points(pts, col='red', cex=.5)
 ```
 
@@ -202,7 +188,7 @@ Note that the shape of the countries is now much more similar to their shape on 
 Let's determine the distribution of species richness using a raster. First we need an empty 'template' raster that has the correct extent and resolution. Here I use 200 by 200 km cells.
 
 ```{r, d1}
-r <- raster(clb)
+r <- rast(clb)
 # 200 km = 200000 m
 res(r) <- 200000
 ```
@@ -210,24 +196,24 @@ res(r) <- 200000
 Now compute the number of observations and the number of species richness for each cell.
 
 ```{r, d2}
-rich <- rasterize(pts, r, 'SPECIES', function(x, ...) length(unique(na.omit(x))))
+rich <- rasterize(pts, r, "SPECIES", function(x, ...) length(unique(na.omit(x))))
 plot(rich)
-plot(clb, add=TRUE)
+lines(clb)
 ```
 
 
 Now we make a raster of the number of observations.
 
 ```{r, d3}
-obs <- rasterize(pts, r, field='SPECIES', fun=function(x, ...)length((na.omit(x))) )
+obs <- rasterize(pts, r, field="SPECIES", fun=function(x, ...)length((na.omit(x))) )
 plot(obs)
-plot(clb, add=TRUE)
+lines(clb)
 ```
 
 A cell by cell comparison of the number of species and the number of observations.
 
 ```{r, d3b}
-plot(obs, rich, cex=1, xlab='Observations', ylab='Richness')
+plot(obs, rich, cex=1, xlab="Observations", ylab="Richness")
 ```
 
 Clearly there is an association between the number of observations and the number of species. It may be that the number of species in some places is inflated just because more research was done there.
@@ -242,7 +228,7 @@ d$lat <- round(d$lat)
 g <- tapply(d$SPECIES, d$lat, function(x) length(unique(na.omit(x))) )
 plot(names(g), g)
 # moving average
-lines(names(g), movingFun(g, 3))
+lines(names(g), raster::movingFun(g, 3))
 ```
 
 ** Question **
@@ -252,21 +238,16 @@ The distribution of species richness has two peaks. What would explain the low s
 
 Let's estimate range sizes of the species. Hijmans and Spooner use two ways: (1) maxD, the maximum distance between any pair of points for a species, and CA50 the total area covered by circles of 50 km around each species. Here, I also add the convex hull. I am using the projected coordinates, but it is also possible to compute these things from the original longitude/latitude data.
 
-```{r, f1}
-# get the (Lambert AEA) coordinates from the SpatialPointsDataFrame
-xy <- coordinates(pts)
-# list of species
-sp <- unique(pts$SPECIES)
-```
-
 Compute maxD for each species
 ```{r, f2}
-maxD <- vector(length=length(sp))
-for (s in 1:length(sp)) {
+spp <- unique(pts$SPECIES)
+maxD <- rep(NA, length(spp))
+for (s in 1:length(spp)) {
 	# get the coordinates for species 's'
-	p <- xy[pts$SPECIES == sp[s], ]
+	p <- pts[pts$SPECIES == spp[s], ]
+	if (nrow(p) < 2) next
 	# distance matrix
-	d <- as.matrix(dist(p))
+	d <- as.matrix(distance(p))
 	# ignore the distance of a point to itself
 	diag(d) <- NA
 	# get max value
@@ -274,19 +255,17 @@ for (s in 1:length(sp)) {
 }
 
 # Note the typical J shape
-plot(rev(sort(maxD))/1000, ylab='maxD (km)')
+plot(rev(sort(maxD))/1000, ylab="maxD (km)")
 ```
 
 Compute CA
 ```{r, f3}
-library(dismo)
-library(rgeos)
-CA <- vector(length=length(sp))
-for (s in 1:length(sp)) {
-	p <- xy[pts$SPECIES == sp[s], ,drop=FALSE]
+CA <- rep(NA, length(spp))
+for (s in 1:length(spp)) {
+	p <- pts[pts$SPECIES == spp[s], ]
 	# run "circles" model
-	m <- circles(p, d=50000, lonlat=FALSE)
-	CA[s] <- area(polygons(m))
+	m <- aggregate(buffer(p, 50000))
+	CA[s] <- area(m)
 }
 # standardize to the size of one circle
 CA <- CA / (pi * 50000^2)
@@ -297,13 +276,14 @@ Make convex hull range polygons
 
 ```{r, f4}
 hull <- list()
-for (s in 1:length(sp)) {
-	p <- unique(xy[pts$SPECIES == sp[s], ,drop=FALSE])
-	# need at least three points for hull
+for (s in 1:length(spp)) {
+	p <- unique(pts[pts$SPECIES == spp[s], ])
+	# need at least three (unique) points for hull
 	if (nrow(p) > 3) {
-		h <- convHull(p, lonlat=FALSE)
-		pol <- polygons(h)
-		hull[[s]] <- pol
+		h <- convexhull(p)
+		if (geomtype(h) == "polygons") {
+  		hull[[s]] <- h
+		}
 	}
 }
 ```
@@ -314,21 +294,27 @@ Plot the hulls. First remove the empty hulls (you cannot make a hull if you do n
 i <- which(!sapply(hull, is.null))
 h <- hull[i]
 # combine them
-hh <- do.call(bind, h)
+hh <- do.call(c, h)
 plot(hh)
 ```
 
 Get the area for each hull, taking care of the fact that some are NULL.
 
 ```{r, f4c}
-ahull <- sapply(hull, function(i) ifelse(is.null(i), 0, area(i)))
-plot(rev(sort(ahull))/1000, ylab='Area of convex hull')
+ahull <- area(hh)
+plot(rev(sort(ahull))/1000, ylab="Area of convex hull")
+```
+
+To get a value (even if `NA`) for all species
+```{r}
+cHull <- rep(NA, length(spp))
+cHull[i] <- ahull
 ```
 
 
 Compare all three measures
 ```{r, f5}
-  d <- cbind(maxD, CA, ahull)
+  d <- cbind(maxD, CA, cHull)
   pairs(d)
 ```
 
@@ -337,8 +323,7 @@ Compare all three measures
 
 ### Exercise 1. Mapping species richness at different resolutions
 
-Make maps of the number of observations and of species richness at 50, 100, 250, and 500 km resolution. 
-Discuss the differences. 
+Make maps of the number of observations and of species richness at 50, 100, 250, and 500 km resolution. Discuss the differences. 
 
 ### Exercise 2. Mapping diversity
 

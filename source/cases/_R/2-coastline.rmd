@@ -8,7 +8,8 @@ First we get a high spatial resolution (30 m) coastline for the United Kingdom f
 ```{r, frac1}
 library(terra)
 library(geodata)
-uk <- gadm("GBR", level=0, path=".")
+w <- world(path=".", resolution = 3)
+uk <- w[w$GID_0=="GBR", ]
 plot(uk)
 ```
 
@@ -53,10 +54,10 @@ plot(b)
 
 On to the tricky part. The function to go around the coast with a ruler (yardstick) of a certain length.
 
-```
-measure_with_ruler <- function(pols, length, lonlat=FALSE) {
+```{r}
+measure_with_ruler <- function(pols, stick_length, lonlat=FALSE) {
 	# some sanity checking
-	stopifnot(inherits(pols, 'SpatialPolygons'))
+	stopifnot(inherits(pols, "SpatVector"))
 	stopifnot(length(pols) == 1)
 	
 	# get the coordinates of the polygon
@@ -76,11 +77,11 @@ measure_with_ruler <- function(pols, length, lonlat=FALSE) {
 		gg <- g[j,]
 		
 		# compute distances
-		pd <- pointDistance(gg[1,], gg, lonlat)
-		
+		pd <- distance(gg[1,,drop=FALSE], gg, lonlat)
+		pd <- as.vector(pd)
 		# get the first point that is past the end of the ruler
 		# this is precise enough for our high resolution coastline
-		i <- which(pd > length)[1]
+		i <- which(pd > stick_length)[1]
 		if (is.na(i)) {
 			stop('Ruler is longer than the maximum distance found')
 		}
@@ -100,7 +101,7 @@ measure_with_ruler <- function(pols, length, lonlat=FALSE) {
 }
 ```
 
-Now we have the function, life is easy, we just call it a couple of times, using rulers of different lengths. 
+Now we have the function, life is easy, we just call it a couple of times, using rulers of different lengths (although it takes a while to run). 
 
 ```{r}
 y <- list()
@@ -110,7 +111,7 @@ for (i in 1:length(rulers)) {
 }
 ```
 
-Object `y` is a list of matrices containing the locations where the ruler touched the coast. We can plot these on top of a map of Britain.
+Object `y` is a list of matrices containing the locations where the ruler touched the coast. We can plot these on top of the map of Britain.
 
 ```{r, frac15, fig.width = 8, fig.height = 10}
 par(mfrow=c(2,3), mai=rep(0,4))
@@ -176,6 +177,6 @@ Get the slope
 -1 * m$coefficients[2]
 ```
 
-Very close to Mandelbrot's *D* = 1.25 for the west coast of Britain.
+Not to far away from Mandelbrot's *D* = 1.25 for the west coast of Britain.
 
 [Further reading](http://www.wahl.org/fe/HTML_version/link/FE4W/c4.htm).

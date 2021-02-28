@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Absence and background points
 
 
@@ -18,69 +23,71 @@ library(predicts)
 # get the predictors
 # filenames  
 f1 <- system.file("ex/bio.tif", package="predicts")
-f2 <- system.file("ex/biometif", package="predicts")
+f2 <- system.file("ex/biome.tif", package="predicts")
 
-r <- rast(f1)
+r <- rast(f2)
 
 # select 500 random points
 # set seed to assure that the examples will always
 # have the same random sample.
 set.seed(1963)
-bgcells <- spatSample(r, 5000, "random", cells=TRUE )
+bgcells <- spatSample(r, 5000, "random", na.rm=T, cells=TRUE)
 bg <- xyFromCell(r, bgcells)
 ```
 
 And inspect the results by plotting
 ```{r, sdm15, fig.width=9, fig.height=6}
-# set up the plotting area for two maps
-par(mfrow=c(1,2))
-plot(!is.na(mask), legend=FALSE)
+plot(!is.na(r))
 points(bg, cex=0.5)
+```
 
-# now we repeat the sampling, but limit 
-# the area of sampling using a spatial extent
-e <- extent(-80, -53, -39, -22)
-bgcells2 <- spatSample(r, 5000, "random", cells=TRUE )
-bg2 <- xyFromCell(r, bgcells2)
-plot(!is.na(mask), legend=FALSE)
-plot(e, add=TRUE, col='red')
+Now we repeat the sampling, but limit the area of sampling using a spatial extent
+
+```{r}
+e <- ext(-80, -53, -39, -22)
+bg2 <- spatSample(r, 100, "random", na.rm=TRUE, xy=TRUE, ext=e)
+plot(!is.na(r))
+lines(e, col="red", lwd=2)
 points(bg2, cex=0.5)
 ```
 
-There are several approaches one could use to sample 'pseudo-absence' points, i.e., points from more restricted area than 'background'. VanDerWal et al. (2009) sampled withn a radius of presence points. Here is one way to implement that, using the `Solanum acaule` data.
+There are several approaches one could use to sample 'pseudo-absence' points, i.e., points from a more restricted area than 'background'. VanDerWal et al. (2009) sampled withn a radius of presence points. Here is one way to implement that, using the `Solanum acaule` data.
 
-We first read the cleaned and subsetted `S. acaule` data that we produced in the previous chapter from the csv file that comes with dismo:
+We first read the cleaned and subsetted `S. acaule` data that we produced in the previous chapter 
 ```{r, sdm16a}
 acfile <- file.path(system.file(package="predicts"), "ex/acaule.rds")
 ac <- readRDS(acfile)
 ```
 
-`ac` is a `data.frame`. Let's change it into a `SpatVector`
+`ac` is a `PackedSpatVector`. To use it we must change it into a `SpatVector`
 
 ```{r, sdm16b}
-ac <- vect(ac, crs="+proj=longlat +datum=WGS84")
+ac <- vect(ac)
 ```
 
 We first create a 'circles' model (see the chapter about geographic models), using an arbitrary radius of 50 km
 ```{r, sdm17}
 # circles with a radius of 50 km
-x <- circles(ac, d=50000, lonlat=TRUE)
-pol <- polygons(x)
+x <- buffer(ac, 50000)
+pol <- aggregate(x)
 ```
 
-Note that you need to have the `rgeos` package installed for the `circles` function to 'dissolve' the circles (remove boundaries were circles overlap). 
+
 
 And then we take a random sample of points within the polygons. We only want one point per grid cell.
 
 ```{r, sdm19}
 # sample randomly from all circles
-samp1 <- spsample(pol, 250, type='random', iter=25)
-# get unique cells
-cells <- cellFromXY(mask, samp1)
-length(cells)
-cells <- unique(cells)
-length(cells)
-xy <- xyFromCell(mask, cells)
+set.seed(999)
+samp1 <- spatSample(pol, 250, "random")
+# get cells
+pcells <- cells(r, samp1)
+head(pcells)
+dim(pcells)
+# remote duplicates
+pcells <- unique(pcells[,2])
+length(pcells)
+xy <- xyFromCell(r, pcells)
 ```
 
 
@@ -88,34 +95,32 @@ Plot to inspect the results:
 
 ```{r, sdm20, fig.width=9, fig.height=6}
 plot(pol, axes=TRUE)
+points(samp1, pch="+", cex=.5)
 points(xy, cex=0.75, pch=20, col='blue')
 ```
 
-Note that the blue points are not all within the polygons (circles), as they now represent the centers of the selected cells from mask. We could choose to select only those cells that have their centers within the circles, using the overlay function.
+Note that the blue points are not all within the polygons (circles), as they now represent the centers of the selected cells from mask. We could choose to select only those cells that have their centers within the circles, using the `intersect` method.
 
 ```{r, sdm21a}
-spxy <- SpatialPoints(xy, proj4string=CRS('+proj=longlat +datum=WGS84'))
-o <- over(spxy, geometry(x))
-xyInside <- xy[!is.na(o), ]
+spxy <- vect(xy, crs="+proj=longlat +datum=WGS84")
+xyInside <- intersect(spxy, x)
 ```
 
 Similar results could also be achieved via the raster functions `rasterize` or `extract`.
 
 ```{r, sdm21b, fig.width=9, fig.height=6}
+# make a new, empty, smaller raster
+m <- crop(rast(r), ext(x)+1)
 # extract cell numbers for the circles
-v <- extract(mask, x@polygons, cellnumbers=T)
-# use rbind to combine the elements in list v
-v <- do.call(rbind, v)
+v <- cells(m, x)
 
 # get unique cell numbers from which you could sample
-v <- unique(v[,1])
+v <- unique(v[,"cell"])
 head(v)
 
 # to display the results
-m <- mask
-m[] <- NA
 m[v] <- 1
-plot(m, ext=extent(x@polygons)+1)
-plot(x@polygons, add=T)
+plot(m)
+lines(x)
 ```
 

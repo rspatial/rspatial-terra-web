@@ -1,10 +1,9 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Environmental data
-
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 6,	fig.height = 6,	fig.cap = '', collapse = TRUE)
-library(dismo)
-```
 
 ## Raster data
 
@@ -18,15 +17,16 @@ Here we make a list of files that are installed with the predicts package and th
 First get the folder with our files. In this example it is the ("ex") directory of the dismo package. You do not need such a complex statement to get your own files (you just type the string).
 
 ```{r, sdm22a}
-path <- file.path(system.file(package="dismo"), 'ex')
+library(predicts)
+path <- file.path(system.file(package="predicts"), 'ex')
+# path
 ```
 
 Now get the names of all the files with extension ".grd" in this folder. The `$` sign indicates that the files must *end* with the characters 'grd'. By using `full.names=TRUE`, the full path names are retunred.
 
 ```{r, sdm22b}
-library(dismo)
-files <- list.files(path, pattern='grd$', full.names=TRUE )
-files
+files <- list.files(path, pattern="tif$", full.names=TRUE )
+basename(files)
 ```
 
 Now create a SpatRaster of predictor variables. 
@@ -40,9 +40,9 @@ plot(predictors)
 
 We can also make a plot of a single layer in a SpatRaster, and plot some additional data on top of it. First get the world boundaries and the bradypus data:
 ```{r, sdm23a}
-library(maptools)
-data(wrld_simpl)
-file <- paste(system.file(package="dismo"), "/ex/bradypus.csv", sep="")
+library(geodata)
+wrld <- world(path=".")
+file <- paste(system.file(package="predicts"), "/ex/bradypus.csv", sep="")
 bradypus <- read.table(file,  header=TRUE,  sep=',')
 # we do not need the first column
 bradypus  <- bradypus[,-1]
@@ -52,10 +52,7 @@ And now plot:
 ```{r, sdm23b}
 # first layer of the SpatRaster
 plot(predictors, 1)
-
-# note the "add=TRUE" argument with plot
-plot(wrld_simpl, add=TRUE)
-# with the points function, "add" is implicit
+lines(wrld)
 points(bradypus, col='blue')
 ```
 
@@ -74,7 +71,7 @@ presvals <- extract(predictors, bradypus)
 # setting random seed to always create the same
 # random set of points for this example
 set.seed(0)
-backgr <- randomPoints(predictors, 500)
+backgr <- spatSample(predictors, 500, "random", na.rm=TRUE, xy=TRUE)
 absvals <- extract(predictors, backgr)
 pb <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
 sdmdata <- data.frame(cbind(pb, rbind(presvals, absvals)))
@@ -92,9 +89,10 @@ To visually investigate colinearity in the environmental data (at the presence a
 pairs(sdmdata[,2:5], cex=0.1)
 ```
 
-A pairs plot of the values of the climate data at the Bradypus occurrence sites.
+A pairs plot of the values of the climate data at the *Bradypus* occurrence sites.
 
 To use the `sdmdata` and `presvals` in the next chapter, we save it to disk.
+
 ```{r, sdm24b2}
 saveRDS(sdmdata, "sdm.Rds")
 saveRDS(presvals, "pvals.Rds")

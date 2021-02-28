@@ -26,6 +26,11 @@ If you have never used *R*, or if you need a refresher, you should start with ou
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf </modis/modis.pdf>`__)
   |
 
+
+.. topic:: 4. `Case studies <cases/index.html>`__
+
+   | A (small) collection of case studies that can help you learn more about particular topics and design your own workflows. (`pdf <cases/cases.pdf>`__)
+   |
    
    
 Manuals
@@ -53,5 +58,6 @@ Manuals
    spatial/index.rst
    rs/index.rst
    modis/index.rst
+   cases/index.rst   
    pkg/index.rst
    rosu/index.rst

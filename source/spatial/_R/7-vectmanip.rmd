@@ -9,9 +9,9 @@ p <- vect(f)
 p
 ```
 
-We can plot it in many ways
+We can plot these data in many ways. For example:
 
-```
+```{r}
 plot(p, "NAME_2")
 ```
 
@@ -54,7 +54,7 @@ To sub-setting a SpatVector to one or more variables you can use the notation be
 p[, "NAME_2"]
 ```
 
-You can adding a new variable as with a `data.frame`.
+You can add a new variable to a `SpatVector` just as if it were a `data.frame`.
 
 ```{r}
 set.seed(0)
@@ -188,7 +188,6 @@ i <- intersect(p, z2)
 plot(i)
 ```
 
-
 You can also intersect with a SpatExtent (rectangle). 
 
 ```{r, intext}
@@ -220,7 +219,7 @@ plot(u, col=sample(rainbow(length(u))))
 
 ### Cover
 
-Cover is a combination of intersect and union
+`cover` is a combination of `intersect` and `union`. `intersect` returns new (intersected) geometries with the attributes of both input datasets. `union` appends the geometries and attributes of the input. `cover` returns the intersection and appends the other geometries and attributes of both datasets.
 
 ```{r, cov}
 cov <- cover(p, z[c(1,4),])

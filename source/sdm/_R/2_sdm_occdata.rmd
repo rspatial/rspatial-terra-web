@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Data preparation
 
 ## Species occurrence data
@@ -48,8 +53,8 @@ Many occurrence records may not have geographic coordinates. In this case, out o
 
 ```{r, sdm2}
 # load the saved S. acaule data
-acfile <- file.path(system.file(package="predicts"), "ex/acaule.rds")
-acaule <- readRDS(acfile)
+acfile <- file.path(system.file(package="predicts"), "ex/acaule.csv")
+acaule <- read.csv(acfile)
 
 # how many rows and colums?
 dim(acaule)
@@ -93,7 +98,7 @@ The point in Brazil (record acaule[98,]) should be in soutern Bolivia, so this i
 Let's have a look at these records:
 
 ```{r, sdm4b}
-lonzero = subset(acgeo, lon==0)
+lonzero <- subset(acgeo, lon==0)
 # show all records, only the first 13 columns
 lonzero[, 1:13]
 ```
@@ -133,7 +138,7 @@ Let's repatriate the records near Pakistan to Argentina, and remove the records 
 i <- acg$lon > 0 & acg$lat > 0
 acg$lon[i] <- -1 * acg$lon[i]
 acg$lat[i] <- -1 * acg$lat[i]
-acg <- acg[acg$lon < -50 & acg$lat > -50, ]
+acg <- acg[acg$lon < -60 & acg$lat > -50, ]
 ```
 
 
@@ -215,16 +220,17 @@ Before using the geocode function it is best to write the records to a table and
 Sampling bias is frequently present in occurrence records (Hijmans *et al.*, 2001). One can attempt to remove some of the bias by subsampling records, and this is illustrated below. However, subsampling reduces the number of records, and it cannot correct the data for areas that have not been sampled at all. It also suffers from the problem that locally dense records might in fact be a true reflection of the relative suitable of habitat. As in many steps in SDM, you need to understand something about your data and species to implement them well. See Phillips *et al.* (2009) for an approach with MaxEnt to deal with bias in occurrence records for a group of species.
 
 ```{r, sdm100A}
-# create a SpatRaster with the extent of acveo
-r <- rast(acg)
+# create a SpatRaster with the extent of acgeo
+r <- rast(acv)
 # set the resolution of the cells to (for example) 1 degree
 res(r) <- 1
 
 # expand (extend) the extent of the SpatRaster a little
-r <- expand(r, extent(r)+1)
+r <- expand(r, ext(r)+1)
 
 # sample:
-acsel <- spatSample(acv, n=1, "stratified", strata=r) 
+set.seed(13)
+acsel <- spatSample(acv, size=1, "random", strata=r) 
 
 # to illustrate the method and show the result
 p <- as.polygons(r)
@@ -237,17 +243,17 @@ points(acsel, cex=1, col='red', pch='x')
 
 Note that with the `gridSample` function you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
 
-At this point, it could be useful to save the cleaned data set. For example with the function `write.table` or `write.csv` so that we can use them later. We did that, and the saved file is available through predicts and can be retrieved like this:
+At this point, it could be useful to save the cleaned data set. For example, you can use `as.data.frame(acsel)` and then `write.csv`. Or you can use `pack` and `saveRDS` so that we can use them later. We did that, and the saved file is available from the `predicts` package and can be read like this:
 
 ```{r, sdm12}
-file <- paste(system.file(package="predicts"), '/ex/acaule.csv', sep='')
-acsel <- read.csv(file)
+file <- paste(system.file(package="predicts"), '/ex/acaule.rds', sep='')
+acsel <- vect(readRDS(file))
 ```
 
 In a real research project you would want to spend much more time on this first data-cleaning and completion step, partly with *R*, but also with other programs. 
 
 
-##2.8  Exercises
+## 2.8  Exercises
 
 1. Use the gbif function to download records for the African elephant (or another species of your preference, try to get one with between 10 and 100 records). Use option "geo=FALSE" to also get records with no (numerical) georeference.
 

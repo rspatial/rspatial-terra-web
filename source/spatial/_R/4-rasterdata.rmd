@@ -47,7 +47,7 @@ points(pts, col="red", pch=20, cex=3)
 lines(pols, col="blue", lwd=2)
 ```
 
-You can crate a multi-layer object using the `c` method.
+You can create a multi-layer object using the `c` method.
 
 ```{r, plot4-2, fig.height=6.8, fig.width=9}
 r2 <- r * r

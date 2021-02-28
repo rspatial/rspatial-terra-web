@@ -44,7 +44,7 @@ pts
 geom(pts)
 ```
 
-So we see that the object has the coordinates we supplied, but also an `extent`. This spatial extent was computed from the coordinates. There is also a coordinate reference system ("crs", discussed in more detail later). We did not provide the cis when we created `pts` so it is unknown. That is not good, so let's recreate the object, and now provide a crs. 
+So we see that the object has the coordinates we supplied, but also an `extent`. This spatial extent was computed from the coordinates. There is also a coordinate reference system ("CRS", discussed in more detail later). We did not provide the CRS when we created `pts`. That is not good, so let's recreate the object, and now provide a CRS. 
  
 ```{r}
 crdref <- "+proj=longlat +datum=WGS84"
@@ -65,14 +65,12 @@ Combine the `SpatVector` with the `data.frame`.
 
 
 ```{r}
-ptsdf <- vect(lonlat, data=df)
-crs(ptsdf) <- crdref
-ptsdf
+ptv <- vect(lonlat, atts=df, crs=crdref)
 ```
 
 To see what is inside:
 ```{r}
-ptsdf
+ptv
 ```
 
 ## Lines and polygons
