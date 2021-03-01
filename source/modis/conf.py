@@ -48,7 +48,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Processing MODIS data'
 copyright = u'2019-2021'
-author = u'Benson Kenduiywo, Aniruddah Ghosh and Robert J. Hijmans'
+author = u'Benson Kenduiywo, Aniruddha Ghosh and Robert J. Hijmans'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -229,7 +229,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'modis.tex', u'Processing MODIS data',
-   u'Benson Kenduiywo, Aniruddah Ghosh and Robert J. Hijmans', 'manual'),
+   u'Benson Kenduiywo, Aniruddha Ghosh and Robert J. Hijmans', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
