@@ -1,12 +1,10 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Model fitting, prediction, and evaluation
 
-
-```{r, echo=FALSE, include=FALSE}
-library(knitr)
-opts_chunk$set(fig.width = 6, fig.height = 6, fig.cap='',  collapse = TRUE)
-
-library(dismo)
-```
 
 ## Model fitting
 
@@ -17,7 +15,6 @@ A simple formula could look like: `y ~ x1 + x2 + x3`, i.e., y is a function of x
 Note that in the examples below, we are using the data.frame 'sdmdata' again. First read `sdmdata` from disk (we saved it at the end of the previous chapter).
 
 ```{r, sdm41a}
-library(dismo)
 sdmdata <- readRDS("sdm.Rds")
 presvals <- readRDS("pvals.Rds")
 ```
@@ -63,10 +60,11 @@ Making such predictions for a few environments can be very useful to explore and
 response(bc)
 ```
 
-In most cases, howver, the purpose is SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers (layerNames) in the Raster* object.
+In most cases, howver, the purpose is SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers (layerNames) in the SpatRaster object.
 
 ```{r, sdm27c, fig.width=9, fig.height=6}
-predictors <- stack(list.files(file.path(system.file(package="dismo"), 'ex'), pattern='grd$', full.names=TRUE ))
+ff <- list.files(file.path(system.file(package="predicts"), "ex"), pattern="tif$", full.names=TRUE )
+predictors <- rsat(ff)
 names(predictors)
 p <- predict(predictors, m1)
 plot(p)
@@ -120,28 +118,30 @@ auc <- as.numeric(mv$statistic) / (length(p) * length(a))
 auc
 ```
 
-Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the dismo package. See `?evaluate` for info on additional evaluation measures that are available. ROC/AUC can also be computed with the `ROCR` package. 
+Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the dismo package. See `?evaluate` for info on additional evaluation measures that are available.
 
 ```{r, sdm40, width=7,height=5 }
-e <- evaluate(p=p, a=a)
+library(predicts)
+e <- pa_evaluate(p=p, a=a)
 class(e)
 e
 par(mfrow=c(1, 2))
-density(e)
-boxplot(e, col=c('blue', 'red'))
+plot(e, "density")
+plot(e, "boxplot", col=c('blue', 'red'))
 ```
 
 
 Back to some real data, presence-only in this case. We'll divide the data in two random sets, one for training a Bioclim model, and one for evaluating the model. 
+
 ```{r, sdm41}
 samp <- sample(nrow(sdmdata), round(0.75 * nrow(sdmdata)))
 traindata <- sdmdata[samp,]
 traindata <- traindata[traindata[,1] == 1, 2:9]
 testdata <- sdmdata[-samp,]
-bc <- bioclim(traindata)
-e <- evaluate(testdata[testdata==1,], testdata[testdata==0,], bc)
+bc <- envelope(traindata)
+e <- pa_evaluate(testdata[testdata==1,], testdata[testdata==0,], bc)
 e
-plot(e, 'ROC')
+plot(e, "ROC")
 ```
 
 
@@ -157,7 +157,7 @@ The background data will only be used for model testing and does not need to be 
 
 ```{r, sdm43}
 k <- 5
-group <- kfold(pres, k)
+group <- make_folds(pres, k)
 group[1:10]
 unique(group)
 ```
@@ -170,7 +170,7 @@ for (i in 1:k) {
 	train <- pres[group != i,]
 	test <- pres[group == i,]
 	bc <- bioclim(train)
-	e[[i]] <- evaluate(p=test, a=back, bc)
+	e[[i]] <- pa_evaluate(p=test, a=back, bc)
 }	
 ```
 
@@ -186,12 +186,12 @@ sapply( e, function(x){ threshold(x)['spec_sens'] } )
 The use of AUC in evaluating SDMs has been criticized (Lobo et al. 2008, Jiménez-Valverde 2011). A particularly sticky problem is that the values of AUC vary with the spatial extent used to select background points. Generally, the larger that extent, the higher the AUC value. Therefore, AUC values are generally biased and cannot be directly compared. Hijmans (2012) suggests that one could remove "spatial sorting bias" (the difference between the distance from testing-presence to training-presence and the distance from testing-absence to training-presence points) through "point-wise distance sampling". 
 
 ```{r, sdm45b}
-file <- file.path(system.file(package="dismo"), "ex/bradypus.csv")
+file <- file.path(system.file(package="predicts"), "ex/bradypus.csv")
 bradypus <- read.table(file,  header=TRUE,  sep=',')
 bradypus <- bradypus[,-1]
 presvals <- extract(predictors, bradypus)
 set.seed(0)
-backgr <- randomPoints(predictors, 500)
+backgr <- spatSample(predictors, 500, na.rm=TRUE)
 
 nr <- nrow(bradypus)
 s <- sample(nr, 0.25 * nr)
@@ -213,7 +213,7 @@ sb[,1] / sb[,2]
 `sb[,1] / sb[,2]` is an indicator of spatial sorting bias (SSB). If there is no SSB this value should be 1, in these data it is close to zero, indicating that SSB is very strong. Let's create a subsample in which SSB is removed. 
 
 ```{r, sdm45d}
-i <- pwdSample(pres_test, back_test, pres_train, n=1, tr=0.1)
+i <- pwd_Sample(pres_test, back_test, pres_train, n=1, tr=0.1)
 pres_test_pwd <- pres_test[!is.na(i[,1]), ]
 back_test_pwd <- back_test[na.omit(as.vector(i)), ]
 sb2 <- ssb(pres_test_pwd, back_test_pwd, pres_train)
@@ -223,8 +223,8 @@ sb2[1]/ sb2[2]
 Spatial sorting bias is much reduced now; notice how the AUC dropped!
 
 ```{r, sdm45e}
-bc <- bioclim(predictors, pres_train)
-evaluate(bc, p=pres_test, a=back_test, x=predictors)
-evaluate(bc, p=pres_test_pwd, a=back_test_pwd, x=predictors)
+bc <- envelope(predictors, pres_train)
+pa_evaluate(bc, p=pres_test, a=back_test, x=predictors)
+pa_evaluate(bc, p=pres_test_pwd, a=back_test_pwd, x=predictors)
 ```
 

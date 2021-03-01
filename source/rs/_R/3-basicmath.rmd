@@ -5,7 +5,7 @@
 library(terra)
 ```
 
-The `raster` package supports many mathematical operations. Math operations are generally performed per pixel (grid cell). First we will do some basic arithmetic operations to combine bands. In the first example we write a custom math function to calculate the Normalized Difference Vegetation Index (NDVI). Learn more about [vegetation indices here](http://www.un-spider.org/links-and-resources/data-sources/daotm/daotm-vegetation) and [NDVI](http://phenology.cr.usgs.gov/ndvi_foundation.php).
+The `terra` package supports many mathematical operations. Math operations are generally performed per pixel (grid cell). First we will do some basic arithmetic operations to combine bands. In the first example we write a custom math function to calculate the Normalized Difference Vegetation Index (NDVI). Learn more about [vegetation indices here](http://www.un-spider.org/links-and-resources/data-sources/daotm/daotm-vegetation) and [NDVI](http://phenology.cr.usgs.gov/ndvi_foundation.php).
 
 
 We use the same Landsat data as in Chapter 2.
@@ -20,7 +20,7 @@ landsatFCC <- landsat[[c(5,4,3)]]
 
 ## Vegetation indices
 
-Let's define a general function for a ratio based (vegetation) index. In the function below, `img` is a mutilayer Raster* object and `i` and `k` are the indices of the layers (layer numbers) used to compute the vegetation index.
+Let's define a general function for a ratio based (vegetation) index. In the function below, `img` is a mutilayer SpatRaster object and `i` and `k` are the indices of the layers (layer numbers) used to compute the vegetation index.
 
 
 ```{r rs3vi}

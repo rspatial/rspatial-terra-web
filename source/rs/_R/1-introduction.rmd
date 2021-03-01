@@ -36,7 +36,7 @@ It is possible to download some satellite data using R-packages. For example, yo
 
 Most remote sensing products consist of observations of reflectance data. That is, they are measures of the intensity of the sun's radiation that is reflected by the earth. Reflectance is normally measured for different wavelengths of the electromagnetic spectrum. For example, it can be measured in the near-infrared, red, green, and blue wavelengths. If that is the case, satellite data can be referred to as "multi-spectral" (or hyper-spectral if there are many separate wavelengths)(reading)[https://gisgeography.com/multispectral-vs-hyperspectral-imagery-explained/.
 
-The data are normally stored as raster data (referred to as "images"). Each separate image (for a place and time) is referred to as as "scene" or "tile". As there are measurements in multiple wavelengths, a single "satellite image" has multiple observations for each pixel, that are stored in separate raster layers. In remote sensing jargon, these layers (variables) are referred to as "bands" (shorthand for "bandwidth"), and grid cells are referred to as "pixel". 
+The data are normally stored as raster data (referred to as "images"). Each separate image (for a place and time) is referred to as as "scene" or "tile". As there are measurements in multiple wavelengths, a single "satellite image" has multiple observations for each pixel, that are stored in separate raster layers. In remote sensing jargon, these layers (variables) are referred to as "bands" as they typically represent reflectance values for a particular spectral bandwith, and grid cells are referred to as "pixel". 
 
 
 ## Data  
@@ -65,12 +65,3 @@ Here is a short list of some resources to learn more about remote sensing image 
 - [A Review of Modern Approaches to Classification of Remote Sensing Data](http://link.springer.com/chapter/10.1007%2F978-94-007-7969-3_9)  
 - [Online remote sensing course](http://nptel.ac.in/courses/105108077/)  
 
-
-## R packages
-
-Here is a list of some R packages for analyzing remote sensing data 
-
-- [RStoolbox](https://cran.r-project.org/web/packages/RStoolbox/index.html)  
-- [landsat](https://cran.r-project.org/web/packages/landsat/index.html)  
-- [hsdar](https://cran.r-project.org/web/packages/hsdar/index.html)  
-- [rasterVis](https://cran.r-project.org/web/packages/rasterVis/index.html) for visualization 

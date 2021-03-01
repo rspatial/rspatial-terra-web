@@ -1,9 +1,5 @@
 # Unsupervised Classification
 
-```{r setup, echo=TRUE, include=FALSE}
-library(knitr)
-library(terra)
-```
 
 In this chapter we explore unsupervised classification. Various unsupervised classification algorithms exist, and the choice of algorithm can affect the results. We will explore only one algorithm (k-means) to illustrate the general principle.
 
@@ -47,7 +43,7 @@ nr <- values(ndvi)
 str(nr)
 ```
 
-Please note that `getValues` converted the `ndvi` SpatRaster to an array (matrix). Now we will perform the `kmeans` clustering on the matrix and inspect the output. 
+Please note that `values(ndvi)` converted the `ndvi` SpatRaster to an array (matrix). Now we will perform the `kmeans` clustering on the matrix and inspect the output. 
 
 ```{r kmeansobject}
 # It is important to set the seed generator because `kmeans` initiates the centers in random locations

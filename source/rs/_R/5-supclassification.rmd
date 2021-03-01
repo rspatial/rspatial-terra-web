@@ -153,7 +153,7 @@ You can print/plot more about the `cartmodel` created in the previous example. E
 
 Now we have our trained classification model (`cartmodel`), we can use it to make predictions, that is, to classify all cells in the `landsat5` SpatRaster.
 
-**Important** The layer names in the Raster object to be predicted should exactly match those expected by the trained model. This will be the case if the same SpatRaster object was used (via extract) to obtain the values to fit the model. Otherwise you need to specify the matching names.
+**Important** The layer names in the SpatRaster should exactly match those that were used to train the model. This will be the case if the same SpatRaster object was used (via extract) to obtain the values to fit the model. Otherwise you need to specify the matching names.
 
 ```{r prediction}
 # Now predict the subset data based on the model; prediction for entire area takes longer time

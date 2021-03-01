@@ -1,9 +1,5 @@
 # Exploration
 
-```{r setup, echo=TRUE, include=FALSE}
-library(knitr)
-library(terra)
-```
 
 In this chapter we describe how to access and explore satellite remote sensing data with *R*. We also show how to use them to make maps.
 
@@ -45,7 +41,7 @@ You can see the spatial resolution, extent, number of layers, coordinate referen
 
 ## Image information and statistics
 
-The below shows how you can access various properties from a Raster* object (this is the same for any raster data set).
+The below shows how you can access various properties from a SpatRaster object.
 
 ```{r}
 # coordinate reference system (CRS)
@@ -182,7 +178,7 @@ __Question 2__: *Use the `landsatcrop` image to plot a true and false color comp
 
 ## Saving results to disk
 
-At this stage we may want to save the raster to disk using the function `writeRaster`. Multiple file types are supported. We will use the commonly used GeoTiff format. While the layer order is preserved, layer names are unfortunately lost in the GeoTiff format.
+At this stage we may want to save the raster to disk with `writeRaster`. Multiple file types are supported. We will use the commonly used GeoTiff format. While the layer order is preserved, layer names are unfortunately lost in the GeoTiff format.
 
 ```{r}
 writeRaster(landsatcrop, filename="cropped-landsat.tif", overwrite=TRUE)
