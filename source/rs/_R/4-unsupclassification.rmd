@@ -67,20 +67,20 @@ knr
 
 We can see that `knr` is a SpatRaster but we do not know which cluster (1-10) belongs to what land cover class (and if it does belong to a class that we would recognize). You can find that out by plotting them side-by-side with a reference layers and using unique color for each cluster.
 
-```{r kmeansplot, fig.height=4, fig.width=8}
+```{r kmeansplot, fig.height=4, fig.width=9}
 
 # Define a color vector for 10 clusters (learn more about setting the color later)
 mycolor <- c("#fef65b","#ff0000", "#daa520","#0000ff","#0000ff","#00ff00","#cbbeb5",
              "#c3ff5b", "#ff7373", "#00ff00", "#808080")
 
 par(mfrow = c(1,2))
-plot(ndvi, col = rev(terrain.colors(10)), main = 'Landsat-NDVI')
-plot(knr, main = 'Unsupervised classification', col = mycolor )
+plot(ndvi, col = rev(terrain.colors(10)), main = "Landsat-NDVI")
+plot(knr, main = 'Unsupervised classification', col = mycolor, type="classes")
 ```
 
 While for other purposes it is usually better to define more classes (and possibly merge classes later), a simple classification like this one could be useful, e.g., merge cluster 4 and 5 to construct a water mask for the year 2011.
 
 You can change the colors in my `mycolor`. Learn more about selecting colors in R [here](http://www.melissaclarkson.com/resources/R_guides/documents/colors_Ver2.pdf) and [here](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/colorPaletteCheatsheet.pdf).
 
-__Question 2__:*Plot 3-band RGB of `landsat5` for the subset (extent `e`) and result of `kmeans` clustering side-by-side and make a table of land-use land-cover labels for the clusters. E.g. cluster 4 and 5 are water.* 
+__Question 2__:*Plot a true-color image of 'landsat5' for the subset (extent 'e') and result of 'kmeans' clustering side-by-side and make a table of land-use land-cover labels for the clusters (based on visual inspection). E.g. cluster 4 and 5 are water.* 
 

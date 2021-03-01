@@ -272,7 +272,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'spatialanalysis', u'Remote Sensing Image Analysis with R',
+  (master_doc, 'remotesensing', u'Remote Sensing Image Analysis with R',
    author, 'RS', 'An introduction to Remote Sensing Image Analysis with R.',
    'Miscellaneous'),
 ]

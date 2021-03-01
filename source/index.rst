@@ -48,8 +48,6 @@ Manuals
    | R companion to Geographic Information Analysis by O'Sullivan and Unwin. (`pdf <rosu/ROSU.pdf>`__)
    |
 
-     
-  
 
 .. toctree::
    :maxdepth: 5

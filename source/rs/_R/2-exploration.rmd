@@ -126,7 +126,7 @@ plotRGB(landsatFCC, axes=TRUE, stretch="lin", main="Landsat False Color Composit
 *Note*: Always check for package documentation (`help(plotRGB)`) for other arguments that can be added (like scale) to improve or modify the image.
 
 
-__Question 1__: *Use the plotRGB function with multi-band (11 bands) `landsat` image to create a true and false color composite (hint remember the position of the bands in the image).* 
+__Question 1__: *Use the plotRGB function with the multi-band (11 bands) `landsat` image to create a true and false color composite (hint remember the position of the bands in the image).* 
 
 
 ## Subset and rename bands

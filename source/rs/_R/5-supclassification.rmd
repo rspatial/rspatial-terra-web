@@ -151,12 +151,11 @@ You can print/plot more about the `cartmodel` created in the previous example. E
 
 ## Classify
 
-Now we have our trained classification model (`cartmodel`), we can use it to make predictions, that is, to classify all cells in the `landsat5` SpatRaster.
+Now that we have our trained classification model (`cartmodel`), we can use it to make predictions, that is, to classify all cells in the `landsat5` SpatRaster.
 
 **Important** The layer names in the SpatRaster should exactly match those that were used to train the model. This will be the case if the same SpatRaster object was used (via extract) to obtain the values to fit the model. Otherwise you need to specify the matching names.
 
-```{r prediction}
-# Now predict the subset data based on the model; prediction for entire area takes longer time
+```{r prediction, fig.height=6, fig.width=9}
 classified <- predict(landsat, cartmodel, na.rm = TRUE)
 classified
 plot(classified)
@@ -166,7 +165,7 @@ Observe that there are `r nlyr(classified)` layers in the `classified` object, e
 
 To plot the final classification result, we first specify the colors corresponding to each lund use cateogry. In the plot classvalues are printed.
 
-```{r combine-results, fig.width=8, fig.height=8}
+```{r combine-results, fig.width=8, fig.height=7}
 
 class <- c("built","cropland","fallow","open","water")
 mycolor <- c('darkred', 'yellow', 'burlywood', 'cyan', 'blue')

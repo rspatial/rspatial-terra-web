@@ -20,7 +20,7 @@ landsatFCC <- landsat[[c(5,4,3)]]
 
 ## Vegetation indices
 
-Let's define a general function for a ratio based (vegetation) index. In the function below, `img` is a mutilayer SpatRaster object and `i` and `k` are the indices of the layers (layer numbers) used to compute the vegetation index.
+Let's define a general function for a ratio based (vegetation) index. In the function below, `img` is a muti-layer SpatRaster object and `i` and `k` are the indices of the layers (layer numbers) used to compute the vegetation index.
 
 
 ```{r rs3vi}
@@ -62,7 +62,7 @@ plot(ndvi2, col=rev(terrain.colors(10)), main="Landsat-NDVI")
 ```
 
 
-__Question 1__: *Adapt the code shown above to compute indices to identify i) water and ii) built-up. Hint: Use the spectral profile plot to find the bands having maximum and minimum reflectance for these two classes.(reading)[https://www.harrisgeospatial.com/docs/BackgroundOtherIndices.html* 
+__Question 1__: *Adapt the code shown above to compute indices to identify i) water and ii) built-up. Hint: Use the spectral profile plot to find the bands having maximum and minimum reflectance for these two classes. Or read about it in [this resource](https://www.harrisgeospatial.com/docs/BackgroundOtherIndices.htm).*.
 
 
 ## Histogram
