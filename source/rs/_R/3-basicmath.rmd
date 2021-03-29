@@ -1,10 +1,6 @@
 # Basic mathematical operations
 
 
-```{r, echo=FALSE, include=FALSE}
-library(terra)
-```
-
 The `terra` package supports many mathematical operations. Math operations are generally performed per pixel (grid cell). First we will do some basic arithmetic operations to combine bands. In the first example we write a custom math function to calculate the Normalized Difference Vegetation Index (NDVI). Learn more about [vegetation indices here](http://www.un-spider.org/links-and-resources/data-sources/daotm/daotm-vegetation) and [NDVI](http://phenology.cr.usgs.gov/ndvi_foundation.php).
 
 

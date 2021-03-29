@@ -29,35 +29,33 @@ m2 = glm(pb ~ ., data=sdmdata)
 m2
 ```
 
-Models that are implemented in dismo do not use a formula (and most models only take presence points). Bioclim is an example. It only uses presence data, so we use 'presvals' instead of 'sdmdata'.
+Models that are implemented in `predicts` do not use a formula (and most models only take presence points). The `envelope` (a.k.a. "Bioclim") is an example. It only uses presence data, so we use 'presvals' instead of 'sdmdata'.
 
 ```{r, sdm26}
-bc <- bioclim(presvals[,c('bio1', 'bio5', 'bio12')])
-class(bc)
+library(predicts)
+bc <- envelope(presvals[,c('bio1', 'bio5', 'bio12')])
 bc
-pairs(bc)
 ```
 
 
 ## Model prediction
 
-Different modeling methods return different type of 'model' objects (typically they have the same name as the modeling method used). All of these 'model' objects, irrespective of their exact class, can be used to with the `predict` function to make predictions for any combination of values of the independent variables. This is illustrated in the example below where we make predictions with the glm model object 'm1' and for bioclim model 'bc', for three records with values for variables bio1, bio5 and bio12 (the variables used in the example above to create the model objects). 
+Different modeling methods return different type of 'model' objects (typically they have the same name as the modeling method used). All of these 'model' objects, irrespective of their exact class, can be used to with the `predict` function to make predictions for any combination of values of the independent variables. This is illustrated in the example below where we make predictions with the glm model object 'm1' and for envelope model 'bc', for three records with values for variables bio1, bio5 and bio12 (the variables used in the example above to create the model objects). 
 
 ```{r, sdm27a}
-bio1 = c(40, 150, 200)
-bio5 = c(60, 115, 290)
-bio12 = c(600, 1600, 1700)
-pd = data.frame(cbind(bio1, bio5, bio12))
+bio1 <- c(40, 150, 200)
+bio5 <- c(60, 115, 290)
+bio12 <- c(600, 1600, 1700)
+pd <- data.frame(cbind(bio1, bio5, bio12))
 pd
 predict(m1, pd)
-predict(bc, pd)
 ```
 
 
 Making such predictions for a few environments can be very useful to explore and understand model predictions. For example it used in the `response` function that creates response plots for each variable, with the other variables at their median value. 
 
 ```{r, sdm27b, fig.width=9, fig.height=6}
-response(bc)
+partialResponse(bc, presvals[,c('bio1', 'bio5', 'bio12')])
 ```
 
 In most cases, howver, the purpose is SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers (layerNames) in the SpatRaster object.

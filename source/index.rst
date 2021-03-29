@@ -15,19 +15,25 @@ If you have never used *R*, or if you need a refresher, you should start with ou
   | 
 
   
-.. topic:: 2. `Remote sensing image analysis <rs/index.html>`__
+.. topic:: 2. `Spatial data analysis <analysis/index.html>`__
+
+  | An introduction to methods for description, prediction and inference with spatial data. (`pdf <analysis/analysis.pdf>`__)
+  |  
+
+  
+.. topic:: 3. `Remote sensing image analysis <rs/index.html>`__
 
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf <rs/rs.pdf>`__)
   |
 
 
-.. topic:: 3. `Processing MODIS data <modis/index.html>`__
+.. topic:: 4. `Processing MODIS data <modis/index.html>`__
 
   | Introduction to remote sensing (satellite) image analysis spatial data. (`pdf <modis/modis.pdf>`__)
   |
 
 
-.. topic:: 4. `Case studies <cases/index.html>`__
+.. topic:: 5. `Case studies <cases/index.html>`__
 
    | A (small) collection of case studies that can help you learn more about particular topics and design your own workflows. (`pdf <cases/cases.pdf>`__)
    |
@@ -54,6 +60,7 @@ Manuals
    :hidden:
 
    spatial/index.rst
+   analysis/index.rst   
    rs/index.rst
    modis/index.rst
    cases/index.rst   

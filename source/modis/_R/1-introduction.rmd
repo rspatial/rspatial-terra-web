@@ -1,7 +1,7 @@
 # The Moderate Resolution Imaging Spectroradiometer (MODIS)
 
 
-This document provides a basic overview of MODIS. Additional resources on terminology and fundamentals of remote sensing can be found [here](https://www.rspatial.org/rs/1-introduction.html) and [here](https://www.nrcan.gc.ca/maps-tools-and-publications/satellite-imagery-and-air-photos/tutorial-fundamentals-remote-sensing/9309).
+This document provides a basic overview of MODIS satellite data. Additional resources on terminology and fundamentals of remote sensing can be found [here](https://www.rspatial.org/rs/1-introduction.html) and [here](https://www.nrcan.gc.ca/maps-tools-and-publications/satellite-imagery-and-air-photos/tutorial-fundamentals-remote-sensing/9309).
 and this ["review of Selected MODIS Algorithms, Data Products, and Applications"](https://pdfs.semanticscholar.org/0096/0a7c7d094c43cc461b07334ec44757110428.pdf).
 
 

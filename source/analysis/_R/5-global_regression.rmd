@@ -20,14 +20,20 @@ We want to find out
    d) How climate change might affect its distribution.
    
 In this context, this type of analysis is often referred to as 'species distribution modeling' or 'ecological niche modeling'. [Here is a more in-depth discussion](/sdm) of this technique.
-  
+
+First make sure we have the packages needed:
+
+```{r pkgs, echo=TRUE}
+if (!require("rspat")) remotes::install_github("rspatial/rspat")
+if (!require("geodata")) remotes::install_github("rspatial/geodata")
+if (!require("predicts")) remotes::install_github("rspatial/predicts")
+```  
   
 ## Data 
 
 ### Observations
 
 ```{r getData, echo=TRUE}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
 library(rspatial)
 bf <- spat_data("bigfoot")
 dim(bf)
@@ -37,7 +43,7 @@ head(bf)
 Plot the locations
 
 ```{r, sup1}
-plot(bf[,1:2], cex=0.5, col='red')
+plot(bf[,1:2], cex=0.5, col="red")
 library(geodata)
 wrld <- geodata::world(path=".")
 bnds <- wrld[wrld$NAME_0 %in% c("Canada", "Mexico", "United States"), ]
@@ -152,9 +158,8 @@ plotcp(cart)
 And here is the tree
 
 ```{r, sup10b}
-plot(cart, uniform=TRUE, main="Regression Tree")
-# text(cart, use.n=TRUE, all=TRUE, cex=.8)
-text(cart, cex=.8, digits=1)
+library(rpart.plot)
+rpart.plot(cart, uniform=TRUE, main="Regression Tree")
 ```
 
 
@@ -163,7 +168,7 @@ __Question 1__: *Describe the conditions under which you have the highest probab
 
 And the predicted distribution
 
-```{r, sup10bb}
+```{r sup10bb, fig.width=6, fig.height=4}
 x <- predict(wc, cart)
 x <- mask(x, wc[[1]])
 plot(x)
@@ -234,7 +239,7 @@ We can use the model to make predictions to any other place for which we have va
 
 ### Regression
 
-```{r, sup17a}
+```{r sup17a, fig.width=6, fig.height=4}
 rp <- predict(wc, rrf, na.rm=TRUE)
 plot(rp)
 ```
@@ -274,7 +279,7 @@ plot(rp > tr$max_spec_sens)
 
 We can also use the classification Random Forest model to make a prediction.
 
-```{r, sup20a}
+```{r sup20a, fig.width=6, fig.height=4}
 rc <- predict(wc, crf, na.rm=TRUE)
 plot(rc)
 ```
@@ -283,7 +288,7 @@ They are different because the classification used a threshold of 0.5, which is 
 
 You can get probabilities for the classes (in this case there are 2 classes, presence and absence, and I only plot presence) 
 
-```{r, sup20b}
+```{r sup20b, fig.width=6, fig.height=4}
 rc2 <- predict(wc, crf, type="prob", na.rm=TRUE)
 plot(rc2, 2)
 ```
@@ -293,7 +298,7 @@ plot(rc2, 2)
 
 Now, let's see if our model is general enough to predict the distribution of the Eastern species. 
 
-```{r, sup22}
+```{r sup22}
 eva2 <- pa_evaluate(predict(rrf, de[de$pa==1, ]), predict(rrf, de[de$pa==0, ]))
 eva2
 plot(eva2, "ROC")
@@ -303,7 +308,7 @@ plot(eva2, "ROC")
 By this measure, it is a *terrible* model -- as we already saw on the map. So our model is really good in predicting the range of the West, but it cannot extrapolate well to the East. 
 
 
-```{r, sup24}
+```{r, sup24, fig.width=6, fig.height=4}
 window(wc) <- ext_bf
 rcusa <- predict(wc, rrf, na.rm=TRUE)
 plot(rcusa)
@@ -317,7 +322,7 @@ An important question in the biogeography of the Bigfoot would be if it can surv
 
 Let's see.
 
-```{r, sup26}
+```{r sup26, fig.width=6, fig.height=4}
 window(wc) <- NULL
 pm <- predict(wc, rrf, na.rm=TRUE)
 plot(pm)
@@ -329,7 +334,7 @@ __Question 4__: *What countries should consider Bigfoot border controls?*
 We can also estimate range shifts due to climate change
 
 
-```{r, sup28}
+```{r sup28, fig.width=6, fig.height=4}
 fut <- cmip6_world("CNRM-CM6-1", "585", "2061-2080", var="bio", res=10, path=".")
 names(fut)
 names(wc)
@@ -342,8 +347,7 @@ plot(pfut)
 __Question 5__: *Make a map to show where conditions are improving for western bigfoot, and where they are not. Is the species headed toward extinction?*
 
 
-
 ## Further reading
 
-More on [Species distribution modeling with R](/sdm); and on the use of [boosted regression trees](http://cran.r-project.org/web/packages/dismo/vignettes/brt.pdf) in the same context.
+More on [Species distribution modeling with R](../../raster/sdm).
 
