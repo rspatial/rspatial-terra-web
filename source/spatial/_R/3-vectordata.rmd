@@ -9,11 +9,11 @@ opts_chunk$set(fig.width = 5, fig.height = 5, fig.cap = '', collapse = TRUE)
 
 The `terra` package defines a set of *classes* to represent spatial data.  A class defines a particular data type. The `data.frame` is an example of a class. Any particular `data.frame` you create is an *object* (instantiation) of that class. 
 
-The main reason for defining classes is to create a standard representation of a particular data type to make it easier to write functions (known as "methods") for them. See Hadley Wickham's [Advanced R](http://adv-r.had.co.nz/) or John Chambers' [Software for data analysis](http://www.springer.com/us/book/9780387759357) for a detailed discussion of the use of classes in *R*). 
+The main reason for defining classes is to create a standard representation of a particular data type to make it easier to write functions (known as "methods") for them. See Hadley Wickham's [Advanced R](http://adv-r.had.co.nz/) or John Chambers' [Software for data analysis](http://www.springer.com/us/book/9780387759357) for a detailed discussion of the use of classes in *R*. 
 
-Package `terra` introduces a number of classes with names that start with `Spat`. For vector data, the relevant class is `SpatVector`. These classes represent geometries as well as attributes (variables) describing the geometries. 
+`terra` introduces a number of classes with names that start with `Spat`. For vector data, the relevant class is `SpatVector`. These classes represent geometries as well as attributes (variables) describing the geometries. 
 
-It is possible to create `SpatVector` objects from scratch with *R* code. It can be very useful to create small self contained example to illustrate something, for example to ask a question about how to do a particular operation without needing to give access to the real data you are using (which is always cumbersome). But in real life you will read these from a file or database, [see Chapter 5](./5-files.html) for examples. 
+It is possible to create `SpatVector` objects from scratch with *R* code. This is very useful when creating small self contained example to illustrate something, for example to ask a question about how to do a particular operation without needing to give access to the real data you are using (which is always cumbersome). It is also frequently done when using coordinates that were obtained with a GPS. But in most other cases, you will read these from a file or database, [see Chapter 5](./5-files.html) for examples. 
 
 To get started, let's make some SpatVector objects from scratch anyway, using the same data as were used in the previous chapter. 
 
@@ -81,6 +81,7 @@ Making a `SpatVector` of points was easy. Making a `SpatVector` of lines or poly
 lon <- c(-116.8, -114.2, -112.9, -111.9, -114.2, -115.4, -117.7)
 lat <- c(41.3, 42.9, 42.4, 39.8, 37.6, 38.3, 37.6) 
 lonlat <- cbind(id=1, part=1, lon, lat)
+lonlat
 lns <- vect(lonlat, type="lines", crs=crdref)
 lns
 ```
@@ -91,7 +92,7 @@ pols <- vect(lonlat, type="polygons", crs=crdref)
 pols
 ```
 
-Behind the scenes the class deals with the complexity of accommodate the possibility of multiple polygons, each consisting of multiple sub-polygons, some of which may be "holes".  Fortunately, you do not need to understand how these structures are organized. The main take home message is that a `SpatVector` stores geometries (coordinates), the name of the coordinate reference system, and attributes. 
+Behind the scenes the class deals with the complexity of accommodating for the possibility of multiple polygons, each consisting of multiple sub-polygons, some of which may be "holes". You do not need to understand how these structures are organized. The main take home message is that a `SpatVector` stores geometries (coordinates), the name of the coordinate reference system, and attributes.
 
 We can make use `plot` to make a map.
 

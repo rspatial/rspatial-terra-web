@@ -20,7 +20,7 @@ A __polygon__ refers to a set of closed polylines. The geometry is very similar 
 
 Raster data is commonly used to represent spatially continuous phenomena such as elevation. A raster divides the world into a grid of equally sized rectangles (referred to as cells or, in the context of satellite remote sensing, pixels) that all have one or more values (or missing values) for the variables of interest. A raster cell value should normally represent the average (or majority) value for the area it covers. However, in some cases the values are actually estimates for the center of the cell (in essence becoming a regular set of points with an attribute).  
 
-In contrast to vector data, in raster data the geometry is not explicitly stored as coordinates. It is implicitly set by knowing the spatial extent and the number or rows and columns in which the area is divided. From the extent and number of rows and columns, the size of the raster cells (spatial resolution) can be computed. While raster cells can be thought of as a set of regular polygons, it would be very inefficient to represent the data that way as coordinates for each cell would have to be stored explicitly. It would also dramatically increase processing speed in most cases.
+In contrast to vector data, in raster data the geometry is not explicitly stored as coordinates. It is implicitly set by knowing the spatial extent and the number or rows and columns in which the area is divided. From the extent and number of rows and columns, the size of the raster cells (spatial resolution) can be computed. While raster cells can be thought of as a set of regular polygons, it would be very inefficient to represent the data that way as coordinates for each cell would have to be stored explicitly. Doing so would also dramatically increase processing time.
 
 Continuous surface data are sometimes stored as triangulated irregular networks (TINs); these are not discussed here.
 
@@ -91,3 +91,4 @@ Moreover, it is non-trivial to do some basic spatial operations. For example, th
 Recent packages in R that define such spatial data structures include `terra` and `sf`. These packages replace a set of older packages including `sp`, `raster`, `rgdal` and `rgeos`.
 
 We mostly use the `terra` package in these materials. You can install the latest released version of *terra* from CRAN with `install.packages("terra")` 
+	

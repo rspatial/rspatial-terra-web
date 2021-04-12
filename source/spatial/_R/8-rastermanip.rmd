@@ -46,7 +46,7 @@ crs(x) <- "+proj=utm +zone=48 +datum=WGS84"
 x
 ```
 
-The objects `x` created in the examples above only consist of the raster *geometry*, that is, we have defined the number of rows and columns, and where the raster is located in geographic space, but there are no cell-values associated with it. Setting and accessing values is illustrated below.
+The object `x` created in the examples above only consist of the raster *geometry*, that is, we have defined the number of rows and columns, and where the raster is located in geographic space, but there are no cell-values associated with it. Setting and accessing values is illustrated below.
 
 First another example empty raster geometry.
 ```{r, raster-1h }
@@ -61,7 +61,7 @@ values(r) <- 1:ncell(r)
 ```
 
 Another example.
-```{r, raster-1j }
+```{r, raster-1j, fig.width=9, fig.height=4 }
 set.seed(0)
 values(r) <- runif(ncell(r))
 
@@ -108,14 +108,14 @@ For this example, we first we get the name of an example file installed with the
 
 ```{r, raster-2a1 }
 filename <- system.file("ex/test.tif", package="terra")
-filename
+basename(filename)
 ```
 
 ```{r, raster-2a2 }
 r <- rast(filename)
 sources(r)
 hasValues(r)
-plot(r, main='SpatRaster from file')
+plot(r, main="SpatRaster from file")
 ```
 
 Multi-layer objects can be created in memory or from files. 
@@ -141,7 +141,7 @@ nlyr(s)
 You can also create a multilayer object from a file.
 ```{r, raster-2b5}
 filename <- system.file("ex/logo.tif", package="terra")
-filename
+basename(filename)
 b <- rast(filename)
 b
 nlyr(b)
@@ -187,7 +187,7 @@ s[s == 5] <- 15
 
 If you use multiple `SpatRaster` objects (in functions where this is relevant, such as range), these must have the same resolution and origin. The origin of a `Raster` object is the point closest to (0, 0) that you could get if you moved from a corner of a `SpatRaster` toward that point in steps of the `x` and `y` resolution. Normally these objects would also have the same extent, but if they do not, the returned object covers the spatial intersection of the objects used.
 
-When you use multiple multi-layer objects with different numbers or layers, the 'shorter' objects are 'recycled'. For example, if you multiply a 4-layer object (a1, a2, a3, a4) with a 2-layer object (b1, b2), the result is a four-layer object (a1b1, a2b2, a3b1, a3b2). 
+When you use multiple multi-layer objects with different numbers or layers, the 'shorter' objects are 'recycled'. For example, if you multiply a 4-layer object (`a1`, `a2`, `a3`, `a4`) with a 2-layer object (`b1`, `b2`), the result is a four-layer object (`a1*b1`, `a2*b2`, `a3*b1`, `a3*b2`). 
 
 ```{r, raster-3c}
 r <- rast(ncol=5, nrow=5)
@@ -340,7 +340,7 @@ The `focal` function currently only work for (single layer) SpatRaster objects. 
 
 ### Distance
 
-There are a number of distance related functions. `distance` computes the shortest distance to cells that are not `NA`. `pointDistance` computes the shortest distance to any point in a set of points. `gridDistance` computes the distance when following grid cells that can be traversed (e.g. excluding water bodies). `direction` computes the direction toward (or from) the nearest cell that is not `NA`. `adjacency` determines which cells are adjacent to other cells. See the `gdistance` package for more advanced distance calculations (cost distance, resistance distance)
+There are a number of distance related functions. For example, you can compute the shortest distance to cells that are not `NA`, the shortest distance to any point in a set of points, or the distance when following grid cells that can be traversed (e.g. excluding water bodies). `direction` computes the direction toward (or from) the nearest cell that is not `NA`. `adjacency` determines which cells are adjacent to other cells. See the `gdistance` package for more advanced distance calculations (cost distance, resistance distance)
 
 ### Spatial configuration
 

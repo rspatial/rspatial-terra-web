@@ -20,12 +20,12 @@ It is easy to read and write such files. Here we use a shapefile that comes with
 
 ### Reading
 
-We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the terra package is installed. You should not use the `system.file` function for your own files. It only serves for creating examples with data that ship with *R*. With your own files, just use the filename (and path if the file is not in your working directory).
+We use the `system.file` function to get the full path name of the file's location. We need to do this as the location of this file depends on where the terra package is installed. You should **not use** the `system.file` function for your own files. It only serves for creating examples with data that ship with *R*. With your own files, just use the filename (and path if the file is not in your working directory).
 
 ```{r, shp1}
 library(terra)
 filename <- system.file("ex/lux.shp", package="terra")
-filename
+basename(filename)
 ```
 
 Now we have the filename we can use the `vect` function to read the file.
@@ -63,7 +63,7 @@ The terra package can read and write several raster file formats.
 Again we need to get a filename for an example file.
 ```{r, ras0}
 f <- system.file("ex/logo.tif", package="terra")
-f
+basename(f)
 ```
 
 Now we can do 
@@ -84,7 +84,7 @@ The same approach holds for other raster file formats, including GeoTiff, NetCDF
 
 ### Writing raster data
 
-Use `writeRaster` to write raster data. You must provide a SpatRaster and a filename. The file format will be guessed from the filename extension. If that does not work you can provide an argument like `wopts=list(format=GTiff)`. Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the datatype (e.g., integer, float).
+Use `writeRaster` to write raster data. You must provide a SpatRaster and a filename. The file format will be guessed from the filename extension. If that does not work you can provide an argument like `format=GTiff`. Note the argument `overwrite=TRUE` and see `?writeRaster` for more arguments, such as `datatype=` to set the a specific datatype (e.g., integer).
 
 ```{r, ras5}
 x <- writeRaster(r, "test_output.tif", overwrite=TRUE)

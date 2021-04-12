@@ -1,9 +1,5 @@
 # Pitfalls and potential
 
-```{r, echo=FALSE, include=FALSE}
-library(deldir)
-```
-
 
 ## Introduction
 
@@ -416,6 +412,4 @@ Note that the `voronoi` functions returns a `SpatVector`. This is a class (type 
 class(v)
 v
 ```
-
-__Question 6__. **
 

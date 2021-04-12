@@ -8,7 +8,7 @@ The `terra` package has functions for creating, reading, manipulating, and writi
 
 ## SpatRaster
 
-A `SpatRaster` represents multi-layer (multi-variable) raster data. A SpatRaster always stores a number of fundamental parameters that describe it. These include the number of columns and rows, the spatial extent, and the Coordinate Reference System. In addition, a `SpatRaster` can store information about the file in which the raster cell values are stored (if there is such a file). A `SpatRaster` can also hold (some of) the raster cell values in memory.
+A `SpatRaster` represents multi-layer (multi-variable) raster data. A SpatRaster always stores a number of fundamental parameters decribing its geometry. These include the number of columns and rows, the spatial extent, and the Coordinate Reference System. In addition, a `SpatRaster` can store information about the file in which the raster cell values are stored. Or, if there is no such a file, a `SpatRaster` can hold the cell values in memory.
 
 Here I create a `SpatRaster` from scratch. But note that in most cases where real data is analyzed, these objects are created from a file.
 
@@ -18,14 +18,14 @@ r <- rast(ncol=10, nrow=10, xmin=-150, xmax=-80, ymin=20, ymax=60)
 r
 ```
 
-SpatRaster `r` only has the geometry of a raster data set. That is, it knows about its location, resolution, etc., but there are no values associated with it. Let's assign some values. In this case I assign a vector of random numbers with a length that is equal to the number of cells of the SpatRaster.
+SpatRaster `r` only has the geometry of a raster data set. That is, it knows about its location, resolution, etc., but there are no values associated with it. Let's assign some values. In this case I assign a vector of random numbers with a length that is equal to the number of raster cells.
  
 ```{r}
 values(r) <- runif(ncell(r))
 r
 ```
 
-You can also assign cell numbers (in this case overwriting the previous values)
+You could also assign cell numbers (in this case overwriting the previous values)
 ```{r}
 values(r) <- 1:ncell(r)
 r

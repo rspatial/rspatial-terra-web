@@ -1,8 +1,10 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Supervised Classification
 
-```{r setup, echo=TRUE, include=FALSE}
-library(terra)
-```
 
 Here we explore supervised classification for a simple land use land cover (LULC) mapping task. Various supervised classification algorithms exist, and the choice of algorithm can affect the results. Here we explore two related algorithms (CART and RandomForest).
 
@@ -10,7 +12,7 @@ In supervised classification, we have prior knowledge about some of the land-cov
 
 The following examples uses a Classification and Regression Trees (CART) classifier (Breiman et al. 1984) ([further reading](https://doi.org/10.1016/S0034-4257(97)00049-7) to predict land use land cover classes in the study area.
 
-We will perform the following steps:  
+We will take the following steps:  
   
 * Create sample sites used for classification  
 * Extract cell values from Landsat data for the sample sites  
@@ -37,11 +39,9 @@ names(landsat) <- c('blue', 'green', 'red', 'NIR', 'SWIR1', 'SWIR2')
 Training and/or validation data can come from a variety of sources. In this example, we use some training polygons we have already collected from other sources. We have already used this for making the spectral plots.There are 5 distinct classes -- built,cropland,fallow,open and, water and we hope to find the pixels under this categroies based on our knowledge of training sites.
 
 ``` {r samples}
-library(sp)
 
 # load polygons with land use land cover information
-samp <- readRDS('data/rs/samples.rds')
-#samp <- spTransform(samp, crs(landsat5))
+samp <- vect(readRDS("data/rs/lcsamples.rds"))
 
 # check the distribution of the polygons
 plot(samp)
@@ -53,54 +53,45 @@ Note that the polygons are [`SpatialPolygonsDataFrame` object](https://www.rdocu
 ```{r sample-points}
 set.seed(1)
 # generate point samples from the polygons 
-ptsamp <- spsample(samp, 1000, type='random')
-
-# add the land cover class to the points
-ptsamp$class <- over(ptsamp, samp)$class
-
-# We convert `ptsamp` to `SpatVector`
-ptsamp <- vect(ptsamp)
+ptsamp <- spatSample(samp, 1000, method="random")
+plot(ptsamp, "class")
 ```
 
 Alternatively, we can generate the training and validation sample sites using a reference land use land cover data. For example, the [National Land Cover Database 2011 (NLCD 2011)](https://www.mrlc.gov/nlcd2011.php) is a land cover product for the United States. NLCD is a 30-m Landsat-based land cover database spanning 4 epochs (1992, 2001, 2006 and 2011). NLCD 2011 is based primarily on a decision-tree classification of circa 2011 Landsat data.
 
 Detailes of the class mapped in NCLD 2011 can be found here (here)[https://www.mrlc.gov/nlcd11_leg.php]. It has two pairs of class values and names that correspond to the levels of land use and land cover classification system. These levels usually represent the level of complexity, level I being the simplest with broad land use land cover categories. Read [this report by Anderson et al](https://pubs.usgs.gov/pp/0964/report.pdf) to learn more about this land use and land cover classification system. 
 
-```{r nlcd, echo = FALSE, include = FALSE, eval = FALSE}
-# Robert: Hide this entire section for now
-
+```{r nlcd}
 nlcd <- rast('data/rs/nlcd-L1.tif')
 names(nlcd) <- c("nlcd2001", "nlcd2011")
 
 # The class names and colors for plotting
-nlcdclass <- c("Water", "Developed", "Barren", "Forest", "Shrubland", "Herbaceous", "Planted/Cultivated", "Wetlands")
-classdf <- data.frame(classvalue1 = c(1,2,3,4,5,7,8,9), classnames1 = nlcdclass) 
-
+nlcdclass <- c("Water", "Developed", "Barren", "Forest", "Shrubland", "Herbaceous", "Cultivated", "Wetlands")
+classdf <- data.frame(value = c(1,2,3,4,5,7,8,9), names = nlcdclass) 
 # Hex codes of colors
 classcolor <- c("#5475A8", "#B50000", "#D2CDC0", "#38814E", "#AF963C", "#D1D182", "#FBF65D", "#C8E6F8") 
 
 nlcd2011 <- nlcd[[2]]
-
+levels(nlcd2011) <- classdf
 # plot the locations over the original nlcd raster
-plot(nlcd2011) #, main = 'NLCD 2011', col = classcolor, add = TRUE)
-points(ptsamp) # hides previous plot
+plot(nlcd2011, col=classcolor)
+ptlonlat <- project(ptsamp, crs(nlcd2011))
+points(ptlonlat)
+```
 
-# generate sample sites from NLCD raster
+
+Generate sample sites from NLCD raster
+```{r}
 # Set the random number generator to reproduce the results
 set.seed(99)
 
 # Sampling
 samp2011 <- spatSample(nlcd2011, size = 500)
 
-samp2011val <- values(samp2011)
 # Number of samples in each class
-table(samp2011val)
-
+table(as.character(samp2011[,1]))
 
 ```
-
-Todo: show how can we change legend labels in terra::plot
-Todo: show how to get coordinates of the sampled cells
 
 
 ## Extract spectral values for the training sites
@@ -161,27 +152,26 @@ classified
 plot(classified)
 ```
 
-Observe that there are `r nlyr(classified)` layers in the `classified` object, each of the layer representing the probability of a particular LULC class. We assign each pixel to the LULC class with highest probability. Next we learn how to combine them to create the final single layer product. 
+Observe that there are `r nlyr(classified)` layers in the `classified` object, each of the layer representing the probability of a particular LULC class. Bewlow, we make a single layer SpatRaster showing, for each grid cell, the LULC class with the highest probability.  
 
-To plot the final classification result, we first specify the colors corresponding to each lund use cateogry. In the plot classvalues are printed.
-
-```{r combine-results, fig.width=8, fig.height=7}
-
-class <- c("built","cropland","fallow","open","water")
-mycolor <- c('darkred', 'yellow', 'burlywood', 'cyan', 'blue')
-
-classdf <- data.frame(classvalue = c(1,2,3,4,5), 
-                      classnames = class,
-                      color = mycolor)
-
-lulc <- app(classified, fun = which.max)
-
-lulcc <- as.factor(lulc)
-levels(lulcc) <- as.character(classdf$classnames)
-plot(lulcc)
+```{r combine-results1}
+lulc <- which.max(classified)
+lulc
 ```
 
-If not satisfied with the results, you can select more samples and use additional predictor variables to improve the classification results. The choice of classifier also plays an important role. Next we show how to test the performance the classification model.
+To make a nice map, we make the raster categorical, using `levels<-`; and we provide custom colors.
+
+```{r combine-results2, fig.width=8, fig.height=7}
+cls <- c("built","cropland","fallow","open","water")
+df <- data.frame(id = 1:5, class=cls)
+levels(lulc) <- df
+lulc
+
+mycolor <- c("darkred", "yellow", "burlywood", "cyan", "blue")
+plot(lulc, col=mycolor)
+```
+
+If you are not satisfied with the results, you can select more samples and use additional predictor variables to see if you can improve the classification. The choice of classifier (algorithm) also plays an important role. Next we show how to test the performance the classification model.
 
 ## Model evaluation
 

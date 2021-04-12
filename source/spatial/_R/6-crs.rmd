@@ -4,14 +4,14 @@
 
 ## Introduction
 
-A very important aspect of spatial data is the coordinate reference system (CRS) that is used. For example, a location of (140, 12) is not meaningful if you do know where the origin is and if the x-coordinate is 140 meters, kilometers, or perhaps degrees away from it (in the x direction).
+A very important aspect of spatial data is the coordinate reference system (CRS) that is used. For example, a location of (140, 12) is not meaningful if you do know where the origin (0,0) is and if the x-coordinate is 140 meters, feet, nautical miles, kilometers, or perhaps degrees away from the x-origin.
 
 ## Coordinate Reference Systems (CRS)
 
 ### Angular coordinates 
 
 
-The earth has an irregular spheroid-like shape. The natural coordinate reference system for geographic data is longitude/latitude. This is an *angular* system. The latitude $\phi$ (phi) of a point is the angle between the equatorial plane and the line that passes through a point and the center of the Earth. Longitude $\lambda$ (lambda) is the angle from a reference meridian (lines of constant longitude) to a meridian that passes through the point. 
+The earth has an irregular spheroid-like shape. The natural coordinate reference system for geographic data is longitude/latitude. This is an *angular* coordinate reference system. The latitude $\phi$ (phi) of a point is the angle between the equatorial plane and the line that passes through a point and the center of the Earth. Longitude $\lambda$ (lambda) is the angle from a reference meridian (lines of constant longitude) to a meridian that passes through the point. 
 
 ```{r, echo=FALSE}
 knitr::include_graphics("img/sphere.png")
@@ -19,11 +19,12 @@ knitr::include_graphics("img/sphere.png")
 
 Obviously we cannot actually measure these angles. But we can estimate them. To do so, you need a model of the shape of the earth. Such a model is called a "datum". The simplest datums are a spheroid (a sphere that is "flattened" at the poles and bulges at the equator). More complex datums allow for more variation in the earth's shape. The most commonly used datum is called WGS84 (World Geodesic System 1984). This is very similar to NAD83 (The North American Datum of 1983). Other, local datums exist to more precisely record locations for a single country or region. 
 
-So the basic way to record a location is a coordinate pair in degrees and a reference datum. (Sometimes people say that their coordinates are "in WGS84". That is meaningless; but they typically mean to say that they are longitude/latitude relative to the WGS84 datum).
+So the basic way to record a location is a coordinate pair in degrees and a reference datum. Sometimes people say that their coordinates are "in WGS84". That does not tell us much; they typically mean to say that they are longitude/latitude relative to the WGS84 datum. Likewise longitude/latitude coordinates are sometimes referred to as "geographic" coordinates. That is rather odd, if planar coordinate reference systems (see below) are not geographic, what are they?
+
 
 ### Projections
 
-A major question in spatial analysis and cartography is how to transform this three dimensional angular system to a two dimensional planar (sometimes called "Cartesian") system. A planar system is easier to use for certain calculations and required to make maps (unless you have a 3-d printer). The different types of planar coordinate reference systems are referred to as "projections'. Examples are "Mercator', "UTM', "Robinson', "Lambert', "Sinusoidal" "Robinson" and "Albers'. 
+A major question in spatial analysis and cartography is how to transform this three dimensional angular system to a two dimensional planar (sometimes called "Cartesian") system. A planar system is easier to use for certain calculations and required to make maps (unless you have a 3-d printer). The different types of planar coordinate reference systems are referred to as "projections'. Examples are "Mercator', "UTM', "Robinson', "Lambert', "Sinusoidal" "Robinson" and "Albers". 
 
 There is not one best projection. Some projections can be used for a map of the whole world; other projections are appropriate for small areas only. One of the most important characteristics of a map projection is whether it is "equal area" (the scale of the map is constant) or "conformal" (the shapes of the geographic features are as they are seen on a globe). No two dimensional map projection can be both conformal and equal-area (but they can be approximately both for smaller areas, e.g. UTM, or Lambert Equal Area for a larger area), and some are neither. 
 
@@ -32,7 +33,7 @@ There is not one best projection. Some projections can be used for a map of the 
 
 
 A planar CRS is defined by a projection, datum, and a set of parameters. The parameters determine things like where the center of the map is. The number of parameters depends on the projection. It is therefore not trivial to document a projection used, and several systems exist. In *R* we used to depend on the [PROJ.4](ftp://ftp.remotesensing.org/proj/OF90-284.pdf
-) notation. PROJ.4 is the name of an open source software library that is commonly used for CRS transformation. 
+) notation. PROJ.4 is the name of a software library that is commonly used for CRS transformation. 
 
 Here is a list of [commonly used projections](http://www.remotesensing.org/geotiff/proj_list/) and their parameters in PROJ4 notation. You can find many more of these on [spatialreference.org](http://spatialreference.org/ref/epsg/4326/)
 
@@ -123,7 +124,7 @@ plot(pr1)
 
 But that is not a good method. As you should want to assure that you project to exactly the raster parameters  you need (so that it lines up with other raster data you are using).  
 
-To have this kind of control, provide an existing SpatRaster. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
+To have this kind of control, provide an existing SpatRaster with the geomotry you desire. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
 
 ```{r}
 x <- rast(pr1)
@@ -138,6 +139,6 @@ pr3
 plot(pr3)
 ```
 
-For raster based analysis it is often important to use equal area projections, particularly when large areas are analyzed. This will assure that the grid cells are all of same size, and therefore comparable to each other.
+For raster based analysis it is often important to use equal area projections, particularly when large areas are analyzed. This will assure that the grid cells are all of same size, and therefore comparable to each other, especially when count data are used.
 
 
