@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Model fitting, prediction, and evaluation
 
 
@@ -33,7 +29,7 @@ Models that are implemented in `predicts` do not use a formula (and most models 
 
 ```{r, sdm26}
 library(predicts)
-bc <- envelope(presvals[,c('bio1', 'bio5', 'bio12')])
+bc <- envelope(presvals[,c("bio1", "bio5", "bio12")])
 bc
 ```
 
@@ -55,14 +51,16 @@ predict(m1, pd)
 Making such predictions for a few environments can be very useful to explore and understand model predictions. For example it used in the `response` function that creates response plots for each variable, with the other variables at their median value. 
 
 ```{r, sdm27b, fig.width=9, fig.height=6}
-partialResponse(bc, presvals[,c('bio1', 'bio5', 'bio12')])
+pr <- partialResponse(bc, presvals, "bio1")
+plot(pr, type="l")
 ```
 
 In most cases, howver, the purpose is SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers (layerNames) in the SpatRaster object.
 
 ```{r, sdm27c, fig.width=9, fig.height=6}
-ff <- list.files(file.path(system.file(package="predicts"), "ex"), pattern="tif$", full.names=TRUE )
-predictors <- rsat(ff)
+library(predicts)
+f <- system.file("ex/bio.tif", package="predicts")
+predictors <- rast(f)
 names(predictors)
 p <- predict(predictors, m1)
 plot(p)
@@ -116,7 +114,7 @@ auc <- as.numeric(mv$statistic) / (length(p) * length(a))
 auc
 ```
 
-Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the dismo package. See `?evaluate` for info on additional evaluation measures that are available.
+Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the dismo package. See `?pa_evaluate` for info on additional evaluation measures that are available.
 
 ```{r, sdm40, width=7,height=5 }
 library(predicts)
@@ -143,7 +141,7 @@ plot(e, "ROC")
 ```
 
 
-In real projects, you would want to use `k-fold` data partitioning instead of a single random sample. The dismo function `kfold` facilitates that type of data partitioning. It creates a vector that assigns each row in the data matrix to a a group (between 1 to k).
+In real projects, you would want to use `k-fold` data partitioning instead of a single random sample. The `predicts::kfold` facilitates that type of data partitioning. It creates a vector that assigns each row in the data matrix to a a group (between 1 to k).
 
 Let's first create presence and background data. 
 ```{r, sdm42}
@@ -167,29 +165,30 @@ e <- list()
 for (i in 1:k) {
 	train <- pres[group != i,]
 	test <- pres[group == i,]
-	bc <- bioclim(train)
-	e[[i]] <- pa_evaluate(p=test, a=back, bc)
+	bc <- envelope(train)
+	p <- predict(bc, test)
+	a <- predict(bc, back)
+	e[[i]] <- pa_evaluate(p, a)
 }	
 ```
 
-We can extract several things from the objects in 'e', but let's restrict ourselves to the AUC values and the "maximum of the sum of the sensitivity (true positive rate) and specificity (true negative rate)" threshold "spec_sens" (this is sometimes uses as a threshold for setting cells to presence or absence).
+We can extract several things from the objects in lise `e1, but let's restrict ourselves to the AUC values and the "maximum of the sum of the sensitivity (true positive rate) and specificity (true negative rate)" threshold "spec_sens" (this is sometimes uses as a threshold for setting cells to presence or absence).
 
 ```{r, sdm45a}
-auc <- sapply(e, function(x){x@auc}) 
-auc
-mean(auc)
-sapply( e, function(x){ threshold(x)['spec_sens'] } )
+stats <- lapply(e, function(x){x@stats})
+stats <- do.call(rbind, stats)
+colMeans(stats)
 ```
 
 The use of AUC in evaluating SDMs has been criticized (Lobo et al. 2008, Jiménez-Valverde 2011). A particularly sticky problem is that the values of AUC vary with the spatial extent used to select background points. Generally, the larger that extent, the higher the AUC value. Therefore, AUC values are generally biased and cannot be directly compared. Hijmans (2012) suggests that one could remove "spatial sorting bias" (the difference between the distance from testing-presence to training-presence and the distance from testing-absence to training-presence points) through "point-wise distance sampling". 
 
 ```{r, sdm45b}
-file <- file.path(system.file(package="predicts"), "ex/bradypus.csv")
-bradypus <- read.table(file,  header=TRUE,  sep=',')
+fsp <- system.file("/ex/bradypus.csv", package="predicts")
+bradypus <- read.csv(fsp)
 bradypus <- bradypus[,-1]
 presvals <- extract(predictors, bradypus)
 set.seed(0)
-backgr <- spatSample(predictors, 500, na.rm=TRUE)
+backgr <- spatSample(predictors, 500, na.rm=TRUE, xy=TRUE, values=FALSE)
 
 nr <- nrow(bradypus)
 s <- sample(nr, 0.25 * nr)
@@ -204,25 +203,26 @@ back_test <- backgr[s, ]
 ```
 
 ```{r, sdm45c}
-sb <- ssb(pres_test, back_test, pres_train)
+sb <- dismo::ssb(pres_test, back_test, pres_train)
 sb[,1] / sb[,2]
 ```
 
 `sb[,1] / sb[,2]` is an indicator of spatial sorting bias (SSB). If there is no SSB this value should be 1, in these data it is close to zero, indicating that SSB is very strong. Let's create a subsample in which SSB is removed. 
 
 ```{r, sdm45d}
-i <- pwd_Sample(pres_test, back_test, pres_train, n=1, tr=0.1)
+i <- pwd_sample(pres_test, back_test, pres_train, n=1, tr=0.1)
 pres_test_pwd <- pres_test[!is.na(i[,1]), ]
 back_test_pwd <- back_test[na.omit(as.vector(i)), ]
-sb2 <- ssb(pres_test_pwd, back_test_pwd, pres_train)
+sb2 <- dismo::ssb(pres_test_pwd, back_test_pwd, pres_train)
 sb2[1]/ sb2[2]
 ```
 
-Spatial sorting bias is much reduced now; notice how the AUC dropped!
+Spatial sorting bias is much reduced now; notice how the AUC dropped.
 
 ```{r, sdm45e}
 bc <- envelope(predictors, pres_train)
-pa_evaluate(bc, p=pres_test, a=back_test, x=predictors)
-pa_evaluate(bc, p=pres_test_pwd, a=back_test_pwd, x=predictors)
+
+pa_evaluate(p=pres_test, a=back_test, model=bc, data=predictors)
+pa_evaluate(p=pres_test_pwd, a=back_test_pwd, model=bc, data=predictors)
 ```
 

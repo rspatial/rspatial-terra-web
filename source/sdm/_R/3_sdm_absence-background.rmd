@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Absence and background points
 
 
@@ -20,24 +16,22 @@ Note that if the mask has the longitude/latitude coordinate reference system, th
 
 ```{r, sdm15a}
 library(predicts)
-# get the predictors
-# filenames  
+# get the predictors filename  
 f1 <- system.file("ex/bio.tif", package="predicts")
 f2 <- system.file("ex/biome.tif", package="predicts")
 
-r <- rast(f2)
+r <- rast(c(f1, f2))
 
-# select 500 random points
+# select 5000 random points
 # set seed to assure that the examples will always
 # have the same random sample.
 set.seed(1963)
-bgcells <- spatSample(r, 5000, "random", na.rm=T, cells=TRUE)
-bg <- xyFromCell(r, bgcells)
+bg <- spatSample(r, 5000, "random", na.rm=TRUE, as.points=TRUE)
 ```
 
 And inspect the results by plotting
 ```{r, sdm15, fig.width=9, fig.height=6}
-plot(!is.na(r))
+plot(r, 1)
 points(bg, cex=0.5)
 ```
 
@@ -45,8 +39,8 @@ Now we repeat the sampling, but limit the area of sampling using a spatial exten
 
 ```{r}
 e <- ext(-80, -53, -39, -22)
-bg2 <- spatSample(r, 100, "random", na.rm=TRUE, xy=TRUE, ext=e)
-plot(!is.na(r))
+bg2 <- spatSample(r, 500, "random", na.rm=TRUE, as.points=TRUE, ext=e)
+plot(r, 1)
 lines(e, col="red", lwd=2)
 points(bg2, cex=0.5)
 ```
@@ -76,20 +70,21 @@ pol <- aggregate(x)
 
 And then we take a random sample of points within the polygons. We only want one point per grid cell.
 
-```{r, sdm19}
+```{r, sdm19A}
 # sample randomly from all circles
 set.seed(999)
-samp1 <- spatSample(pol, 250, "random")
-# get cells
-pcells <- cells(r, samp1)
-head(pcells)
-dim(pcells)
-# remote duplicates
-pcells <- unique(pcells[,2])
-length(pcells)
-xy <- xyFromCell(r, pcells)
+samp1 <- spatSample(pol, 500, "random")
 ```
 
+We do not what to include the same raster cells multiple times
+
+```{r, sdm19B}
+pcells <- cells(r, samp1)
+# remote duplicates
+pcells <- unique(pcells[,2])
+# back to coordinates
+xy <- xyFromCell(r, pcells)
+```
 
 Plot to inspect the results:
 
@@ -99,7 +94,7 @@ points(samp1, pch="+", cex=.5)
 points(xy, cex=0.75, pch=20, col='blue')
 ```
 
-Note that the blue points are not all within the polygons (circles), as they now represent the centers of the selected cells from mask. We could choose to select only those cells that have their centers within the circles, using the `intersect` method.
+Note that the blue points are not all within the polygons (circles), as they now represent the centers of the selected cells. We could choose to select only those cells that have their centers within the circles, using the `intersect` method.
 
 ```{r, sdm21a}
 spxy <- vect(xy, crs="+proj=longlat +datum=WGS84")
@@ -110,7 +105,7 @@ Similar results could also be achieved via the raster functions `rasterize` or `
 
 ```{r, sdm21b, fig.width=9, fig.height=6}
 # make a new, empty, smaller raster
-m <- crop(rast(r), ext(x)+1)
+m <- crop(rast(r[[1]]), ext(x)+1)
 # extract cell numbers for the circles
 v <- cells(m, x)
 

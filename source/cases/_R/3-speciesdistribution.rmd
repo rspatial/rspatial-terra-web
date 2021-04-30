@@ -1,15 +1,8 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # 3. Analysing species distribution data
-
 
 ## Introduction
 
 In this case-study I show some techniques that can be used to analyze species distribution data with *R*. Before going through this document you should at least be somewhat familiar with *R* and [spatial data manipulation in *R*](/spatial). This document is based on an analysis of the distribution of wild potato species by Hijmans and Spooner (2001). Wild potatoes (Solanaceae; *Solanum* sect. *Petota* are relatives of the cultivated potato. There are nearly 200 different species that occur in the Americas. 
-
 
 ## Import and prepare data
 
@@ -294,7 +287,7 @@ Plot the hulls. First remove the empty hulls (you cannot make a hull if you do n
 i <- which(!sapply(hull, is.null))
 h <- hull[i]
 # combine them
-hh <- do.call(c, h)
+hh <- do.call(rbind, h)
 plot(hh)
 ```
 

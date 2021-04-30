@@ -1,10 +1,6 @@
 # High-level methods
 
 
-```{r, echo=FALSE, include=FALSE}
-library(terra)
-```
-
 Several 'high level' methods (functions) have been implemented for `SpatRaster` objects. 'High level' refers to methods that you would normally find in a GIS program that supports raster data. Here we briefly discuss some of these. See the help files for more detailed descriptions.
 
 The high-level methods have some arguments in common. The first argument is typically 'x' or 'object' and in most cases it is a `SpatRaster` or a `SpatVector`. It is followed by one or more arguments specific to the method (either additional `SpatRaster` objects or other arguments), followed by a filename="" and "..." arguments. 
@@ -131,6 +127,6 @@ values(s) <- round(runif(ncell(r)) * 5)
 zonal(r, s, 'mean')
 freq(s)
 freq(s, value=3)
-#crosstab(r*3, s)
+crosstab(c(r*3, s))
 ```
 

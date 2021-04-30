@@ -1,9 +1,5 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Point pattern analysis
+
 
 ## Introduction
 
@@ -125,9 +121,10 @@ plot(city, add=TRUE)
 That looks better. Now let's get the frequencies.
 
 ```{r, pp6}
-f <- freq(ncrimes, useNA='no')
+f <- freq(ncrimes)
 head(f)
-plot(f[,-1], pch=20)
+f <- f[,-1]
+plot(f, pch=20)
 ``` 
 
 Does this look like a pattern you would have expected?  
@@ -334,14 +331,16 @@ Above we did some 'home-brew' point pattern analysis, we will now use the spatst
 library(spatstat)
 ``` 
 
-We start with making make a Kernel Density raster. I first create a 'ppp' (point pattern) object, as defined in the spatstat package. 
+We start with making make a Kernel Density raster. I first create a 'ppp' (point pattern) object, as defined in the `spatstat` package. 
 
 A ppp object has the coordinates of the points **and** the analysis 'window' (study region). To assign the points locations we need to extract the coordinates from our SpatVector points object. To set the window, we first need to to coerce our SpatVector polygons into an 'owin' object. We need a function from the maptools package for this coercion.
 
 Coerce from SpatVector to SpatialPolygons to an object of class "owin" (observation window)
 
 ```{r, message=FALSE}
-cityOwin <- maptools::as.owin.SpatialPolygons(as(city, "Spatial"))
+cityOwin <- as.owin(sf::st_as_sf(city))
+# or 
+# cityOwin <- as.owin(sf::st_as_sf(as(city, "Spatial"))
 class(cityOwin)
 cityOwin
 ``` 
@@ -536,6 +535,7 @@ KS.drunk
 __Question 7__: *Why is the result surprising, or not surprising?*
 
 We can also compare the patterns for "drunk in public" and for "Arson" with the KCross function.
+
 ```{r, pp30}
 kc <- Kcross(mpp, i = "Drunk in Public", j = "Arson")
 ekc <- envelope(mpp, Kcross, nsim = 50, i = "Drunk in Public", j = "Arson")
@@ -543,3 +543,6 @@ plot(ekc)
 ``` 
 
 
+```{r, inclue=FALSE}
+detach("package:spatstat", unload=TRUE)
+```

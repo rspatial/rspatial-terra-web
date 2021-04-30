@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Scale and distance
 
 
@@ -43,7 +39,7 @@ xy <- cbind(x=runif(1000, 0, 100), y=runif(1000, 0, 100))
 income <- (runif(1000) * abs((xy[,1] - 50) * (xy[,2] - 50))) / 500
 ```
 
-Inspect the data, both spatially and non-spatially. The first two plots show that there are many poor people and a few rich people. The thrird that there is a clear spatial pattern in where the rich and the poor live.
+Inspect the data, both spatially and non-spatially. The first two plots show that there are many poor people and a few rich people. The third that there is a clear spatial pattern in where the rich and the poor live.
 
 ```{r incplot}
 par(mfrow=c(1,3), las=1)
@@ -55,10 +51,11 @@ plot(xy, xlim=c(0,100), ylim=c(0,100), cex=income, col=rev(terrain.colors(50))[1
 Income inequality is often expressed with the Gini coefficient.
 
 ```{r}
-    n <- length(income)
-    G <- (2 * sum(sort(income) * 1:n)/sum(income) - (n + 1)) / n
-	G
+n <- length(income)
+G <- (2 * sum(sort(income) * 1:n)/sum(income) - (n + 1)) / n
+G
 ```
+
 For our data set the Gini coefficient is `r round(G, 3)`. 
 
 Now assume that the household data was grouped by some kind of census districts. I create different districts, in our case rectangular raster cells, and compute mean income for each district. 
@@ -68,7 +65,7 @@ library(terra)
 v <- vect(xy)
 v$income <- income
 r1 <- rast(ncol=1, nrow=4, xmin=0, xmax=100, ymin=0, ymax=100)
-r1 <- rasterize(v, r1, income, mean)
+r1 <- rasterize(v, r1, "income", mean)
 
 r2 <- rast(ncol=4, nrow=1, xmin=0, xmax=100, ymin=0, ymax=100)
 r2 <- rasterize(v, r2, income, mean)
@@ -94,8 +91,7 @@ par(mfrow=c(2,3), las=1)
 plot(r1); plot(r2); plot(r3); plot(r4); plot(r5); plot(r6)
 ```
 
-It is not surprising to see that the smaller the regions get, the better the real pattern is captured. 
-But in all cases, the histograms show that we do not capture the full income distribution (compare to the histogram with the data for individuals).  
+It is not surprising to see that the smaller the regions get, the better the real pattern is captured. But in all cases, the histograms show that we do not capture the full income distribution (compare to the histogram with the data for individuals).  
 
 ```{r inchist}
 par(mfrow=c(1,3), las=1)

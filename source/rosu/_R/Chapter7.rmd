@@ -4,12 +4,11 @@
 
 This handout accompanies Chapter 7 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
 
-
 ## The area of a polygon
 
 Create a polygon like in Figure 7.2 (page 192).
 
-```{r}
+```{r ch7_1}
 library(terra)
 pol <- matrix(c(1.7, 2.6, 5.6, 8.1, 7.2, 3.3, 1.7, 4.9, 7, 7.6, 6.1, 2.7, 2.7, 4.9), ncol=2)
 sppol <- vect(pol, "polygons")

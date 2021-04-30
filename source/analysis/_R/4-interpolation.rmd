@@ -12,7 +12,7 @@ We will be working with temperature data for California. If have not yet done so
 if (!require("rspat")) devtools::install_github('rspatial/rspat')
 ```
 
-Now get the data
+Now get the data:
 
 ```{r fields0}
 library(rspat)

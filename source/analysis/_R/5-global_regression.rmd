@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 
 # Spatial distribution models
 
@@ -131,8 +127,8 @@ bfw <- bfc[bf[,1] <= -102, ]
 And now I combine the presence ("1") with the background ("0") data (I use the same background data for both subspecies) 
 
 ```{r}
-dw <- rbind(cbind(pa=1, bfw), cbind(pa=0, bg))
-de <- rbind(cbind(pa=1, bfe), cbind(pa=0, bg))
+dw <- rbind(cbind(pa=1, bfw[,-1]), cbind(pa=0, bg))
+de <- rbind(cbind(pa=1, bfe[,-1]), cbind(pa=0, bg))
 
 dw <- data.frame(dw)
 de <- data.frame(na.omit(de))

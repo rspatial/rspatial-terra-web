@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Data preparation
 
 ## Species occurrence data
@@ -20,7 +16,7 @@ We are using an example file that is installed with the `predicts`  package, and
 library(predicts)
 filename <- file.path(system.file(package="predicts"), "ex/bradypus.csv")
 # this is the file we will use:
-filename
+basename(filename)
 ```
 
 Now read the file and inspect the values.
@@ -36,11 +32,11 @@ head(bradypus)
 
 You can also read such data from Excel files with the `readxl` package. No matter how you do it, the objective is to get a matrix (or a `data.frame`) with at least 2 columns that hold the coordinates of the locations where a species was observed. Coordinates are typically expressed as longitude and latitude (i.e. angular), but they could also be Easting and Northing in UTM or another planar coordinate reference system (map projection). The convention used here is to organize the coordinates columns so that longitude is the first and latitude the second column (think x and y axes in a plot; longitude is x, latitude is y); they often are  in the reverse order, leading to undesired results. In many cases you will have additional columns, e.g., a column to indicate the species if you are modeling multiple species; and a column to indicate whether this is a 'presence' or an 'absence' record (a much used convention is to code presence with a 1 and absence with a 0). 
 
-If you do not have any species distribution data you can get started by downloading data from the [Global Biodiversity Inventory Facility (GBIF)](http://www.gbif.org/). In the predicts package there is a function `gbif` that you can use for this. The data used below were downloaded, and saved to a permanent data set for use in this chapter, using the `gbif` function like this: 
+If you do not have any species distribution data you can get started by downloading data from the [Global Biodiversity Inventory Facility (GBIF)](http://www.gbif.org/). In the `geodata` package there is a function `sp_occurrence` that you can use for this. The data used below were downloaded, and saved to a permanent data set for use in this chapter, using the `sp_occurrence` function like this: 
 
 
 ```{r, sdm11B, eval=FALSE}
-acaule <- predicts::gbif("solanum", "acaule*", geo=FALSE)
+acaule <- geodata::sp_occurrence("solanum", "acaule*", geo=FALSE)
 ## Loading required namespace: jsonlite
 ## 7238 records found
 ## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200
@@ -225,8 +221,8 @@ r <- rast(acv)
 # set the resolution of the cells to (for example) 1 degree
 res(r) <- 1
 
-# expand (extend) the extent of the SpatRaster a little
-r <- expand(r, ext(r)+1)
+# extend (expand) the extent of the SpatRaster a little
+r <- extend(r, ext(r)+1)
 
 # sample:
 set.seed(13)

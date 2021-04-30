@@ -12,9 +12,17 @@ On page 13 the fractional dimension of a part of the New Zealand coastline is co
 
 Throughout this book, we will use data that is installed with the `rspat` package. To install this package (from github) you can use the `install_github` function from the `remotes` package (so you may need to run `install.packages("remotes")` first.
 
+```{r remotes}
+if (!require("remotes")) install.packages("remotes")
+```
+
+Now install `rspat`
+
 ```{r getDataOSU1, echo=TRUE}
-if (!require("remotes")) install.packages('remotes')
-if (!require("rspat")) remotes::install_github('rspatial/rspatial')
+# to make this work with older versions of R
+Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true")
+# install rspat
+if (!require("rspat")) remotes::install_github("rspatial/rspat")
 ```
 
 Now you should have the data for all chapters. 

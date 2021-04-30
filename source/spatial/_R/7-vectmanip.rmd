@@ -259,7 +259,6 @@ lines(p, col='blue', lwd=2)
 
 `extract` is used for queries between SpatVector and SpatRaster objects, and also for queries between SpatVectors.
 
-
 ```{r}
 extract(spts, p)
 extract(spts, z)

@@ -1,18 +1,11 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Spatial prediction
 
-Some examples for prediction. 
+This chapters shows some examples for making spatial prediction with different types of models. Using the `predict` and `interpolate` methods.
 
-## Predict 
+The is the data we use. 
 
-
-### GLM
-
-```{r glm, message=FALSE}
+```{r exa, message=FALSE}
 library(terra)
 logo <- rast(system.file("ex/logo.tif", package="terra"))   
 names(logo) <- c("red", "green", "blue")
@@ -31,7 +24,15 @@ e <- extract(logo, xy[,2:3])
 
 # combine with response 
 v <- data.frame(cbind(pa=xy[,1], e))
+```
 
+## Predict 
+
+### GLM
+
+A general linear model (GLM) 
+
+```{r glm}
 #build a model, here with glm 
 model <- glm(formula=pa~., data=v)
 
@@ -190,60 +191,55 @@ p3 <- interpolate(elevation, tps3, fun=pfun)
 plot(p3)
 ```
 
+### inverse distance weighted (IDW)
+
+```{r idw}
+library(gstat)
+data(meuse, package="sp")
+
+r <- rast(system.file("ex/test.tif", package="terra"))
+mg <- gstat(id = "zinc", formula = zinc~1, locations = ~x+y, data=meuse, 
+            nmax=7, set=list(idp = .5))
+z <- interpolate(r, mg, debug.level=0)
+```
+
+
 ### Kriging 
 
 Kriging with gstat examples. Examples provided by Maurizio Marchi
 
+orinary kriging
+```{r krig}
+v <- variogram(log(zinc)~1, ~x+y, data=meuse)
+mv <- fit.variogram(v, vgm(1, "Sph", 300, 1))
+gOK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse, locations=~x+y, model=mv)
+OK <- interpolate(r, gOK, debug.level=0)
+plot(OK)
+```
 
-```{r gstat, warning = FALSE}
-library(sp)
-library(gstat)
-data(meuse)
-
-# inverse distance weighted (IDW)
-r <- rast(system.file("ex/test.tif", package="terra"))
-mg <- gstat(id = "zinc", formula = zinc~1, locations = ~x+y, data=meuse, 
-            nmax=7, set=list(idp = .5))
-f <- function(model, data, ...) predict(model, data, ...)[,3,drop=FALSE]
-z <- interpolate(r, mg, fun=f, debug.level=0)
-
-# kriging
-coordinates(meuse) <- ~x+y
-crs(meuse) <- crs(r)
-
-# ordinary kriging
-v <- variogram(log(zinc)~1, meuse)
-m <- fit.variogram(v, vgm(1, "Sph", 300, 1))
-gOK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse, model=m)
-
-fg <- function(model, d, crs, ...) {
-	sp <- SpatialPointsDataFrame(d[,1:2,drop=FALSE], data.frame(d), proj4string=CRS(crs(r, T)))
-	data.frame(predict(model, sp, ...))[,3:4]
-}
-OK1 <- interpolate(r, gOK, fun=fg, debug.level=0, crs=crs(r), na.rm=TRUE)
-OK2 <- interpolate(r, gOK, fun=fg, debug.level=0, crs=crs(r), na.rm=FALSE)
-OK3 <- interpolate(x, gOK, fun=fg, debug.level=0, crs=crs(x))
-plot(c(OK1[[1]], OK2[[1]], OK3[[1]]))
-
-
-## universial kriging
-vu <- variogram(log(zinc)~elev, meuse)
+universial kriging
+```{r}
+vu <- variogram(log(zinc)~elev, ~x+y, data=meuse)
 mu <- fit.variogram(vu, vgm(1, "Sph", 300, 1))
-gUK <- gstat(NULL, "log.zinc", log(zinc)~elev, meuse, model=mu)
+gUK <- gstat(NULL, "log.zinc", log(zinc)~elev, meuse, locations=~x+y, model=mu)
 names(r) <- "elev"
-UK <- interpolate(r, gUK, fun=fg, debug.level=0, crs=crs(r))
+UK <- interpolate(r, gUK, debug.level=0)
+plot(UK)
+```
 
-## co-kriging
-gCoK <- gstat(NULL, "log.zinc", log(zinc)~1, meuse)
-gCoK <- gstat(gCoK, "elev", elev~1, meuse)
-gCoK <- gstat(gCoK, "cadmium", cadmium~1, meuse)
-gCoK <- gstat(gCoK, "copper", copper~1, meuse)
+co-kriging
+
+```{r}
+gCoK <- gstat(NULL, 'log.zinc', log(zinc)~1, meuse, locations=~x+y)
+gCoK <- gstat(gCoK, 'elev', elev~1, meuse, locations=~x+y)
+gCoK <- gstat(gCoK, 'cadmium', cadmium~1, meuse, locations=~x+y)
+gCoK <- gstat(gCoK, 'copper', copper~1, meuse, locations=~x+y)
 coV <- variogram(gCoK)
-plot(coV, type="b", main="Co-variogram")
-coV.fit <- fit.lmc(coV, gCoK, vgm(model="Sph", range=1000))
+plot(coV, type='b', main='Co-variogram')
+coV.fit <- fit.lmc(coV, gCoK, vgm(model='Sph', range=1000))
 coV.fit
-plot(coV, coV.fit, main="Fitted Co-variogram")
-coK <- interpolate(r, coV.fit, fun=fg, debug.level=0, crs=crs(r))
+plot(coV, coV.fit, main='Fitted Co-variogram')
+coK <- interpolate(r, coV.fit, debug.level=0)
 plot(coK)
 ```
 

@@ -1,72 +1,185 @@
 # Maps
 
-Like for other plots, there are different approaches in R to make maps. 
+Generally maps are created by running `plot(x)`, sometimes several times. 
 
-## Vector data
+You can zoom in using `zoom(x)` and clicking on the map twice (to indicate where to zoom to). Or use `select(x)` to save a spatial subset to a new object. With `click(x)` it is possible to interactively query a SpatRaster by clicking once or several times on a map plot.
 
-### Base plots 
 
-```{r, maps_1}
+## SpatVector
+
+Example data 
+
+```{r, vect_1}
 library(terra)
 p <- vect(system.file("ex/lux.shp", package="terra"))
+```
+
+If you plot a `SpatVector` without further arguments, you get black points, lines or polygons, and no legend.
+
+```{r, maps_1, fig.height=5}
 plot(p)
 ```
 
-```{r, maps_2}
+You can add colors like this
+
+```{r, maps_2, fig.height=5}
 n <- size(p)
 plot(p, col=rainbow(n))
 ```
 
-One colour per region (NAME_1)
+But if you want colors it is probably easiest to use an attribute. 
 
 ```{r, maps_3}
-u <- unique(p$NAME_1)
-u
-m <- match(p$NAME_1, u)
-plot(p, col=rainbow(n)[m])
-#text(p, 'NAME_2', cex=.75, halo=TRUE)
+plot(p, "NAME_2", col=rainbow(25))
 ```
 
+You can request maps for multiple variables
+```{r, maps_4a, fig.width=10}
+plot(p, c("NAME_1", "NAME_2"), col=rainbow(25))
+```
 
-## Raster
+Below we also make two maps, but do it "by hand". We adjust the spacing, and put the legends inside the map area, and use non-rotated text for the vertical axis.
+
+```{r, maps_4b, fig.width=10}
+par(mfrow=c(1,2))
+m <- c(3.1, 3.1, 2.1, 2.1)
+plot(p, "NAME_1", col=rainbow(25), mar=m, plg=list(x="topright"), pax=list(las=1))
+plot(p, "NAME_2", col=rainbow(25), mar=m, plg=list(x="topright", cex=.75), pax=list(las=1))
+```
+
+More costumization. Choose the axes to draw, at a label and a box to the legend.
+
+```{r, maps_5, fig.width=10}
+par(mfrow=c(1,2))
+m <- c(3.1, 3.1, 1.1, 1.1)
+plot(p, "NAME_1", col=rainbow(25), mar=m, plg=list(x="topright", title="District", bty = "o"), main="", axes=FALSE)
+axis(1, at=c(5,7)); axis(1)
+axis(2, at=c(49,51)); axis(2, las=1)
+
+plot(p, "NAME_2", col=rainbow(25), mar=m, plg=list(x="topright", cex=.75, title="Canton", bty = "o"), main="", axes=FALSE)
+axis(1, at=c(5, 7)); axis(1)
+```
+
+We can combine multiple SpatVectors using `lines` and `points` to draw on top of what we plotted first.
+
+```{r, maps_6}
+d <- aggregate(p, "NAME_1")
+plot(p, col="light blue", lty=2, border="red", lwd=2)
+lines(d, lwd=5)
+lines(d, col="white", lwd=1)
+text(p, "NAME_2", cex=.8, halo=TRUE)
+```
+
+The `rasterVis` package provides a lot of very nice plotting options as well. 
+
+
+## SpatRaster
+
 
 Example data
 
-```{r}
+```{r, maps_10}
+f <- system.file("ex/elev.tif", package="terra")
+r <- rast(f)
+```
+
+The default display of a single layer SpatRaster depends on the data type, but there will always be a legend.
+```{r, maps_11}
+plot(r)
+```
+
+After plotting a `SpatRaster` you can add vector type spatial data (points, lines, polygons). You can do this with functions `points`, `lines`, `polys` or `plot(object, add=TRUE)`. 
+
+```{r, maps_12}
+plot(r)
+
+lines(p, lwd=2)
+set.seed(12)
+xy <- spatSample(r, 20, "random", na.rm=TRUE, xy=TRUE)
+points(xy, pch=20, col="red", cex=2)
+```
+
+Or use a different legend type 
+
+```{r, maps_13}
+m <- c(3.1, 3.1, 1.1, 1.1)
+plot(r, type="interval", plg=list(x="topright"), mar=m)
+```
+
+If there are only a few values, the default is to show "classes"
+
+```{r, maps_14}
+rr <- round(r/100)
+plot(rr, plg=list(x="topright"), mar=m)
+```
+
+
+If the raster is categorical you get the labels 
+
+```{r, maps_15, fig.height=5, fig.width=9}
+set.seed(0)
+x <- rast(nrow=10, ncol=10)
+values(x) <- sample(0:2, ncell(r), replace=TRUE)
+cls <- c("forest", "water", "urban")
+levels(x) <- cls
+names(x) <- "land cover"
+is.factor(x)
+x
+plot(x, col=c("green", "blue", "light gray"))
+text(x, digits=3, cex=.75, halo=TRUE)
+```
+
+When plot is used with a multi-layer object, all layers are plotted (up to 16), unless the layers desired are indicated with an additional argument. 
+
+
+```{r, maps_16}
 library(terra)
 b <- rast(system.file("ex/logo.tif", package="terra"))
+plot(b)
+```
 
+
+```{r, maps_17}
 r <- rast(p, res=0.01 )
 values(r) <- 1:ncell(r)
 r <- mask(r, p)
 ```
 
-Several generic functions have been implemented for SpatRaster objects to create maps and other plot types. Use 'plot' to create a map of a SpatRaster. You can zoom in using 'zoom' and clicking on the map twice (to indicate where to zoom to). With `click` it is possible to interactively query a SpatRaster by clicking once or several times on a map plot.
-
-After plotting a `SpatRaster` you can add vector type spatial data (points, lines, polygons). You can do this with functions points, lines, polygons if you are using the basic R data structures or plot(object, add=TRUE) if you are using Spatial* objects as defined in the sp package. When plot is used with a multi-layer object, all layers are plotted (up to 16), unless the layers desired are indicated with an additional argument. 
-
-```{r, maps_5}
-plot(r)
-plot(p, add=TRUE)
-```
-
-`image` does not provide a legend and that can be advantageous in some cases.
-
-```{r, maps_6}
-image(r)
-plot(p, add=TRUE)
-```
-
-Multi-layer Raster objects can be plotted as individual layers
-```{r, raster-20a, fig.width=7}
-plot(b)
-```
-
-They can also be combined into a single image, by assigning individual layers to one of the three color channels (red, green and blue):
-```{r, raster-20b }
+In this case, it makes sense to combine the three layers into a single image, by assigning individual layers to one of the three color channels (red, green and blue):
+```{r, maps_20}
 plotRGB(b, r=1, g=2, b=3)
 ```
 
 You can also use a number of other plotting functions with `SpatRasters`, including `hist`, `persp`, `contour`}, and `density`. See the help files for more info. 
 
+The `rasterVis` and `tmap` packages provides a lot of very nice mapping options as well. 
+
+## Basemaps
+
+You can get many different basemaps with the maptiles package. Reading the data again. 
+```{r, maps_data}
+library(terra)
+f <- system.file("ex/lux.shp", package="terra")
+p <- vect(f)
+```
+
+```{r, maps_21}
+library(maptiles)
+bg <- get_tiles(ext(p))
+plotRGB(bg)
+lines(p, col="blue", lwd=3)
+```
+
+## Interactive maps 
+
+You can use the `leaflet` package to make interactive maps. 
+
+
+```{r leaflet, message=FALSE}
+library(sf)
+library(leaflet)
+leaflet(sf::st_as_sf(p)) %>%
+   addTiles() %>%
+   addPolygons(fillOpacity=0.1)
+```
 

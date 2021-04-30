@@ -1,8 +1,4 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
+
 # Local regression
 
 
@@ -108,7 +104,7 @@ crs(hvect) <- crs(counties)
 
 Do a spatial query (points in polygon)
 ```{r}
-cnty <- extract(hvect, counties)
+cnty <- extract(counties, hvect)
 head(cnty)
 ```
 

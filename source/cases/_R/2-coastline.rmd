@@ -1,6 +1,5 @@
 # 2. The length of a coastline
 
-
 *How Long Is the Coast of Britain? Statistical Self-Similarity and Fractional Dimension* is the title of a [famous paper](https://classes.soe.ucsc.edu/ams214/Winter09/foundingpapers/Mandelbrot1967.pdf) by [Benoît Mandelbrot](https://en.wikipedia.org/wiki/Benoit_Mandelbrot). Mandelbrot uses data from a paper by [Lewis Fry Richardson](https://en.wikipedia.org/wiki/Lewis_Fry_Richardson) who showed that the length of a coastline changes with scale, or, more precisely, with the length (resolution) of the measuring stick (ruler) used. Mandelbrot discusses the fractal dimension *D* of such lines. *D* is 1 for a straight line, and higher for more wrinkled shapes. For the west coast of Britain, Mandelbrot reports that *D*=1.25. Here I show how to measure the length of a coast line with rulers of different length and how to compute a fractal dimension. 
 
 First we get a high spatial resolution (30 m) coastline for the United Kingdom from the [GADM](http://www.gadm.org) database.

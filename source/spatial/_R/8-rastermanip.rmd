@@ -104,10 +104,10 @@ While we can create a `SpatRaster` from scratch, it is more common to do so from
 
 A notable feature of the `terra` package is that it can work with raster datasets that are stored on disk and are too large to be loaded into memory (RAM). The package can work with large files because the objects it creates from these files only contain information about the structure of the data, such as the number of rows and columns, the spatial extent, and the filename, but it does not attempt to read all the cell values in memory. In computations with these objects, data is processed in chunks. If no output filename is specified to a function, and the output raster is too large to keep in memory, the results are written to a temporary file. 
 
-For this example, we first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction of your own files (just type the file name; don't forget the forward slashes).
+For this example, we first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction for your own files (just type the file name; don't forget the forward slashes).
 
 ```{r, raster-2a1 }
-filename <- system.file("ex/test.tif", package="terra")
+filename <- system.file("ex/elev.tif", package="terra")
 basename(filename)
 ```
 
@@ -255,7 +255,7 @@ Crop and merge example.
 ```{r, raster-5b, fig.width=9, fig.height=4 }
 r1 <- crop(r, ext(-50,0,0,30))
 r2 <- crop(r, ext(-10,50,-20, 10))
-m <- merge(r1, r2, filename='test.tif', overwrite=TRUE)
+m <- merge(r1, r2, filename="test.tif", overwrite=TRUE)
 plot(m)
 ```
 
@@ -405,7 +405,6 @@ head(ctb)
 The cell number is an important concept in the terra package. Raster data can be thought of as a matrix, but in a `SpatRaster` it is more commonly treated as a vector. Cells are numbered from the upper left cell to the upper right cell and then continuing on the left side of the next row, and so on until the last cell at the lower-right side of the raster. There are several helper functions to determine the column or row number from a cell and vice versa, and to determine the cell number for x, y coordinates and vice versa.
 
 ```{r, raster-15}
-library(terra)
 r <- rast(ncol=36, nrow=18)
 ncol(r)
 nrow(r)
@@ -424,15 +423,15 @@ rowFromY(r, 0)
 Cell values can be accessed with several methods. Use `getValues` to get all values or a single row; and `getValuesBlock` to read a block (rectangle) of cell values. 
 
 ```{r, raster-20}
-r <- rast(system.file("ex/test.tif", package="terra"))
-#v <- values(r, 50)
-#v[35:39]
-#getValuesBlock(r, 50, 1, 35, 5)
+r <- rast(system.file("ex/elev.tif", package="terra"))
+v <- values(r)
+v[3075:3080, ]
+values(r, row=33, nrow=1, col=35, ncol=6)
 ```
 
 You can also read values using cell numbers or coordinates (xy) using the `extract` method.
 ```{r, raster-21}
-cells <- cellFromRowCol(r, 50, 35:39)
+cells <- cellFromRowCol(r, 33, 35:40)
 cells
 r[cells]
 xy <- xyFromCell(r, cells)
@@ -450,7 +449,7 @@ In addition, you can use standard *R* indexing to access values, or to replace v
 r[cells] 
 r[1:4]
 sources(r)
-#r[2:3] <- 10
+r[2:5] <- 10
 r[1:4]
 sources(r)
 ```
@@ -458,9 +457,8 @@ sources(r)
 Note that in the above examples values are retrieved using cell numbers. That is, a raster is represented as a (one-dimensional) vector. Values can also be inspected using a (two-dimensional) matrix notation. As for *R* matrices, the first index represents the row number, the second the column number.
 
 ```{r, raster-33}
-
-r[1]
-r[2,2]
+r[1:3]
+r[1,1:3]
 r[1, 1:5]
 r[1:5, 2]
 r[1:3,1:3]
@@ -469,11 +467,10 @@ r[1:3,1:3]
 r[1:3, 1:3, drop=TRUE]
 
 # or a raster like matrix 
-as.matrix(r, wide=TRUE)[1:3, 1:3]
+as.matrix(r, wide=TRUE)[1:3, 1:4]
 ```
 
 Accessing values through this type of indexing should be avoided inside functions as it is less efficient than accessing values via functions like `getValues`. 
-
 
 ## Coercion to other classes
 

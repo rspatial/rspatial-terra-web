@@ -1,37 +1,19 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Environmental data
 
 ## Raster data
 
-In species distribution modeling, predictor variables are typically organized as raster (grid) type files. Each predictor should be a 'raster' representing a variable of interest. Variables can include climatic, soil, terrain, vegetation, land use, and other variables. These data are typically stored in files in some kind of GIS format. Almost all relevant formats can be used (including ESRI grid, geoTiff, netCDF, IDRISI). Avoid ASCII files if you can, as they tend to considerably slow down processing speed. For any particular study the layers should all have the same spatial extent, resolution, origin, and projection. If necessary, use functions like `crop`, `extend`, `aggregate`, `resample`, and `projectRaster` from the `raster` package. See the [Introduction to spatial data manipulation](../../spatial/8-rastermanip.html) for more information about function you can use to prepare your predictor variable data. See the help files and the vignette of the raster package for more info on how to do this. 
+In species distribution modeling, predictor variables are typically organized as raster (grid) type files. The predictors should be layers in a `SpatRaster` representing variables of interest such as climate, soil, terrain, vegetation, or land use. These data are typically stored in files in some kind of geospatial format. Almost all relevant formats can be used (including geoTiff, netCDF, and Arc-ASCII). Avoid ASCII files if you can, as they tend to considerably slow down processing speed. For any particular study the layers should all have the same spatial extent, resolution, origin, and projection. If necessary, use functions like `crop`, `extend`, `aggregate`, `resample`, and `project` from the `terra` package. See the [Introduction to spatial data manipulation](../../spatial/8-rastermanip.html) for more information about function you can use to prepare your predictor variable data. See the help files and the vignette of the raster package for more info on how to do this. 
 
 The set of predictor variables (rasters) can be used to make a `SpatRaster`, which has many layers (see the [Spatial Data tutorial](../../spatial/4-rasterdata.html) for more info. 
 
 Here we make a list of files that are installed with the predicts package and then create a SpatRaster from these, show the names of each layer, and finally plot them all.
 
-
-First get the folder with our files. In this example it is the ("ex") directory of the dismo package. You do not need such a complex statement to get your own files (you just type the string).
+First get the folder with our files. Here we use a file that ships with R. 
 
 ```{r, sdm22a}
 library(predicts)
-path <- file.path(system.file(package="predicts"), 'ex')
-# path
-```
-
-Now get the names of all the files with extension ".grd" in this folder. The `$` sign indicates that the files must *end* with the characters 'grd'. By using `full.names=TRUE`, the full path names are retunred.
-
-```{r, sdm22b}
-files <- list.files(path, pattern="tif$", full.names=TRUE )
-basename(files)
-```
-
-Now create a SpatRaster of predictor variables. 
-```{r, sdm22c}
-predictors <- rast(files)
+f <- system.file("ex/bio.tif", package="predicts")
+predictors <- rast(f)
 predictors
 names(predictors)
 plot(predictors)
@@ -56,7 +38,7 @@ lines(wrld)
 points(bradypus, col='blue')
 ```
 
-The example above uses data representing 'bioclimatic variables' from the [WorldClim database](http://www.worldclim.org) (Hijmans *et al.*, 2004) and ['terrestrial biome'](http://www.worldwildlife.org/science/data/item1875.html) data from the WWF (Olsen *et al.*, 2001). You can go to these websites if you want higher resolution data. You can also use the `getData` function from the `raster` package to download WorldClim climate data.
+The example above uses data representing 'bioclimatic variables' from the [WorldClim database](http://www.worldclim.org) (Hijmans *et al.*, 2004). You can download more recent versions of WorldClim with the `geodata` package.
 
 Predictor variable selection can be important, particularly if the objective of a study is explanation. See, e.g., Austin and Smith (1987), Austin (2002), Mellert *et al.*, (2011). The early applications of species modeling tended to focus on explanation (Elith and Leathwick 2009). Nowadays, the objective of SDM tends to be prediction.  For prediction within the same geographic area, variable selection might arguably be relatively less important, but for many prediction tasks (e.g. to new times or places, see below) variable selection is critically important. In all cases it is important to use variables that are relevant to the ecology of the species (rather than with the first dataset that can be found on the web!).  In some cases it can be useful to develop new, more ecologically relevant, predictor variables from existing data. For example, one could use land cover data and the `focal` function in the `raster ` package to create a new variable that indicates how much forest area is available within x km of a grid cell, for a species that might have a home range of x. 
 
@@ -64,18 +46,20 @@ Predictor variable selection can be important, particularly if the objective of 
 
 ## Extracting values from rasters
 
-We now have a set of predictor variables (rasters) and occurrence points. The next step is to extract the values of the predictors at the locations of the points. (This step can be skipped for the modeling methods that are implemented in the dismo package). This is a very straightforward thing to do using the 'extract' function from the raster package. In the example below we use that function first for the `Bradypus` occurrence points, then for 500 random background points. We combine these into a single `data.frame` in which the first column (variable 'pb') indicates whether this is a presence or a background point. 'biome' is categorical variable (called a 'factor' in *R*) and it is important to explicitly define it that way, so that it won't be treated like any other numerical variable.
+We now have a set of predictor variables (rasters) and occurrence points. The next step is to extract the values of the predictors at the locations of the points. (This step can be skipped for the modeling methods that are implemented in the dismo package). This is a very straightforward thing to do using the 'extract' function from the raster package. In the example below we use that function first for the `Bradypus` occurrence points, then for 500 random background points. We combine these into a single `data.frame` in which the first column (variable 'pb') indicates whether this is a presence or a background point.
 
 ```{r, sdm24a}
 presvals <- extract(predictors, bradypus)
+# remove the ID variable
+presvals <- presvals[,-1]
 # setting random seed to always create the same
 # random set of points for this example
 set.seed(0)
-backgr <- spatSample(predictors, 500, "random", na.rm=TRUE, xy=TRUE)
-absvals <- extract(predictors, backgr)
+backgr <- spatSample(predictors, 500, "random", as.points=TRUE, na.rm=TRUE)
+absvals <- values(backgr)
+
 pb <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
 sdmdata <- data.frame(cbind(pb, rbind(presvals, absvals)))
-sdmdata[,'biome'] = as.factor(sdmdata[,'biome'])
 head(sdmdata)
 tail(sdmdata)
 summary(sdmdata)
@@ -97,6 +81,3 @@ To use the `sdmdata` and `presvals` in the next chapter, we save it to disk.
 saveRDS(sdmdata, "sdm.Rds")
 saveRDS(presvals, "pvals.Rds")
 ```
-
-
-

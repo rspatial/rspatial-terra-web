@@ -1,4 +1,3 @@
-
 # Map overlay
 
 
@@ -154,12 +153,13 @@ r <- rasterize(railTA, r)
 
 # compute distance
 d <- distance(r)
+names(d) <- "dist"
 
 # extract distance values for polygons
-dp <- extract(d, parksTA, fun=mean, small=TRUE)
+dp <- extract(d, parksTA, fun=mean, exact=TRUE)
 
-dp <- cbind(park=parksTA$PARK, dp)
-dp <- dp[order(dp$value), ]
+dp <- data.frame(park=parksTA$PARK, distance=dp[,2])
+dp <- dp[order(dp$distance), ]
 
 plot(d)
 plot(parksTA, add=TRUE)
