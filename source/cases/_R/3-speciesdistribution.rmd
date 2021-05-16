@@ -1,4 +1,4 @@
-# 3. Analysing species distribution data
+# 3. Analyzing species distribution data
 
 ## Introduction
 
@@ -6,7 +6,7 @@ In this case-study I show some techniques that can be used to analyze species di
 
 ## Import and prepare data
 
-The data we will use is available in the rspatial package. First install that from github, using `devtools`.
+The data we will use is available in the rspatial package. First install that from github, using the `remotes` package.
 ```{r, a1}
 if (!require("rspat")) remotes::install_github('rspatial/rspat')
 library(rspat)
@@ -41,7 +41,7 @@ fun <- function(x) {
 ddd <- lapply(dd, fun)
 # row bind all elements (into a matrix)
 v <- do.call(rbind, ddd)
-head(v)
+v[1:3, 1:8]
 
 #set the column names and remove them from the data
 colnames(v) <- v[1,]
@@ -258,7 +258,7 @@ for (s in 1:length(spp)) {
 	p <- pts[pts$SPECIES == spp[s], ]
 	# run "circles" model
 	m <- aggregate(buffer(p, 50000))
-	CA[s] <- area(m)
+	CA[s] <- expanse(m)
 }
 # standardize to the size of one circle
 CA <- CA / (pi * 50000^2)
@@ -273,7 +273,7 @@ for (s in 1:length(spp)) {
 	p <- unique(pts[pts$SPECIES == spp[s], ])
 	# need at least three (unique) points for hull
 	if (nrow(p) > 3) {
-		h <- convexhull(p)
+		h <- convHull(p)
 		if (geomtype(h) == "polygons") {
   		hull[[s]] <- h
 		}
@@ -294,7 +294,7 @@ plot(hh)
 Get the area for each hull, taking care of the fact that some are NULL.
 
 ```{r, f4c}
-ahull <- area(hh)
+ahull <- expanse(hh)
 plot(rev(sort(ahull))/1000, ylab="Area of convex hull")
 ```
 

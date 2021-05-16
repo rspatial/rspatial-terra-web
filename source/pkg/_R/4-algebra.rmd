@@ -1,11 +1,5 @@
 # Raster algebra
 
-```{r, global_options, tidy = TRUE, echo=FALSE, message=FALSE}
-library(knitr)
-library(terra)
-opts_chunk$set(tidy.opts=list(width.cutoff=60))
-```
-
 Many generic functions that allow for simple and elegant raster algebra have been implemented for `SpatRaster` objects, including the normal algebraic operators such as `+`, `-`, `*`, `/`, logical operators such as `>`, `>=`, `<`, `==`, `!`} and functions such as `abs`, `round`, `ceiling`, `floor`, `trunc`, `sqrt`, `log`, `log10`, `exp`, `cos`, `sin`, `max`, `min`, `range`, `prod`, `sum`, `any`, `all`. In these functions you can mix `terra` objects with numbers, as long as the first argument is a `terra` object. 
 
 ```{r  raster-3a}
@@ -24,9 +18,9 @@ r <- r == 1
 
 You can also use replacement functions (not yet supported)
 ```{r  raster-3b}
-#s[r] <- -0.5
-#s[!r] <- 5
-#s[s == 5] <- 15
+s[r] <- -0.5
+s[!r] <- 5
+s[s == 5] <- 15
 ```
 
 If you use multiple `SpatRaster` objects (in functions where this is relevant, such as range), these must have the same resolution and origin. The origin of a `SpatRaster` object is the point closest to (0, 0) that you could get if you moved from a corners of a `SpatRaster` object towards that point in steps of the `x` and ```y` resolution. Normally these objects would also have the same extent, but if they do not, the returned object covers the spatial intersection of the objects used.

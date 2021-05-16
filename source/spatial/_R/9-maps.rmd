@@ -23,7 +23,7 @@ plot(p)
 You can add colors like this
 
 ```{r, maps_2, fig.height=5}
-n <- size(p)
+n <- nrow(p)
 plot(p, col=rainbow(n))
 ```
 

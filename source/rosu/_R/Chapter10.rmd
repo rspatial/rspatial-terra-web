@@ -1,13 +1,12 @@
 # Kriging
 
-
 ## Alberta Rainfall
 
 Recreating Figures 10.2, 10.13 & 10.14 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
 
-We need the rspatial packge to get the data we will use.
+We need the `rspat` packge to get the data we will use.
 ```{r, krig0}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
 ```
 
 Figure 10.2
@@ -64,7 +63,8 @@ axis(1, at=seq(0,80,10))
 axis(2, las=1)
 ```
 
-And plotting semivariance in bins 
+And plotting semivariance in bins (and note the "drift").
+
 ```{r, krig10}
 # choose a bin width (in spatial distance)
 binwidth <- 8
@@ -80,5 +80,5 @@ axis(1, at=seq(0,80,10))
 axis(2, las=1)
 ```
 
-Now continue with the [interpolation chapter](/analysis/4-interpolation.html) of the "Spatial Data Analysis" book.
+Now continue with the [interpolation chapter](/terra/analysis/4-interpolation.html) of the "Spatial Data Analysis" section.
 

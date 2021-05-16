@@ -93,7 +93,7 @@ The `clump` method identifies groups of cells that are connected. `boundaries` i
 ```{r  raster-7}
 r <- rast(nrow=45, ncol=90)
 values(r) <- round(runif(ncell(r))*3)
-a <- area(r, sum=FALSE)
+a <- cellSize(r)
 zonal(a, r, "sum")
 ```
 

@@ -5,7 +5,7 @@
 
 This page accompanies Chapter 5 of [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html).
 
-We are using a dataset of crimes in a city. You can get these data from the `rspatial` package that you can install from github using the devtools package 
+We are using a dataset of crimes in a city. You can get these data from the `rspatial` package that you can install from github using the `remotes` package 
 
 ```{r getData, echo=TRUE}
 if (!require("rspat")) remotes::install_github('rspatial/rspat')
@@ -75,7 +75,7 @@ lines(circle, col='red', lwd=2)
 Here is a basic approach to computing point density. 
 
 ```{r, message=FALSE}
-CityArea <- area(city)
+CityArea <- expanse(city)
 dens <- nrow(xy) / CityArea
 ``` 
 
@@ -333,14 +333,12 @@ library(spatstat)
 
 We start with making make a Kernel Density raster. I first create a 'ppp' (point pattern) object, as defined in the `spatstat` package. 
 
-A ppp object has the coordinates of the points **and** the analysis 'window' (study region). To assign the points locations we need to extract the coordinates from our SpatVector points object. To set the window, we first need to to coerce our SpatVector polygons into an 'owin' object. We need a function from the maptools package for this coercion.
+A ppp object has the coordinates of the points **and** the analysis 'window' (study region). To assign the points locations we need to extract the coordinates from our SpatVector points object. To set the window, we first need to to coerce our SpatVector polygons into an 'owin' object. 
 
-Coerce from SpatVector to SpatialPolygons to an object of class "owin" (observation window)
+Coerce from SpatVector an object of class "owin" (observation window)
 
 ```{r, message=FALSE}
 cityOwin <- as.owin(sf::st_as_sf(city))
-# or 
-# cityOwin <- as.owin(sf::st_as_sf(as(city, "Spatial"))
 class(cityOwin)
 cityOwin
 ``` 
@@ -397,7 +395,7 @@ census
 
 To compute population density for each census block, we first need to get the area of each polygon. I transform density from persons per feet^2^ to persons per mile^2^, and then compute population density from POP2000 and the area
 ```{r}
-census$area <- terra::area(census)
+census$area <- expanse(census)
 census$area <- census$area/27878400
 census$dens <- census$POP2000 / census$area
 ``` 
@@ -423,8 +421,9 @@ plot(win, add=TRUE, border='blue', lwd=3)
 ``` 
 
 Now we can use `Smooth.ppp` to interpolate. Population density at the points is referred to as the 'marks'
+
 ```{r}
-owin <- maptools::as.owin.SpatialPolygons(as(win, "Spatial"))
+owin <- as.owin(sf::st_as_sf(win))
 pxy <- geom(p)[, c("x", "y")]
 pp <- ppp(pxy[,1], pxy[,2], window=owin, marks=census$dens)
 pp
@@ -491,7 +490,7 @@ Create a marked point pattern object (ppp) for all crimes. It is important to co
 
 ```{r}
 fcat <- as.factor(crime$CATEGORY)
-#cityOwin <- maptools::as.owin.SpatialPolygons(as(city, "Spatial"))
+cityOwin <- as.owin(sf::st_as_sf(city))
 xy <- geom(crime)[, c("x", "y")]
 mpp <- ppp(xy[,1], xy[,2], window = cityOwin, marks=fcat)
 ``` 

@@ -38,7 +38,7 @@ head(duk)
 
 Now we have 920 features. We want the largest one. 
 ```{r}
-a <- area(duk)
+a <- expanse(duk)
 i <- which.max(a)
 a[i] / 1000000
 b <- duk[i,]

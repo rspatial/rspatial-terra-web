@@ -1,4 +1,3 @@
-
 # Local regression
 
 
@@ -11,7 +10,7 @@ There are two examples here. One short example with California precipitation dat
 
 ```{r getDataLocal}
 
-if (!require("rspat")) devtools::install_github('rspat/rspatial')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
 
 library(rspat)
 counties <- spat_data("counties")
@@ -65,8 +64,8 @@ g
 
 Link the results back to the raster
 ```{r, loca18, fig.width=9}
-slope <- r
-intercept <- r
+slope <- copy(r)
+intercept <- copy(r)
 slope[!is.na(slope)] <- g$SDF$ALT 
 intercept[!is.na(intercept)] <- g$SDF$'(Intercept)'
 s <- c(intercept, slope)
@@ -78,7 +77,7 @@ plot(s)
 ## California House Price Data
 
 We will use house prices data from the 1990 census, taken from "Pace, R.K. and R. Barry, 1997. Sparse Spatial Autoregressions. Statistics and Probability Letters 33: 291-297."
-You can download the data [here](https://biogeo.ucdavis.edu/data/rspatial/houses1990.csv)
+
 
 ```{r}
 houses <- spat_data("houses1990.csv")
@@ -218,13 +217,13 @@ plot(cnres, "income")
 
 To show all parameters in a 'conditioning plot', we need to first scale the values to get similar ranges.
 
-```{r, gwr6}
+```{r, gwr6, fig.width=10}
 # a copy of the data
 cnres2 <- cnres
 
 # scale all variables, except the first one (county name)
 values(cnres2) <- as.data.frame(scale(as.data.frame(cnres)[,-1]))
-plot(cnres2, 1:6)
+plot(cnres2, 1:6, plg=list(x="topright"), mar=c(1,1,1,1))
 ```
 
 
@@ -363,7 +362,9 @@ names(b) <- colnames(dd)
 plot(b)
 ```
 
+__Question 2__: *spgwr shows a remarkable startup message. What is that about?*
 
-__Question 2__: *Briefly comment on the results and the differences (if any) with the two home-brew examples.*
+
+__Question 3__: *Briefly comment on the results and the differences (if any) with the two home-brew examples.*
 
 

@@ -1,15 +1,16 @@
 # Interpolation
 
+
 ## Introduction
 
-Almost any variable of interest has [spatial autocorrelation](/analysis/3-spauto.html). That can be a problem in statistical tests, but it is a very useful feature when we want to predict values at locations where no measurements have been made; as we can generally safely assume that values at nearby locations will be similar. There are several spatial interpolation techniques. We show some of them in this chapter.
+Almost any geographic variable of interest has [spatial autocorrelation](/terra/analysis/3-spauto.html). That can be a problem in statistical tests, but it is a very useful feature when we want to predict values at locations where no measurements have been made; as we can generally safely assume that values at nearby locations will be similar. There are several spatial interpolation techniques. We show some of them in this chapter.
 
 ## Temperature in California 
 
-We will be working with temperature data for California. If have not yet done so, first install the rspatial package to get the data. You may need to install the devtools package first.
+We will be working with temperature data for California, USA. If have not yet done so, first install the `rspat` package to get the data. You may need to install the `remotes` package first.
 
 ```{r fields00}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
 ```
 
 Now get the data:
@@ -23,7 +24,8 @@ head(d)
 Compute annual precipitation
 
 ```{r fields1}
-d$prec <- rowSums(d[, c(6:17)])
+mnts <- toupper(month.abb)
+d$prec <- rowSums(d[, mnts])
 plot(sort(d$prec), ylab="Annual precipitation (mm)", las=1, xlab="Stations")
 ```
 
@@ -37,7 +39,7 @@ cuts <- c(0,200,300,500,1000,3000)
 # set up a palette of interpolated colors
 blues <- colorRampPalette(c('yellow', 'orange', 'blue', 'dark blue'))
 
-plot(CA, col="light gray", lwd=3, border="dark gray")
+plot(CA, col="light gray", lwd=4, border="dark gray")
 plot(dsp, "prec", type="interval", col=blues(10), legend=TRUE, cex=2,
 	breaks=cuts, add=TRUE, plg=list(x=-117.27, y=41.54))
 lines(CA)
@@ -68,17 +70,20 @@ null <- RMSE(mean(dsp$prec), dsp$prec)
 null
 ```
 
+So `r round(null)` is our target. Can we do better (have a smaller RMSE)?
+
 ### proximity polygons
 
 Proximity polygons can be used to interpolate categorical variables. Another term for this is "nearest neighbour" interpolation.
 
 ```{r fields25}
-v <- voronoi(dta, cata)
+v <- voronoi(dta)
 plot(v)
+points(dta)
 ```
 
 
-Let's cut out what is not California
+Let's cut out what is not California, and map precipitation.
 
 ```{r fields35}
 vca <- crop(v, cata)
@@ -94,7 +99,7 @@ vr <- rasterize(vca, r, "prec")
 plot(vr)
 ```
 
-We can use cross-validation to evaluate this model.
+And use 5-fold cross-validation to evaluate this model.
 
 ```{r}
 set.seed(5132015)
@@ -105,12 +110,14 @@ for (k in 1:5) {
   test <- dta[kf == k, ]
   train <- dta[kf != k, ]
   v <- voronoi(train)
-  p <- extract(test, v)
+  p <- extract(v, test)
   rmse[k] <- RMSE(test$prec, p$prec)
 }
 rmse
 mean(rmse)
-1 - (mean(rmse) / null)
+# relative model performance
+perf <- 1 - (mean(rmse) / null)
+round(perf, 3)
 ```
 
 __Question 1__: *Describe what each step in the code chunk above does (that is, how does cross-validation work?)*
@@ -119,7 +126,7 @@ __Question 1__: *Describe what each step in the code chunk above does (that is, 
 __Question 2__: *How does the proximity-polygon approach compare to the NULL model?*
 
 
-__Question 3__: *You would not typically use proximty polygons for rainfall data. For what kind of data would you use them?*
+__Question 3__: *You would not typically use proximty polygons for rainfall data. For what kind of data might you use them?*
 
 
 
@@ -169,7 +176,7 @@ idwr <- mask(idw, vr)
 plot(idwr, 1)
 ```
 
-__Question 4__: *IDW generated rasters tend to have a noticeable artefact. What is that?*
+__Question 4__: *IDW generated rasters tend to have a noticeable artefact. What is that and what causes that?*
 
 
 Cross-validate again. We can use `predict` for the locations of the test points
@@ -189,7 +196,7 @@ mean(rmse)
 ```
 
 
-__Question 5__: *Inspect the arguments used for and make a map of the IDW model below. What other name could you give to this method (IDW with these parameters)? Why?*
+__Question 5__: *Inspect the arguments used for and make a map of the IDW model below. What other name could you give to this method (IDW with these parameters)? Why? Illustrate with a map*
 
 ```{r}
 gs2 <- gstat(formula=prec~1, locations=~x+y, data=d, nmax=1, set=list(idp=1))
@@ -308,7 +315,7 @@ i <- sample(nrow(aq), 0.2 * nrow(aq))
 tst <- p[i,]
 trn <- p[-i,]
 opt <- optim(c(8, .5), f1, test=tst, train=trn)
-opt
+str(opt)
 ```
 
 
@@ -320,8 +327,8 @@ idw <- mask(idw, ca)
 plot(idw, 1)
 ```
 
+And now, for something completely different, a thin plate spline model:
 
-A thin plate spline model
 ```{r krig34, message=FALSE}
 library(fields)
 m <- fields::Tps(p[,c("x", "y")], p$OZDLYAV)
@@ -331,7 +338,7 @@ plot(tps)
 ```
 
 
-### Cross-validate 
+### Cross-validation 
 
 Cross-validate the three methods (IDW, Ordinary kriging, TPS) and add RMSE weighted ensemble model.
 
@@ -373,11 +380,12 @@ rme
 __Question 6__: *Which method performed best?*
 
 
-We can use the RMSE values to make a weighted ensemble. I use the inverse of the differnce between a model's RMSE and a NULL model.
+We can use the RMSE values to make a weighted ensemble. I use the normalized difference between a model's RMSE and the NULL model as weights.
 
 ```{r krig40}
 nullrmse <- RMSE(test$OZDLYAV, mean(test$OZDLYAV))
-w <- 1 / (nullrmse - rms)
+w <- nullrmse - rms
+# normalize weights to sum to 1
 weights <- ( w / sum(w) )
 # check 
 sum(weights)
@@ -394,6 +402,7 @@ plot(s)
 
 
 __Question 7__: *Show where the largest difference exist between IDW and OK.*
+
 
 __Question 8__: *Show the 95% confidence interval of the OK prediction.*
 

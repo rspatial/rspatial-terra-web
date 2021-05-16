@@ -62,11 +62,11 @@ p$lets <- sample(letters, nrow(p))
 p
 ```
 
-Note that to get the number of geometries of SpatVector `p`, you can use `nrow(p)`, or `size(p)`. You can also do `perimeter(p)` to get the "length" of the spatial objects (zero for points, the length of the lines, or the perimeter of the polygons).
+Note that to get the number of geometries of SpatVector `p`, you can use `nrow(p)`, or `size(p)`. You can also do `perim(p)` to get the "length" of the spatial objects (zero for points, the length of the lines, or the perimeter of the polygons).
 
 
 ```{r}
-perimeter(p)
+perim(p)
 ```
 
 Assigning a new value to an existing variable.

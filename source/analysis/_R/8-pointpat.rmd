@@ -1,3 +1,4 @@
+
 # Point pattern analysis
 
 ## Introduction
@@ -5,12 +6,11 @@
 We are using a dataset of crimes in a city. Start by reading in the data. 
 
 ```{r getDatapp}
-if (!require("rspat")) devtools::install_github("rspatial/rspat")
+if (!require("rspat")) remotes::install_github("rspatial/rspat")
 library(rspat)
 city <- spat_data("city")
 crime <- spat_data("crime")
 ```
-
 
 Here is a map of both datasets. 
 ```{r, pp1, fig.width=8, fig.height=4}
@@ -28,7 +28,7 @@ tb
 Let's get the coordinates of the crime data, and for this exercise, remove duplicate crime locations. These are the "events" we will use below (later we'll go back to the full data set).
 
 ```{r}
-xy <- coordinates(crime)
+xy <- crds(crime)
 dim(xy)
 xy <- unique(xy)
 dim(xy)
@@ -66,7 +66,7 @@ lines(circle, col='red', lwd=2)
 Here is a basic approach to computing point density. 
 
 ```{r, message=FALSE}
-CityArea <- raster::area(city)
+CityArea <- expanse(city)
 dens <- nrow(xy) / CityArea
 ``` 
 
@@ -75,20 +75,18 @@ __Question 1a__:*What is the unit of 'dens'?*
 __Question 1b__:*What is the number of crimes per square km?*
 
 
-To compute  quadrat counts I first create quadrats (a RasterLayer). I get the extent for the raster from the city polygon, and then assign an an arbitrary resolution of 1000. (In real life one should always try a range of resolutions, I think).
+To compute  quadrat counts I first create quadrats (a SpatRaster). I get the extent for the raster from the city polygon, and then assign an an arbitrary resolution of 1000. (In real life one should always try a range of resolutions, I think).
 
 ```{r}
-r <- raster(city) 
-res(r) <- 1000
-r
+r <- rast(city, res=1000) 
 ``` 
 
-To find the cells that are in the city, and for easy display, I create polygons from the RasterLayer.
+To find the cells that are in the city, and for easy display, I create polygons from the SpatRaster.
 
 ```{r, pp3, fig.width=8, fig.height=4}
 r <- rasterize(city, r)
 plot(r)
-quads <- as(r, 'SpatialPolygons')
+quads <- as.polygons(r)
 plot(quads, add=TRUE)
 points(crime, col='red', cex=.5)
 ``` 
@@ -96,7 +94,7 @@ points(crime, col='red', cex=.5)
 The number of events in each quadrat can be counted using the 'rasterize' function. That function can be used to summarize the number of points within each cell, but also to compute statistics based on the 'marks' (attributes). For example we could compute the number of different crime types) by changing the 'fun' argument to another function (see ?rasterize).
 
 ```{r, pp4, fig.width=8, fig.height=4}
-nc <- rasterize(coordinates(crime), r, fun='count', background=0)
+nc <- rasterize(crime, r, fun=function(i){length(i)}, background=0)
 plot(nc)
 plot(city, add=TRUE)
 ``` 
@@ -112,12 +110,12 @@ plot(city, add=TRUE)
 Better. Now the frequencies.
 
 ```{r, pp6}
-f <- freq(ncrimes, useNA='no')
+f <- freq(ncrimes)
 head(f)
 plot(f, pch=20)
 ``` 
 
-Does this look like a pattern you would have expected? Now compute average number of cases per quadrat.
+Does this look like a pattern you would have expected? Now compute the average number of cases per quadrat.
 ```{r}
 # number of quadrats
 quadrats <- sum(f[,2])
@@ -154,7 +152,7 @@ __Question 2:__*What does this VMR score tell us about the point pattern?*
 
 ## Distance based measures
 
-As we are using a *planar coordinate system* we can use the dist function to compute the distances between pairs of points. If we were using longitude/latitude we could compute distance via spherical trigonometry functions. These are available in the sp, raster, and notably the geosphere package (among others). For example, see `raster::pointDistance`.
+As we are using a *planar coordinate system* we can use the dist function to compute the distances between pairs of points. If we were using longitude/latitude we could compute distance via spherical trigonometry functions. These are available in the sp, raster, and notably the geosphere package (among others). For example, see `terra::distance`.
 
 ```{r}
 d <- dist(xy)
@@ -209,8 +207,7 @@ for (i in far25) {
 
 Note that some points, but actually not that many, are used as isolated and as a neighbor to an isolated points. 
 
-
-Now on to the G function
+Now on to the *G* function
 ```{r, pp11}
 max(dmin)
 # get the unique distances (for the x-axis)
@@ -248,11 +245,11 @@ The steps are so small in our data, that you hardly see the difference.
 I use the centers of previously defined raster cells to compute the *F* function.
 
 ```{r, pp13}
-# get the centers of the 'quadrats' (raster cells)
-p <- rasterToPoints(r)
+c# get the centers of the 'quadrats' (raster cells)
+p <- as.points(r)
 # compute distance from all crime sites to these cell centers
-d2 <- pointDistance(p[,1:2], xy, longlat=FALSE)
-
+d2 <- distance(p, crime)
+d2 <- as.matrix(d2)
 # the remainder is similar to the G function
 Fdistance <- sort(unique(round(d2)))
 mind <- apply(d2, 1, min)
@@ -273,7 +270,7 @@ expected <- ef(0:2000, dens)
 Now, let's combine F and G on one plot.
 ```{r, pp14}
 plot(distance, Gd, type='l', lwd=2, col='red', las=1, 
-    ylab='F(d) or G(d)', xlab='Distance', yaxs="i", xaxs="i")
+    ylab='F(d) or G(d)', xlab='Distance', yaxs="i", xaxs="i", ylim=c(0,1.1))
 lines(Fdistance, Fd, lwd=2, col='blue')
 lines(0:2000, expected, lwd=2)
 
@@ -319,18 +316,17 @@ We start with making make a Kernel Density raster. I first create a 'ppp' (point
 
 A ppp object has the coordinates of the points **and** the analysis 'window' (study region). To assign the points locations we need to extract the coordinates from our SpatialPoints object. To set the window, we first need to to coerce our SpatialPolygons into an 'owin' object. We need a function from the maptools package for this coercion.
 
-Coerce from SpatialPolygons to an object of class "owin" (observation window)
+Coerce from SpatVector to an object of class "owin" (observation window) via `sf`
 
 ```{r, message=FALSE}
-library(maptools)
-cityOwin <- as.owin(city)
+cityOwin <- as.owin(sf::st_as_sf(city))
 class(cityOwin)
 cityOwin
 ``` 
 
 Extract coordinates from SpatialPointsDataFrame:
 ```{r}
-pts <- coordinates(crime)
+pts <- terra::crds(crime)
 head(pts)
 ``` 
 
@@ -351,10 +347,10 @@ class(ds)
 plot(ds, main='crime density')
 ``` 
 
-Density is the number of points per unit area. Let's ceck if the numbers makes sense, by adding them up and mulitplying with the area of the raster cells. I use raster package functions for that.
+Density is the number of points per unit area. Let's ceck if the numbers makes sense, by adding them up and mulitplying with the area of the raster cells. I use terra package functions for that.
 ```{r}
 nrow(pts)
-r <- raster(ds)
+r <- rast(ds)
 s <- sum(values(r), na.rm=TRUE) 
 s * prod(res(r))
 ``` 
@@ -369,19 +365,20 @@ p$n
 Here's another, lenghty, example of generalization. We can interpolate population density from (2000) census data; assigning the values to the centroid of a polygon (as explained in the book, but not a great technique). We use a shapefile with census data. 
 
 ```{r}
-census <- sp_data("census2000.rds")
+census <- spat_data("census2000.rds")
 ``` 
 
 To compute population density for each census block, we first need to get the area of each polygon. I transform density from persons per feet^2^ to persons per mile^2^, and then compute population density from POP2000 and the area
 ```{r}
-census$area <- area(census)
+census$area <- expanse(census)
 census$area <- census$area/27878400
 census$dens <- census$POP2000 / census$area
 ``` 
 
-Now to get the centroids of the census blocks we can use the 'coordinates' function again. Note that it actually does something quite different (with a `SpatialPolygons*` object) then in the case above (with a SpatialPoints* object).
+Now to get the centroids of the census blocks.
+
 ```{r}
-p <- coordinates(census)
+p <- terra::crds(centroids(census))
 head(p)
 ``` 
 
@@ -401,7 +398,7 @@ plot(win, add=TRUE, border='blue', lwd=3)
 
 Now we can use 'Smooth.ppp' to interpolate. Population density at the points is referred to as the 'marks'
 ```{r}
-owin <- as.owin(win)
+owin <- as.owin(sf::st_as_sf(win))
 pp <- ppp(p[,1], p[,2], window=owin, marks=census$dens)
 pp
 ``` 
@@ -410,17 +407,17 @@ Note the warning message: "1 point was rejected as lying outside the specified w
 
 Let's find and remove this point that is outside the study area.
 ```{r}
-sp <- SpatialPoints(p, proj4string=CRS(proj4string(win)))
-library(rgeos)
-i <- gIntersects(sp, win, byid=TRUE)
-which(!i)
+sp <- vect(p, crs=crs(win))
+i <- relate(sp, win, "intersects")
+i <- which(!i)
+i
 ``` 
 
 Let's see where it is:
 ```{r, pp23}
 plot(census)
 points(sp)
-points(sp[!i,], col='red', cex=3, pch=20)
+points(sp[i,], col='red', cex=3, pch=20)
 ``` 
 
 You can zoom in using the code below. After running the next line, click on your map twice to zoom to the red dot, otherwise you cannot continue:
@@ -429,7 +426,7 @@ You can zoom in using the code below. After running the next line, click on your
 
 And add the red points again
 
-```points(sp[!i,], col='red')```
+```points(sp[i,], col='red')```
 
 To only use points that intersect with the window polygon, that is, where 'i == TRUE':
 
@@ -464,15 +461,16 @@ Create a marked point pattern object (ppp) for all crimes. It is important to co
 
 ```{r}
 crime$fcat <- as.factor(crime$CATEGORY)
-w <- as.owin(city)
-xy <- coordinates(crime)
-mpp <- ppp(xy[,1], xy[,2], window = w, marks=crime$fcat)
+w <- as.owin(sf::st_as_sf(city))
+xy <- terra::crds(crime)
+mpp <- ppp(xy[,1], xy[,2], window = w, marks=as.factor(crime$fcat))
 ``` 
 
 We can split the mpp object by category (crime)
 ```{r, pp27, fig.width=9}
 spp <- split(mpp)
-plot(spp[1:4], main='')
+
+plot(spp[1:4], main=)
 ``` 
 
 The crime density by category:

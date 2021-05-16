@@ -13,7 +13,6 @@ def setup(app):
     app.add_css_file('custom.css')
 
 
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -35,7 +34,8 @@ extensions = [
 #mathjax_path = "js/MathJax.js?config=TeX-MML-AM_CHTML"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['../rtheme/templates']
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Spatial Data Science'
-copyright = u'2016-2019, Robert J. Hijmans'
-author = u'Robert J. Hijmans, Ani Ghosh, Alex Mandel'
+copyright = u'2020-2021, Robert J. Hijmans'
+author = u'Robert J. Hijmans'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -186,7 +186,7 @@ html_static_path = ['_static']
 html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -278,7 +278,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'RSpatial', u'RSpatial',
-   author, 'RSpatial', 'Introduction to using R for spatial data analysis',
+   author, 'RSpatial', 'Spatial Data Science with R',
    'Spatial data'),
 ]
 

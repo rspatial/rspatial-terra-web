@@ -66,17 +66,10 @@ dsp <- vect(d, c("LONG", "LAT"), crs= "+proj=longlat +datum=WGS84")
 CA <- spat_data("counties")
 
 cuts <- c(0,200,300,500,1000,3000)
-#pols <- list("sp.polygons", CA, fill = "lightgray")
-# set up a palette of interpolated colors
 blues <- colorRampPalette(c('yellow', 'orange', 'blue', 'dark blue'))
-#spplot(dsp, 'prec', cuts=cuts, col.regions=blues(5), sp.layout=pols, pch=20, cex=2)
+plot(CA, col="light gray", lwd=4, border="white")
+plot(dsp, "prec", breaks=cuts, col=blues(5), pch=20, cex=1.5, add=TRUE, plg=list(x="topright"))
+lines(CA, lwd=1.5)
 ```
 
-Transform longitude/latitude to planar coordinates
-```{r}
-TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
-dta <- project(dsp, TA)
-cata <- project(CA, TA)
-```
 
-Continue [here](/analysis/4-interpolation.html)

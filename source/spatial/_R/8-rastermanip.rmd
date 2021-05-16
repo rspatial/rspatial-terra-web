@@ -349,7 +349,7 @@ There are a number of distance related functions. For example, you can compute t
 ```{r, raster-7}
 r <- rast(nrow=45, ncol=90)
 values(r) <- round(runif(ncell(r))*3)
-a <- area(r, sum=FALSE)
+a <- cellSize(r)
 zonal(a, r, "sum")
 ```
 

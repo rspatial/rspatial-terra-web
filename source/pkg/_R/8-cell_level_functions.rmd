@@ -25,7 +25,7 @@ rowFromY(r, 0)
 Cell values can be accessed with several methods. Use `values` to get all values or a single row; and `valuesBlock` to read a block (rectangle) of cell values. 
 
 ```{r  raster-20}
-r <- rast(system.file("ex/test.tif", package="terra"))
+r <- rast(system.file("ex/meuse.tif", package="terra"))
 v <- values(r)
 v[708:712]
 ```

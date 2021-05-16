@@ -14,7 +14,3 @@ Robert J. Hijmans and Jane Elith
 	3_sdm_absence-background
 	4_sdm_envdata
 	5_sdm_models
-	6_sdm_methods
-	7_sdm_NULLmodels
-	8_sdm_references
-	9_sdm_brt

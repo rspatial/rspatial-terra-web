@@ -11,4 +11,6 @@ Spatial data analysis
 	4-interpolation
 	5-global_regression
 	6-local_regression	
+	7-spregression	
+	8-pointpat	
 	

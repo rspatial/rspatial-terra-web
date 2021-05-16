@@ -1,86 +1,81 @@
 # Local statistics
 
-
 ## Introduction
 
 This handout accompanies Chapter 8 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
 
-
 ## LISA
 
-First get the Auckland data
+We compute some measures of local spatial autocorrelation. 
 
+First get the Auckland data.
 
-```{r, loca1}
-if (!require("rspat")) devtools::install_github("rspatial/rspat")
+```{r, loca1, message=FALSE}
+if (!require("rspat")) remotes::install_github("rspatial/rspat")
 library(rspat)
 auck <- spat_data("auctb")
 ```
 
-We will be using the `sp`, `spdep` and related packages. And we transform the SpatVector data to a Spatial* object.
+Now compute the spatial weights. You can try other ways (e.g. `relation="touches"`)
 
 ```{r, locasp}
-auck <- as(auck, "Spatial")
+w <- relate(auck, relation="rook")
 ``` 
 
-Local Getis *Gi*
+Compute the Getis *Gi*
 
 ```{r, loca2}
-library(spdep)
-wr <- poly2nb(auck, row.names=auck$Id, queen=FALSE)
-lstw <- nb2listw(wr, style="B")
-Gi <- localG(auck$TB, lstw)
+Gi <- autocor(auck$TB, w, "Gi")
 head(Gi)
 ```
 
+And make a map
 
-```{r, loca3}
-par(mai=c(0,0,0,0))
-Gcuts <- cut(Gi, 5)
-Gcutsi <- as.integer(Gcuts)
-cols <- rev(gray(seq(0,1,.2)))
-plot(auck, col=cols[Gcutsi])
-legend("bottomleft", levels(Gcuts), fill=cols)
+```{r, loca3, fig.height=4}
+grays <- rev(gray(seq(0,1,.2)))
+auck$Gi <- Gi
+plot(auck, "Gi", col=grays)
 ```
 
-To get the *Gi* * we need to include each polygon as its own "neighbor"
+Now on to the `Gi*` by including the focal area in the computation.
 
-```{r, loca4}
-ws <- include.self(wr)
-lstws <- nb2listw(ws, style="B")
-Gis <- localG(auck$TB, lstws)
-Gscuts <- cut(Gis, 5)
-Gscutsi <- as.integer(Gscuts)
-cols <- rev(gray(seq(0,1,.2)))
-plot(auck, col=cols[Gscutsi])
-legend("bottomleft", levels(Gscuts), fill=cols)
+```{r, loca4, fig.height=4}
+#include "self"
+diag(w) <- TRUE
+auck$Gistar <- autocor(auck$TB, w, "Gi*")
+plot(auck, "Gistar", main="Gi*", col=grays)
 ```
 
+This looks very similar to the local average, which we compute below.
 
-This looks very similar to the local average.
-
-```{r, loca6}
-m <- sapply(ws, function(i) mean(auck$TB[i]))
-cts <- cut(m, 5)
-mcts <- as.integer(cts)
-plot(auck, col=cols[mcts])
-legend("bottomleft", levels(cts), fill=cols)
+```{r, loca6, fig.height=4}
+auck$loc_mean <- apply(w, 1, function(i) mean(auck$TB[i]))
+plot(auck, "loc_mean", main="Local mean", col=grays)
 ```
 
+The local Moran *Ii* has not been implemented in `terra`, but we can use `spdep` (a package that if focussed on these type of statistics and on spatial regression). 
 
-The local Moran *Ii* shows where there are locally high levels of autocorrelation.
-
-```{r, loca8}
-Ii <- localmoran(auck$TB, lstw)
-Icuts <- cut(Ii, 5)
-Icutsi <- as.integer(Icuts)
-plot(auck, col=cols[Icutsi])
-legend("bottomleft", levels(Icuts), fill=cols)
+```{r, loca8, message=FALSE, fig.height=4}
+library(spdep)
+sfauck <- sf::st_as_sf(auck)
+wr <- poly2nb(sfauck, row.names=sfauck$Id, queen=FALSE)
+lstw <- nb2listw(wr, style="B")
+auck$Ii <- localmoran(auck$TB, lstw)
+plot(auck, "Ii", main="Local Moran", col=grays)
 ```
+
+In the above I followed the book by useing the raw count data. Howwever, it would be more approproate to use disease density instead. You can compute that like this:
+
+```{r}
+auck$TBdens <- 10000 * auck$TB / expanse(auck)
+```
+
+The 10000 is just to avoid very small numbers. 
+
 
 ## Geographically weighted regression
 
-Here is an example of GWR with California precipitation data (you can download the data with the scripts or links on the top of this page). 
+Here is an example of GWR with California precipitation data. 
 
 
 ```{r, loca10}
@@ -103,21 +98,21 @@ m <- lm(pan ~ ALT, data=p)
 m
 ```
 
-Create `Spatial*` objects with a planar crs.
+Create `sf` objects with a planar crs.
 
 ```{r, loca13}
 alb <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84"
 sp <- vect(p, c("LONG", "LAT"), crs="+proj=longlat +datum=NAD83")
-spt <- as(terra::project(sp, alb), "Spatial")
+sp <- terra::project(sp, alb)
+spsf <- sf::st_as_sf(sp)
 vctst <- terra::project(cts, alb)
-ctst <- as(vctst, "Spatial")
+ctst <- sf::st_as_sf(vctst)
 ```
-
 
 Get the optimal bandwidth
 ```{r, loca14}
 library( spgwr )
-bw <- gwr.sel(pan ~ ALT, data=spt)
+bw <- gwr.sel(pan ~ ALT, crds(sp), data=spsf)
 bw
 ``` 
 
@@ -131,14 +126,15 @@ newpts <- geom(as.points(r))[, c("x", "y")]
 
 Run the `gwr` function
 ```{r, loca17}
-g <- gwr(pan ~ ALT, data=spt, bandwidth=bw, fit.points=newpts[, 1:2])
+g <- gwr(pan ~ ALT, crds(sp), data=spsf, bandwidth=bw, fit.points=newpts[, 1:2])
 g
 ```
 
-Link the results back to the raster
+Link the results back to the raster. Note the use of `slope <- copy` to get a *deep copy*. If you do `slope <- r`, both `slope` and `r` point to the *same object in memory*, so you need to avoid that.
+
 ```{r, loca18, fig.width=9}
-slope <- r
-intercept <- r
+slope <- copy(r)
+intercept <- copy(r)
 slope[!is.na(slope)] <- g$SDF$ALT 
 intercept[!is.na(intercept)] <- g$SDF$"(Intercept)"
 s <- c(intercept, slope)
@@ -146,4 +142,4 @@ names(s) <- c("intercept", "slope")
 plot(s)
 ```
 
-See [this page](http://rspatial.org/analysis/6-local_regression.html) for a more detailed example of Geographically weighted regression.
+See [this page](http://rspatial.org/terra/analysis/6-local_regression.html) for a more detailed example of geographically weighted regression.

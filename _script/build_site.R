@@ -39,8 +39,6 @@ if (!dopdf) {
 	#g <- file.path("build/html/images", basename(f))
 	#y <- file.copy(f, g, overwrite=TRUE)
 
-
-
 	ff <- list.files("build/html", patt='\\.html$', recursive=TRUE, full=TRUE)
 
 	ignore_errors <- c("build/html/intr/2-basic-data-types.html", "build/html/intr/7-explore.html"

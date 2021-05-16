@@ -1,6 +1,5 @@
 # Map overlay
 
-
 ## Introduction
 
 This document shows some example *R* code to do "overlays" and associated spatial data manipulation to accompany Chapter 11 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). You have already seen many of this type of data manipulation in previsous labs. And we have done perhaps more advanced things using regression type models (including LDA and RandomForest). This lab is very much a review of what you have already seen: basic spatial data operations with *R*. 
@@ -10,8 +9,9 @@ This document shows some example *R* code to do "overlays" and associated spatia
 You can get the data for this tutorial with the "rspat" package that you can install with the line below. 
 
 ```{r getData}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
 ```
+
 
 ## Selection by attribute
 
@@ -73,7 +73,7 @@ countiesTA$NAME[i]
 An alternative approach is to intersect the two polygon datasets.
 ```{r, over5}
 i <- intersect(cityTA, countiesTA)
-i$area <- area(i)
+i$area <- expanse(i)
 as.data.frame(i)
 
 plot(cityTA, col='blue')
@@ -105,7 +105,7 @@ box()
 
 What is the percentage of the area of the city of Davis that is within 500 m of a railroad?
 ```{r}
-round(100 * area(rail_buf) / area(cityTA))
+round(100 * expanse(rail_buf) / expanse(cityTA))
 ```
 
 

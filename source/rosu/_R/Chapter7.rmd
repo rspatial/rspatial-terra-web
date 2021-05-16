@@ -51,7 +51,7 @@ Or simply use an existing function. To make sure that the coordinates are not in
 
 ```{r}
 crs(sppol) <- '+proj=utm +zone=1'
-area(sppol)
+expanse(sppol)
 ``` 
 
 
@@ -88,11 +88,10 @@ Apparently, I am using a different data set than OSU (compare the above with tab
 
 ## Spatial structure
 
-
 Read the Auckland data from the `rspat` package
 
 ```{r, auck1}
-if (!require("rspat")) devtools::install_github('rspatial/rspat')
+if (!require("rspat")) remotes::install_github('rspatial/rspat')
 library(rspat)
 pols <- spat_data("auctb")
 ``` 
@@ -141,14 +140,14 @@ wq <- adjacent(pols, "queen", symmetrical=TRUE)
 
 Distance based:
 ```{r}
-wd1 <- near(pols, 1000)
-wd25 <- near(pols, 2500)
+wd1 <- nearby(pols, 1000)
+wd25 <- nearby(pols, 2500)
 ```
 
 Nearest neighbors:
 ```{r}
-k3 <- near(pols, k=3)
-k6 <- near(pols, k=6)
+k3 <- nearby(pols, k=3)
+k6 <- nearby(pols, k=6)
 ```
 
 Delauny:

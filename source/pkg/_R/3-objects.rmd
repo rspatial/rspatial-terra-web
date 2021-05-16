@@ -38,13 +38,12 @@ x
 
 The object `x` created in the example above only consist of a "skeleton", that is, we have defined the number of rows and columns, and where the raster is located in geographic space, but there are no cell-values associated with it. Setting and accessing values is illustrated below.
 
-```{r  raster-1b, fig=TRUE , echo=TRUE}
+```{r  raster-1b, fig=TRUE , fig.height=3.5, fig.width=7}
 r <- rast(ncol=10, nrow=10)
 ncell(r)
 hasValues(r)
 
-# use the 'values' function
-# e.g., 
+# use the 'values' function, e.g., 
 values(r) <- 1:ncell(r)
 # or
 set.seed(0)
@@ -86,7 +85,7 @@ It is more common, however, to create a `SpatRaster` object from a file. The ras
 ```{r  raster-2a, fig=TRUE , echo=TRUE}
 # get the name of an example file installed with the package
 # do not use this construction of your own files
-filename <- system.file("ex/test.tif", package="terra")
+filename <- system.file("ex/meuse.tif", package="terra")
 filename
 r <- rast(filename)
 sources(r)

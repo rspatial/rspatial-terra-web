@@ -1,5 +1,4 @@
 
-
 # Spatial distribution models
 
 
@@ -30,7 +29,7 @@ if (!require("predicts")) remotes::install_github("rspatial/predicts")
 ### Observations
 
 ```{r getData, echo=TRUE}
-library(rspatial)
+library(rspat)
 bf <- spat_data("bigfoot")
 dim(bf)
 head(bf)
@@ -60,7 +59,7 @@ Now extract climate data for the locations of our observations. That is, get dat
 
 ```{r, sup5}
 bfc <- extract(wc, bf[,1:2])
-head(bfc)
+head(bfc, 3)
 
 # Any missing values?
 i <- which(is.na(bfc[,1]))
