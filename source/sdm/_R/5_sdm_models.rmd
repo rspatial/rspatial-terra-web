@@ -25,7 +25,7 @@ m2 = glm(pb ~ ., data=sdmdata)
 m2
 ```
 
-Models that are implemented in `predicts` do not use a formula (and most models only take presence points). The `envelope` (a.k.a. "Bioclim") is an example. It only uses presence data, so we use 'presvals' instead of 'sdmdata'.
+Models that are implemented in the `predicts` package do not use a formula (and most models only take presence points). The `envelope` (a.k.a. "Bioclim") is an example. It only uses presence data, so we use 'presvals' instead of 'sdmdata'.
 
 ```{r, sdm26}
 library(predicts)
@@ -55,7 +55,7 @@ pr <- partialResponse(bc, presvals, "bio1")
 plot(pr, type="l")
 ```
 
-In most cases, howver, the purpose is SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers (layerNames) in the SpatRaster object.
+In most cases, howver, the purpose of SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers in the SpatRaster object.
 
 ```{r, sdm27c, fig.width=9, fig.height=6}
 library(predicts)
@@ -86,7 +86,6 @@ Most modelers rely on cross-validation. This consists of creating a model with o
 Different measures can be used to evaluate the quality of a prediction (Fielding and Bell, 1997, Liu et al., 2011; and Potts and Elith (2006) for abundance data), perhaps depending on the goal of the study. Many measures for evaluating models based on presence-absence or presence-only data are 'threshold dependent'. That means that a threshold must be set first (e.g., 0.5, though 0.5 is rarely a sensible choice – e.g. see Lui et al. 2005). Predicted values above that threshold indicate a prediction of 'presence', and values below the threshold indicate 'absence'. Some measures emphasize the weight of false absences; others give more weight to false presences. 
 
 Much used statistics that are threshold independent are the correlation coefficient and the Area Under the Receiver Operator Curve (AUROC, generally further abbreviated to AUC). AUC is a measure of rank-correlation. In unbiased data, a high AUC indicates that sites with high predicted suitability values  tend to be areas of known presence and locations with lower model prediction values tend to be areas where the species is not known to be present (absent or a random point). An AUC score of 0.5 means that the model is as good as a random guess. See Phillips *et al.* (2006) for a discussion on the use of AUC in the context of presence-only rather than presence/absence data.
-
 
 Here we illustrate the computation of the correlation coefficient and AUC with two random variables. `p` (presence) has higher values, and represents the predicted value for 50 known cases (locations) where the species is present, and `a` (absence) has lower values, and represents the predicted value for 50 known cases (locations) where the species is absent. 
 
@@ -156,6 +155,7 @@ k <- 5
 group <- make_folds(pres, k)
 group[1:10]
 unique(group)
+table(group)
 ```
 
 Now we can fit and test our model five times. In each run, the records corresponding to one of the five groups is only used to evaluate the model, while the other four groups are only used to fit the model. The results are stored in a list called 'e'.
@@ -172,13 +172,14 @@ for (i in 1:k) {
 }	
 ```
 
-We can extract several things from the objects in lise `e1, but let's restrict ourselves to the AUC values and the "maximum of the sum of the sensitivity (true positive rate) and specificity (true negative rate)" threshold "spec_sens" (this is sometimes uses as a threshold for setting cells to presence or absence).
+We can extract several things from list `e`, but let's restrict ourselves to the AUC values and the "maximum of the sum of the sensitivity (true positive rate) and specificity (true negative rate)" threshold "spec_sens" (this is sometimes uses as a threshold for setting cells to presence or absence).
 
 ```{r, sdm45a}
 stats <- lapply(e, function(x){x@stats})
 stats <- do.call(rbind, stats)
 colMeans(stats)
 ```
+
 
 The use of AUC in evaluating SDMs has been criticized (Lobo et al. 2008, Jiménez-Valverde 2011). A particularly sticky problem is that the values of AUC vary with the spatial extent used to select background points. Generally, the larger that extent, the higher the AUC value. Therefore, AUC values are generally biased and cannot be directly compared. Hijmans (2012) suggests that one could remove "spatial sorting bias" (the difference between the distance from testing-presence to training-presence and the distance from testing-absence to training-presence points) through "point-wise distance sampling". 
 
@@ -217,12 +218,16 @@ sb2 <- dismo::ssb(pres_test_pwd, back_test_pwd, pres_train)
 sb2[1]/ sb2[2]
 ```
 
-Spatial sorting bias is much reduced now; notice how the AUC dropped.
+Spatial sorting bias is much reduced now; but notice how the AUC dropped.
 
 ```{r, sdm45e}
 bc <- envelope(predictors, pres_train)
+ptst <- predict(bc, extract(predictors, pres_test))
+btst <- predict(bc, extract(predictors, back_test))
+pa_evaluate(ptst, btst)@stats
 
-pa_evaluate(p=pres_test, a=back_test, model=bc, data=predictors)
-pa_evaluate(p=pres_test_pwd, a=back_test_pwd, model=bc, data=predictors)
+pwdptst <- predict(bc, extract(predictors, pres_test_pwd))
+pwdbtst <- predict(bc, extract(predictors, back_test_pwd))
+pa_evaluate(pwdptst, pwdbtst)@stats
 ```
 

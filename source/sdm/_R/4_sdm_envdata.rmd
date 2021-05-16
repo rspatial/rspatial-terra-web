@@ -20,7 +20,7 @@ plot(predictors)
 ```
 
 
-We can also make a plot of a single layer in a SpatRaster, and plot some additional data on top of it. First get the world boundaries and the bradypus data:
+We can also make a plot of a single layer in a SpatRaster, and plot some additional data on top of it. First get the world boundaries and the *Bradypus* data:
 ```{r, sdm23a}
 library(geodata)
 wrld <- world(path=".")

@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Modeling methods
 
 
@@ -8,64 +13,35 @@ A large number of algorithms has been used in species distribution modeling. The
 First recreate the data we have used so far.
 
 ```{r, sdm46a, message=FALSE}
-library(dismo)
-library(maptools)
-data(wrld_simpl)
+library(geodata)
+wrld <- world(path=".")
 
-predictors <- stack(list.files(file.path(system.file(package="dismo"), 'ex'), pattern='grd$', full.names=TRUE ))
-
-file <- file.path(system.file(package="dismo"), "ex/bradypus.csv")
+library(predicts)
+file <- paste(system.file(package="predicts"), "/ex/bradypus.csv", sep="")
 bradypus <- read.table(file,  header=TRUE,  sep=',')
-bradypus <- bradypus[,-1]
-presvals <- extract(predictors, bradypus)
+# we do not need the first column
+bradypus  <- bradypus[,-1]
+
+fpred <- system.file("ex/bio.tif", package="predicts")
+predictors <- rast(fpred)
+
 set.seed(0)
-backgr <- randomPoints(predictors, 500)
-absvals <- extract(predictors, backgr)
-pb <- c(rep(1, nrow(presvals)), rep(0, nrow(absvals)))
-sdmdata <- data.frame(cbind(pb, rbind(presvals, absvals)))
-sdmdata[,'biome'] <- as.factor(sdmdata[,'biome'])
+bgvals <- spatSample(predictors, 5000, na.rm=TRUE)
 ```
 
-We will use the same data to illustrate all models, except that some models cannot use categorical variables. So for those models we drop the categorical variables from the predictors stack.
 
-```{r, sdm46b}
-pred_nf <- dropLayer(predictors, 'biome')
-```
-
-We use the `Bradypus` data for presence of a species. First we make a training and a testing set.
+We use the `Bradypus` data for presence of a species. First we make a training and a testing sets.
 ```{r, sdm47}
 set.seed(0)
-group <- kfold(bradypus, 5)
+group <- make_folds(bradypus, 5)
 pres_train <- bradypus[group != 1, ]
 pres_test <- bradypus[group == 1, ]
+
+bggroup <- make_folds(bgvals, 5)
+bg_train <- bgvals[bggroup != 1, ]
+bg_test <- bgvals[bggroup == 1, ]
+
 ```
-
-To speed up processing, let's restrict the predictions to a more restricted area (defined by a rectangular extent):
-```{r, sdm48}
-ext <- extent(-90, -32, -33, 23)
-```
-
-Background data for training and a testing set. The first layer in the RasterStack is used as a 'mask'. That ensures that random points only occur within the spatial extent of the rasters, and within cells that are not `NA`, and that there is only a single absence point per cell. Here we further restrict the background points to be within 12.5\% of our specified extent 'ext'.
-
-```{r, sdm49}
-set.seed(10)
-backg <- randomPoints(pred_nf, n=1000, ext=ext, extf = 1.25)
-colnames(backg) = c('lon', 'lat')
-group <- kfold(backg, 5)
-backg_train <- backg[group != 1, ]
-backg_test <- backg[group == 1, ]
-```
-
-```{r, sdm50}
-r <- raster(pred_nf, 1)
-plot(!is.na(r), col=c('white', 'light grey'), legend=FALSE)
-plot(ext, add=TRUE, col='red', lwd=2)
-points(backg_train, pch='-', cex=0.5, col='yellow')
-points(backg_test, pch='-',  cex=0.5, col='black')
-points(pres_train, pch= '+', col='green')
-points(pres_test, pch='+', col='blue')
-```
-
 
 
 ## Profile methods
@@ -74,44 +50,46 @@ The three methods described here, Bioclim, Domain, and Mahal. These methods are 
 
 ### Bioclim
 
-The BIOCLIM algorithm has been extensively used for species distribution modeling. BIOCLIM is a classic 'climate-envelope-model' (Booth *et al.*, 2014). Although it generally does not perform as good as some other modeling methods (Elith *et al.* 2006), particularly in the context of climate change (Hijmans and Graham, 2006), it is still used, among other reasons because the algorithm is easy to understand and thus useful in teaching species distribution modeling. The BIOCLIM algorithm computes the similarity of a location by comparing the values of environmental variables at any location to a percentile distribution of the values at known locations of occurrence ('training sites'). The closer to the 50th percentile (the median), the more suitable the location is. The tails of the distribution are not distinguished, that is, 10 percentile is treated as equivalent to 90 percentile. In the 'dismo' implementation, the values of the upper tail values are transformed to the lower tail, and the minimum percentile score across all the environmental variables is used (i.e., BIOCLIM uses an approach like Liebig's law of the minimum). This value is subtracted from 1 and then multiplied with two so that the results are between 0 and 1. The reason for scaling this way is that the results become more like that of other distribution modeling methods and are thus easier to interpret. The value 1 will rarely be observed as it would require a location that has the median value of the training data for all the variables considered. The value 0 is very common as it is assigned to all cells with a value of an environmental variable that is outside the percentile distribution (the range of the training data) for at least one of the variables.
+The BIOCLIM algorithm has been extensively used for species distribution modeling. BIOCLIM is a classic 'climate-envelope-model' (Booth *et al.*, 2014). Although it generally does not perform as good as some other modeling methods (Elith *et al.* 2006), particularly in the context of climate change (Hijmans and Graham, 2006), it is still used, among other reasons because the algorithm is easy to understand and thus useful in teaching species distribution modeling. The BIOCLIM algorithm computes the similarity of a location by comparing the values of environmental variables at any location to a percentile distribution of the values at known locations of occurrence ('training sites'). The closer to the 50th percentile (the median), the more suitable the location is. The tails of the distribution are not distinguished, that is, 10 percentile is treated as equivalent to 90 percentile. In the 'dismo' implementation, the values of the upper tail values are transformed to the lower tail, and the minimum percentile score across all the environmental variables is used (i.e., BIOCLIM uses an approach like Liebig's law of the minimum). This value is subtracted from 1 and then multiplied with two so that the results are between 0 and 1. The reason for scaling this way is that the results become more like that of other distribution modeling methods and are thus easier to interpret. The value 1 will rarely be observed as it would require a location that has the median value of the training data for all the variables considered. The value 0 is very common as it is assigned to all cases with a value of an environmental variable that is outside the the range observed in the training data for at least one of the variables.
 
 
-Earlier on, we fitted a Bioclim model using data.frame with each row representing the environmental data at known sites of presence of a species. Here we fit a bioclim model simply using the predictors and the occurrence points (the function will do the extracting for us).
+Earlier on, we fitted an `envelope` model using data.frame with each row representing the environmental data at known sites of presence of a species. Here we fit a bioclim model simply using the predictors and the occurrence points (the function will do the extracting for us).
 
 ```{r, sdm60}
-bc <- bioclim(pred_nf, pres_train)
-plot(bc, a=1, b=2, p=0.85)
+bc <- envelope(predictors, pres_train)
+plot(bc, a=1, b=7, p=0.85)
 ```
 
-We evaluate the model in a similar way, by providing presence and background (absence) points, the model, and a RasterStack:
+We evaluate the model in a similar way, by providing presence and background (absence) points, the model, and a SpatRaster:
+
 ```{r, sdm61a}
-e <- evaluate(pres_test, backg_test, bc, pred_nf)
+v <- extract(predictors, pres_test)
+e <- pa_evaluate(v, bg_test, bc)
 e
 ```
 
 Find a threshold
 ```{r, sdm61b}
-tr <- threshold(e, 'spec_sens')
-tr
+stats <- do.call(rbind, e@stats)
+colMeans(stats)
+
+e@thresholds
+tr <- e@thresholds[["equal_sens_spec"]]
 ```
 
 
-And we use the RasterStack with predictor variables to make a prediction to a SpatRaster:
+And we use the SpatRaster with predictor variables to make a spatial prediction:
 
 ```{r, sdm62, fig.width=9, fig.height=6}
-pb <- predict(pred_nf, bc, ext=ext, progress='')
+pb <- predict(predictors, bc, ext=ext)
 pb
 par(mfrow=c(1,2))
 plot(pb, main='Bioclim, raw values')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 plot(pb > tr, main='presence/absence')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 points(pres_train, pch='+')
 ```
-
-
-Please note the order of the arguments in the predict function. In the example above, we used `predict(pred\_nf, bc)` (first the RasterStack, then the model object), which is  little bit less efficient than predict(bc, pred\_nf) (first the model, than the RasterStack). The reason for using the order we have used, is that this will work for all models, whereas the other option only works for the models defined in the dismo package, such as Bioclim, Domain, and Maxent, but not for models defined in other packages (random forest, boosted regression trees, glm, etc.).
 
 
 ### Domain
@@ -124,17 +102,24 @@ The distance between the environment at point A and those of the known occurrenc
 To integrate over environmental variables, the distance to any of the variables is used. This distance is subtracted from one, and (in this *R* implementation) values below zero are truncated so that the scores are between 0 (low) and 1 (high).
 
 Below we fit a domain model, evaluate it, and make a prediction. We map the prediction, as well as a map subjectively classified into presence / absence.
-```{r, sdm63, fig.width=9, fig.height=6}
+
+Not yet implemented in `predicts`
+```
 dm <- domain(pred_nf, pres_train)
-e <- evaluate(pres_test, backg_test, dm, pred_nf)
+e <- evaluate(pres_test, backg_test, dm, predictors)
 e
 pd = predict(pred_nf, dm, ext=ext, progress='')
 par(mfrow=c(1,2))
 plot(pd, main='Domain, raw values')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld_simpl)
+
+e <- pa_evaluate(v, bg_test, bc)
+tr <- e@thresholds[["equal_sens_spec"]]
+
+
 tr <- threshold(e, 'spec_sens')
 plot(pd > tr, main='presence/absence')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 points(pres_train, pch='+')
 ```
 
@@ -143,18 +128,20 @@ points(pres_train, pch='+')
 
 The `mahal` function implements a species distribution model based on the Mahalanobis distance (Mahalanobis, 1936). Mahalanobis distance takes into account the correlations of the variables in the data set, and it is not dependent on the scale of measurements.
 
-```{r, sdm64, fig.width=9, fig.height=6}
-mm <- mahal(pred_nf, pres_train)
+Not yet implemented in `predicts`
+
+```
+mm <- mahal(predictors, pres_train)
 e <- evaluate(pres_test, backg_test, mm, pred_nf)
 e
-pm = predict(pred_nf, mm, ext=ext, progress='')
+pm <- predict(pred_nf, mm, ext=ext, progress='')
 par(mfrow=c(1,2))
 pm[pm < -10] <- -10
 plot(pm, main='Mahalanobis distance')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 tr <- threshold(e, 'spec_sens')
 plot(pm > tr, main='presence/absence')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 points(pres_train, pch='+')
 ```
 
@@ -167,13 +154,10 @@ train <- rbind(pres_train, backg_train)
 pb_train <- c(rep(1, nrow(pres_train)), rep(0, nrow(backg_train)))
 envtrain <- extract(predictors, train)
 envtrain <- data.frame( cbind(pa=pb_train, envtrain) )
-envtrain[,'biome'] = factor(envtrain[,'biome'], levels=1:14)
 head(envtrain)
 
 testpres <- data.frame( extract(predictors, pres_test) )
 testbackg <- data.frame( extract(predictors, backg_test) )
-testpres[ ,'biome'] = factor(testpres[ ,'biome'], levels=1:14)
-testbackg[ ,'biome'] = factor(testbackg[ ,'biome'], levels=1:14)
 ```
 
 ### Generalized Linear Models
@@ -210,10 +194,10 @@ ge2
 pg <- predict(predictors, gm2, ext=ext)
 par(mfrow=c(1,2))
 plot(pg, main='GLM/gaussian, raw values')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 tr <- threshold(ge2, 'spec_sens')
 plot(pg > tr, main='presence/absence')
-plot(wrld_simpl, add=TRUE, border='dark grey')
+lines(wrld)
 points(pres_train, pch='+')
 points(backg_train, pch='-', cex=0.25)
 ```

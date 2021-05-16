@@ -38,6 +38,13 @@ If you have never used *R*, or if you need a refresher, you should start with ou
    | A (small) collection of case studies that can help you learn more about particular topics and design your own workflows. (`pdf <cases/cases.pdf>`__)
    |
    
+
+.. topic:: 6. `Species Distribution Modeling <sdm/index.html>`
+
+   | An tutorial for predicting the geographic ranges of species (under development). (`pdf <sdm/SDM.pdf>`__)
+   |
+  
+  
    
 Manuals
 -------
@@ -64,5 +71,6 @@ Manuals
    rs/index.rst
    modis/index.rst
    cases/index.rst   
+   sdm/index.rst
    pkg/index.rst
    rosu/index.rst
