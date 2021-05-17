@@ -38,8 +38,7 @@ names(landsat) <- c('blue', 'green', 'red', 'NIR', 'SWIR1', 'SWIR2')
 
 Training and/or validation data can come from a variety of sources. In this example, we use some training polygons we have already collected from other sources. We have already used this for making the spectral plots.There are 5 distinct classes -- built,cropland,fallow,open and, water and we hope to find the pixels under this categroies based on our knowledge of training sites.
 
-``` {r samples}
-
+``` {r samples, fig.height=4.23}
 # load polygons with land use land cover information
 samp <- vect(readRDS("data/rs/lcsamples.rds"))
 
@@ -48,9 +47,9 @@ plot(samp)
 text(samp, samp$class)
 ```
 
-Note that the polygons are [`SpatialPolygonsDataFrame` object](https://www.rdocumentation.org/packages/sp/versions/1.3-1/topics/SpatialPolygonsDataFrame-class). Next we generate random points within each polygons and convert those to `SpatVector` object.
+Next we generate random points within each polygons.
 
-```{r sample-points}
+```{r sample-points, fig.height=4.23}
 set.seed(1)
 # generate point samples from the polygons 
 ptsamp <- spatSample(samp, 1000, method="random")
@@ -61,7 +60,7 @@ Alternatively, we can generate the training and validation sample sites using a 
 
 Detailes of the class mapped in NCLD 2011 can be found here (here)[https://www.mrlc.gov/nlcd11_leg.php]. It has two pairs of class values and names that correspond to the levels of land use and land cover classification system. These levels usually represent the level of complexity, level I being the simplest with broad land use land cover categories. Read [this report by Anderson et al](https://pubs.usgs.gov/pp/0964/report.pdf) to learn more about this land use and land cover classification system. 
 
-```{r nlcd}
+```{r nlcd, fig.height=4.23}
 nlcd <- rast('data/rs/nlcd-L1.tif')
 names(nlcd) <- c("nlcd2001", "nlcd2011")
 
@@ -146,7 +145,7 @@ Now that we have our trained classification model (`cartmodel`), we can use it t
 
 **Important** The layer names in the SpatRaster should exactly match those that were used to train the model. This will be the case if the same SpatRaster object was used (via extract) to obtain the values to fit the model. Otherwise you need to specify the matching names.
 
-```{r prediction, fig.height=6, fig.width=9}
+```{r prediction, fig.height=5.3, fig.width=9.5}
 classified <- predict(landsat, cartmodel, na.rm = TRUE)
 classified
 plot(classified)
@@ -161,7 +160,7 @@ lulc
 
 To make a nice map, we make the raster categorical, using `levels<-`; and we provide custom colors.
 
-```{r combine-results2, fig.width=8, fig.height=7}
+```{r combine-results2, fig.width=9, fig.height=7}
 cls <- c("built","cropland","fallow","open","water")
 df <- data.frame(id = 1:5, class=cls)
 levels(lulc) <- df

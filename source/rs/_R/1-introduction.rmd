@@ -1,6 +1,6 @@
 # Introduction
 
-This book provides a short introduction to satellite data analysis with R. Before reading this you should first learn the [basics of the terra package](http://rspatial.org/terra/). There is another version of this book for [the raster package](http://rspatial.org/raster/rs).
+This section provides a short introduction to satellite data analysis with R. Before reading this you should first learn the [basics of the terra package](http://rspatial.org/terra/). 
 
 Getting satellite images for a specific project remains a challenging task. You have to find data that is suitable for your objectives, and that you can get access to. Important properties to consider while searching the remotely sensed (satellite) data include:
 
@@ -22,7 +22,7 @@ iv. <https://lpdaac.usgs.gov/data_access/data_pool>
 v. <https://scihub.copernicus.eu/>
 vi. <https://aws.amazon.com/public-data-sets/landsat/>
 
-See [this web site](http://gisgeography.com/free-satellite-imagery-data-list/) for more sources of freely available remote sensing data.
+See [this web site](http://gisgeography.com/free-satellite-imagery-data-list/) for more sources of freely available satellite remote sensing data.
 
 It is possible to download some satellite data using R-packages. For example, you can use the
 [luna](https://github.com/rspatial/luna), [MODIS](https://cran.r-project.org/web/packages/MODIS/index.html) or [MODISTools](https://cran.r-project.org/web/packages/MODISTools/index.html) package to search, download and pre-process different [MODIS products](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table).
@@ -32,7 +32,7 @@ It is possible to download some satellite data using R-packages. For example, yo
 
 Most remote sensing products consist of observations of reflectance data. That is, they are measures of the intensity of the sun's radiation that is reflected by the earth. Reflectance is normally measured for different wavelengths of the electromagnetic spectrum. For example, it can be measured in the near-infrared, red, green, and blue wavelengths. If that is the case, satellite data can be referred to as "multi-spectral" (or hyper-spectral if there are many separate wavelengths)(reading)[https://gisgeography.com/multispectral-vs-hyperspectral-imagery-explained/.
 
-The data are normally stored as raster data (referred to as "images"). Each separate image (for a place and time) is referred to as as "scene" or "tile". As there are measurements in multiple wavelengths, a single "satellite image" has multiple observations for each pixel, that are stored in separate raster layers. In remote sensing jargon, these layers (variables) are referred to as "bands" as they typically represent reflectance values for a particular spectral bandwith, and grid cells are referred to as "pixel". 
+The data are normally stored as raster data, and are generally referred to as "images". Each separate image (for a place and time) is referred to as as "scene" or "tile". As there are measurements in multiple wavelengths, a single "satellite image" has multiple observations for each pixel, that are stored in separate raster layers. In remote sensing jargon, these layers (variables) are referred to as "bands" as they typically represent reflectance values for a particular spectral bandwith, and grid cells are referred to as "pixels". 
 
 
 ## Data  

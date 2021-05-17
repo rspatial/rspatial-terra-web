@@ -1,7 +1,7 @@
 # Unsupervised Classification
 
 
-In this chapter we explore unsupervised classification. Various unsupervised classification algorithms exist, and the choice of algorithm can affect the results. We will explore only one algorithm (k-means) to illustrate the general principle.
+In this chapter we explore unsupervised classification. Various unsupervised classification algorithms exist, and the choice of algorithm affects the results. Here we use the k-means algorithm to illustrate the general principle.
 
 For this example, we will follow the [National Land Cover Database 2011 (NLCD 2011)](https://www.mrlc.gov/nlcd2011.php) classification scheme for a subset of the Central Valley regions. We use cloud-free composite image from [Landsat 5](https://landsat.gsfc.nasa.gov/landsat-5/) with 6 bands.
 
@@ -27,11 +27,11 @@ We will perform unsupervised classification on a spatial subset of the `ndvi` la
 ndvi <- (landsat5[['NIR']] - landsat5[['red']]) / (landsat5[['NIR']] + landsat5[['red']])
 ```
 
-We will do `kmeans` clustering of the `ndvi` data. First we use `crop` to make a spatial subset of the `ndvi`, to allow for faster processing (you can select any `extent` using the `drawExtent()` function).  
+We will do `kmeans` clustering of the `ndvi` data. First we use `crop` to make a spatial subset of the `ndvi`, to allow for faster processing (you can select any `SpatExtent` using the `draw` function).  
 
 ## kmeans classification
 ```{r kmeans, fig.width = 8, fig.height = 4}
-# Extent to crop ndvi layer
+# SpatExtent to crop ndvi layer
 e <- ext(-121.807, -121.725, 38.004, 38.072)
 
 # crop landsat by the extent
@@ -81,6 +81,7 @@ plot(knr, main = 'Unsupervised classification', col = mycolor, type="classes")
 While for other purposes it is usually better to define more classes (and possibly merge classes later), a simple classification like this one could be useful, e.g., merge cluster 4 and 5 to construct a water mask for the year 2011.
 
 You can change the colors in my `mycolor`. Learn more about selecting colors in R [here](http://www.melissaclarkson.com/resources/R_guides/documents/colors_Ver2.pdf) and [here](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/colorPaletteCheatsheet.pdf).
+
 
 __Question 2__:*Plot a true-color image of 'landsat5' for the subset (extent 'e') and result of 'kmeans' clustering side-by-side and make a table of land-use land-cover labels for the clusters (based on visual inspection). E.g. cluster 4 and 5 are water.* 
 

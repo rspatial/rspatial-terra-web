@@ -29,53 +29,48 @@ vi <- function(img, k, i) {
 ```
 
 
-```{r rs3ndvi}
+```{r rs3ndvi, fig.height=4.23}
 # For Landsat NIR = 5, red = 4.
 ndvi <- vi(landsat, 5, 4)
-plot(ndvi, col=rev(terrain.colors(10)), main = "Landsat-NDVI")
+plot(ndvi, col=rev(terrain.colors(10)), main = "NDVI")
 ```
 
 You can see the variation in greenness from the plot.
 
-An alternative way to accomplish this is like this
+Below is an alternative way to accomplish this. First write a general function that can compute 2-layer NDVI type indices.
 
-
-```{r rs3ndvialt}
-# Write a general function that can compute 2-layer NDVI type indices
+```{r rs3ndvialtfun}
 vi2 <- function(x, y) {
 	(x - y) / (x + y)
 }
+```
 
+And use that function as an argument in `lapp`
+
+```{r rs3ndvialt, fig.height=4.23}
 nir <- landsat[[5]]
 red <- landsat[[4]]
-
 ndvi2 <- lapp(c(nir, red), fun = vi2)
 
 # or in one line
-ndvi2 <- lapp(landsat[[5:4]], fun=vi2)
+#ndvi2 <- lapp(landsat[[5:4]], fun=vi2)
 
 plot(ndvi2, col=rev(terrain.colors(10)), main="Landsat-NDVI")
 ```
 
-
-__Question 1__: *Adapt the code shown above to compute indices to identify i) water and ii) built-up. Hint: Use the spectral profile plot to find the bands having maximum and minimum reflectance for these two classes. Or read about it in [this resource](https://www.harrisgeospatial.com/docs/BackgroundOtherIndices.htm).*.
+__Question 1__: *Adapt the code shown above to compute indices to identify i) water and ii) built-up. Hint: Use the spectral profile plot to find the bands having maximum and minimum reflectance for these two classes. Or read about it  [here](https://www.harrisgeospatial.com/docs/BackgroundOtherIndices.htm).*.
 
 
 ## Histogram
 
-We can explore the distribution of values contained within our raster using the hist() function which produces a histogram. Histograms are often useful in identifying outliers and bad data values in our raster data. 
+We can explore the distribution of values contained within our raster using `hist` to produces a histogram. Histograms are often useful in identifying outliers and bad data values in our raster data. 
 
 ```{r rs2hist}
-# view histogram of data
-hist(ndvi,
-     main = "Distribution of NDVI values",
-     xlab = "NDVI",
-     ylab= "Frequency",
-     col = "wheat",
-     xlim = c(-0.5, 1),
-     breaks = 30,
-     xaxt = 'n')
-axis(side=1, at = seq(-0.5,1, 0.05), labels = seq(-0.5,1, 0.05))
+hist(ndvi, main = "NDVI values", xlab = "NDVI", ylab= "Frequency",  
+   	col = "wheat", xlim = c(-0.5, 1),  breaks = 30, xaxt = "n")
+
+axis(side=1, at = seq(-0.6, 1, 0.2), labels = seq(-0.6, 1, 0.2))
+
 ```
 
 We will refer to this histogram for the following sub-section on thresholding.
@@ -90,34 +85,33 @@ We can apply basic rules to get an estimate of spatial extent of different Earth
 Cells with NDVI values greater than 0.4 are definitely vegetation. The following operation masks all cells that are perhaps not vegetation (NDVI < 0.4).
 
 
-```{r rs3veg1}
-veg <- classify(ndvi, cbind(-Inf, 0.4, NA))
+```{r rs3veg1, fig.height=4.23}
+veg <- clamp(ndvi, 0.4, values=FALSE)
 plot(veg, main='Vegetation')
 ```
 
 Let's map the area that corresponds to the peak between 0.25 and 0.3 in the NDVI histogram.
 
-```{r rs3land}
+```{r rs3land, fig.height=4.23}
 m <- c(-Inf, 0.25, NA,  0.25, 0.3, 1,  0.3, Inf, NA)
 rcl <- matrix(m, ncol = 3, byrow = TRUE)
 land <- classify(ndvi, rcl)
 plot(land, main = 'What is it?')
 ```
 
-These may be the open areas. You can plot `land` over original `landsatFCC` raster to find out more.
+You can plot `land` on top of the `landsatRGB` raster to find out.
 
-```{r rs3rgb1}
-plotRGB(landsatRGB, r=1, g=2, b=3, axes=TRUE, stretch="lin", main="Landsat False Color Composite")
+```{r rs3rgb1, fig.height=4.23}
+plotRGB(landsatRGB, r=1, g=2, b=3, axes=TRUE, stretch="lin")
 plot(land, add=TRUE, legend=FALSE)
 ```
 
-You can also create classes for different amount of vegetation presence. 
+You can also create classes for different intensity of vegetation. 
 
-```{r rs3veg2}
-m <- c(-Inf,0.25,1, 0.25,0.3,2, 0.3,0.4,3, 0.4,0.5,4, 0.5,Inf, 5)
-rcl <- matrix(m, ncol = 3, byrow = TRUE)
-vegc <- classify(ndvi, rcl)
-plot(vegc,col = rev(terrain.colors(4)), main = 'NDVI based thresholding')
+```{r rs3veg2, fig.height=4.23}
+m <- c(-1,0.25, 0.3, 0.4, 0.5, 1)
+vegc <- classify(ndvi, m)
+plot(vegc, col = rev(terrain.colors(4)), main = 'NDVI based thresholding')
 ```
 
 __Question 3__: *Is it possible to find water using thresholding of NDVI or any other indices?*
@@ -141,18 +135,20 @@ This is known as vegetation and soil-line plot (Same as the scatter plot in earl
 pca <- prcomp(sr, scale = TRUE)
 pca
 screeplot(pca)
+```
 
-# function to restrict prediction to the 
-# first two principal components
+
+We use a function to restrict prediction to the first two principal components
+
+```{r rs3pca2b, fig.width=8, fig.height=3}
 pca_predict2 <- function(model, data, ...) {
   predict(model, data, ...)[,1:2]
 }
-
 pci <- predict(landsat, pca, fun=pca_predict2)
 plot(pci)
 ```
 
-The first principal component highlights the boundaries between land use classes or spatial details, which is the most common information among all wavelengths. it is difficult to understand what the second principal component is highlighting. Lets try thresholding again:
+The first principal component highlights the boundaries between different land use classes. it is difficult to understand what the second principal component is highlighting. Lets try thresholding again:
 
 ```{r rs3rgb2}
 # quick look at the histogram of second component
@@ -164,9 +160,9 @@ pcClass <- classify(pci[[2]], rcl)
 ```
 
 Now plot the results
-```{r rs3rgb2plot, fig.width = 12, fig.height = 6}
+```{r rs3rgb2plot, fig.width=10, fig.height=4}
 par(mfrow=c(1,2))
-plotRGB(landsatFCC, r = 1, g = 2, b = 3, stretch = "lin", axes=TRUE, main = "False Color")
+plotRGB(landsatFCC, stretch = "lin", main="False Color", mar=c(3.1, 3.1, 2.1, 2.1))
 plot(pcClass, main="PCA")
 ```
 
