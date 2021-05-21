@@ -3,8 +3,6 @@ Spatial Data Science with R and "terra"
 
 These resources teach spatial data analysis and modeling with *R*. *R* is a widely used programming language and software environment for data science. *R* also provides unparalleled opportunities for analyzing spatial data and for spatial modeling. 
 
-**This is the "terra" version of this resource. You can also use the more elaborate** `"raster" <https://rspatial.org/raster/index.html>`_ **version.** 
-
 
 If you have never used *R*, or if you need a refresher, you should start with our `Introduction to R <../intr/index.html>`__ 
 
@@ -60,6 +58,10 @@ Manuals
 
    | R companion to Geographic Information Analysis by O'Sullivan and Unwin. (`pdf <rosu/ROSU.pdf>`__)
    |
+
+
+This is the "terra" version of this resource. You can also go to the now outdated `"raster/sp" <https://rspatial.org/raster/index.html>`_ version. 
+
 
 
 .. toctree::

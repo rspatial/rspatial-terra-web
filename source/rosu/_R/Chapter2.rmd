@@ -108,7 +108,7 @@ md <- matrix(dep, ncol=6, nrow=6, byrow=TRUE)
 __Question 1__: *Create these matrices from* `ind` *and* `dep` *without using* `byrow=TRUE`. *Hint: use the* `t` *function after you made the matrix.*
 
 
-The type of aggregation as shown in Figure 2.1 is not a very typical operation in the context of matrix manipulation. However, it is very common to do this with raster data. So let's first transform the matrices to objects that represent raster data, `SpatRaster` objects in this case. This class is defined in the `terra` package, so we need to load that first. If `library(raster)` gives this error: `Error in library("terra") : there is no package called ‘terra’` you need to install the package first, using this command: `install.packages("terra")`.
+The type of aggregation as shown in Figure 2.1 is not a very typical operation in the context of matrix manipulation. However, it is very common to do this with raster data. So let's first transform the matrices to objects that represent raster data, `SpatRaster` objects in this case. This class is defined in the `terra` package, so we need to load that first. If `library(terra)` gives this error: `Error in library("terra") : there is no package called ‘terra’` you need to install the package first, using this command: `install.packages("terra")`.
 
 ```{r, ch2-4a}
 # load package
