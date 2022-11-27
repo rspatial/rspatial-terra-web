@@ -1,8 +1,3 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Supervised Classification
 
 
@@ -40,7 +35,7 @@ Training and/or validation data can come from a variety of sources. In this exam
 
 ``` {r samples, fig.height=4.23}
 # load polygons with land use land cover information
-samp <- vect(readRDS("data/rs/lcsamples.rds"))
+samp <- readRDS("data/rs/lcsamples.rds")
 
 # check the distribution of the polygons
 plot(samp)
@@ -88,7 +83,7 @@ set.seed(99)
 samp2011 <- spatSample(nlcd2011, size = 500)
 
 # Number of samples in each class
-table(as.character(samp2011[,1]))
+table(samp2011[,1])
 
 ```
 

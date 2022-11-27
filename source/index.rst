@@ -37,7 +37,7 @@ If you have never used *R*, or if you need a refresher, you should start with ou
    |
    
 
-.. topic:: 6. `Species Distribution Modeling <sdm/index.html>`
+.. topic:: 6. `Species Distribution Modeling <sdm/index.html>`__
 
    | An tutorial for predicting the geographic ranges of species (under development). (`pdf <sdm/SDM.pdf>`__)
    |

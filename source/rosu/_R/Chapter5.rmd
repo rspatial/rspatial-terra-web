@@ -1,6 +1,5 @@
 # Point pattern analysis
 
-
 ## Introduction
 
 This page accompanies Chapter 5 of [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html).

@@ -1,10 +1,5 @@
 # Downloading MODIS data
 
-
-```{r, echo=FALSE, include=FALSE}
-library(terra)
-```
-
 MODIS data can be acquired through multiple services, and it can be confusing to find out what to get where. This [website](https://modis.gsfc.nasa.gov/tools/) has a lot of information on MODIS resources. 
 
 Websites are great for preliminary data exploration, they are not ideal for accessing large number of files or when automatic updates are required. Manually downloading also makes workflows less reproducible. So once you know what data you need, it is better to use automatic downloading methods. Here we show how to use *R* package `luna` to download MODIS data for a geographic area and time period. 

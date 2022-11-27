@@ -1,5 +1,6 @@
 # Spatial autocorrelation
 
+
 ## Introduction
 
 This handout accompanies Chapter 7 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 
@@ -140,8 +141,8 @@ wq <- adjacent(pols, "queen", symmetrical=TRUE)
 
 Distance based:
 ```{r}
-wd1 <- nearby(pols, 1000)
-wd25 <- nearby(pols, 2500)
+wd1 <- nearby(pols, distance=1000)
+wd25 <- nearby(pols, distance=2500)
 ```
 
 Nearest neighbors:
@@ -152,7 +153,7 @@ k6 <- nearby(pols, k=6)
 
 Delauny:
 ```{r}
-d <- delauny(centroids(pols))
+d <- delaunay(centroids(pols))
 ```
 
 Lag-two Rook:

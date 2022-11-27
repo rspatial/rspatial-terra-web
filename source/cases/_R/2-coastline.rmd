@@ -32,7 +32,7 @@ guk <- project(uk, prj)
 We only want the main island, so want need to separate (disaggregate) the different polygons.
 
 ```{r}
-duk <- disaggregate(guk)
+duk <- disagg(guk)
 head(duk)
 ```
 

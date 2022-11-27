@@ -234,7 +234,7 @@ There are several functions that deal with modifying the spatial extent of `Spat
 
 The `merge` function lets you merge 2 or more `Raster` objects into a single new object. The input objects must have the same resolution and origin (such that their cells neatly fit into a single larger raster). If this is not the case you can first adjust one of the `Raster` objects with use `(dis)aggregate` or `resample`.
 
-`aggregate` and `disaggregate` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disaggregate` are the best functions when adjusting cells size only, with an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible. 
+`aggregate` and `disagg` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disagg` are the best functions when adjusting cells size only, with an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible. 
 
 For example, you may need nearly the same cell size, while shifting the cell centers. In those cases, the `resample` function can be used. It can do either nearest neighbor assignments (for categorical data) or bilinear interpolation (for numerical data). Simple linear shifts of a Raster object can be accomplished with the `shift` function or with the `extent` function. 
 
@@ -243,11 +243,12 @@ With the `warp` function you can transform values of `SpatRaster` object to a ne
 Here are some simple examples.
 
 Aggregate and disaggregate.
+
 ```{r, raster-5, fig.width=9, fig.height=4 }
 r <- rast()
 values(r) <- 1:ncell(r)
 ra <- aggregate(r, 20)
-rd <- disaggregate(ra, 20)
+rd <- disagg(ra, 20)
 ```
 
 Crop and merge example.
@@ -277,7 +278,7 @@ The `lapp` (layer-apply) function can be used as an alternative to the raster al
 
 
 
-### Reclassify
+### Classify
 
 You can use `classify` to replace ranges of values with single values, or to substitute (replace) single values with other values. 
 
@@ -333,9 +334,9 @@ y <- classify(x, cbind(id=c(2,3), v=c(40,50)))
 as.matrix(y)
 ```
 
-### Focal functions
+### Focal methods
 
-The `focal` function currently only work for (single layer) SpatRaster objects. They make a computation using values in a neighborhood of cells around a focal cell, and putting the result in the focal cell of the output SpatRaster. The neighborhood is a user-defined matrix of weights and could approximate any shape by giving some cells zero weight. It is possible to only computes new values for cells that are `NA` in the input SpatRaster.
+The `focal` methods computate new values based on the values in a neighborhood of cells around a focal cell, and putting the result in the focal cell of the output SpatRaster. The neighborhood is a user-defined matrix of weights and could approximate any shape by giving some cells zero weight. It is possible to only computes new values for cells that are `NA` in the input SpatRaster.
 
 
 ### Distance
@@ -420,7 +421,7 @@ rowFromY(r, 0)
 
 ## Accessing cell values
 
-Cell values can be accessed with several methods. Use `getValues` to get all values or a single row; and `getValuesBlock` to read a block (rectangle) of cell values. 
+Cell values can be accessed with several methods. Use `values` to get all values or a subset such as a single row or a block (rectangle) of cell values. 
 
 ```{r, raster-20}
 r <- rast(system.file("ex/elev.tif", package="terra"))
