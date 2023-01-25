@@ -16,6 +16,14 @@ detach_pkgs <- function() {
 	}
 }
 
+# must be in global env when using new.env
+knitr::opts_chunk$set(
+	dev        = 'png',
+	fig.width  = 6,	fig.height = 6,
+	fig.path = 'figures/',
+	fig.cap="",
+	collapse   = TRUE
+)
 
 do_knit <- function(option, quiet=TRUE) {
 

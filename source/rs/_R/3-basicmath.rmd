@@ -6,7 +6,7 @@ The `terra` package supports many mathematical operations. Math operations are g
 
 We use the same Landsat data as in Chapter 2.
 
-```{r lsstack, message=FALSE}
+```{r lsstack}
 library(terra)
 rfiles <- paste0('data/rs/LC08_044034_20170614_B', 1:11, ".tif")
 landsat <- rast(rfiles)

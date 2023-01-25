@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This document shows some example *R* code to do "overlays" and associated spatial data manipulation to accompany Chapter 11 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). You have already seen many of this type of data manipulation in previsous labs. And we have done perhaps more advanced things using regression type models (including LDA and RandomForest). This lab is very much a review of what you have already seen: basic spatial data operations with *R*. 
+This document shows some example *R* code to do "overlays" and associated spatial data manipulation to accompany Chapter 11 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). You have already seen many of this type of data manipulation in previous labs. And we have done perhaps more advanced things using regression type models (including LDA and RandomForest). This chapter is very much a review of what you have already seen: basic spatial data operations with *R*. 
 
 ### Get the data
 
@@ -19,11 +19,12 @@ if (!require("rspat")) remotes::install_github('rspatial/rspat')
 By now, you are well aware that in *R*, polygons and their attributes can be represented by a `SpatVector`. Here we use a `SpatVector` of California counties.
 
 ```{r, warning=FALSE}
+library(terra)
 library(rspat)
 counties <- spat_data('counties')
 ```
 
-Selection by attribute of elements of a `SpatVector` is similar to selecting rows from a `data.frame`. For example, to select Yolo county by its name:
+Selecting rows (geometries and their attributes) of a `SpatVector` is similar to selecting rows from a `data.frame`. For example, to select Yolo county by its name:
 
 ```{r, over1}
 yolo <- counties[counties$NAME == 'Yolo', ]
@@ -31,16 +32,16 @@ plot(counties, col='light gray', border='gray')
 plot(yolo, add=TRUE, density=20, lwd=2, col='red')
 ```
 
-You can interactively select counties this way:
+You can interactively select counties this way by clicking on the map of the counties:
 
    `plot(counties)`
 
-   `s <- select(counties)`
+   `s <- sel(counties)`
 
 
 ## Intersection and buffer
 
-I want to select the railroads in the city of Davis from the railroads in Yolo county. First read the data, and do an important sanity check: are the coordinate reference systems (crs) the same?
+I want to get the railroads in the city of Davis by sub-setting the railroads in Yolo county. First read the data, and do an important sanity check: are the coordinate reference systems (crs) for the two datasets the same?
 
 ```{r}
 rail <- spat_data("yolo-rail")
@@ -53,7 +54,7 @@ crs(rail, TRUE)
 crs(city, TRUE)
 ```
 
-Ay, we are dealing with two different coordinate reference systems (projections)! Let's settle for yet another one: Teale Albers (this is really the "Albers Equal Area projection with parameters suitable for California". This particular set of parameters was used by an California State organization called the Teale Data Center, hence the name.
+Ay, we are dealing with two different coordinate reference systems (projections)! Let's settle for yet another one: Teale Albers. This is a short name for the "Albers Equal Area projection with parameters suitable for California". This particular set of parameters was used by an California State organization called the Teale Data Center, hence the name.
 
 ```{r}
 TA <- "+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +datum=WGS84 +units=m"
@@ -71,7 +72,8 @@ i <- which(relate(davis, countiesTA, "intersects"))
 countiesTA$NAME[i]
 ```
 
-An alternative approach is to intersect the two polygon datasets.
+An alternative approach is to intersect the two polygon SpatVectors
+
 ```{r, over5}
 i <- intersect(cityTA, countiesTA)
 i$area <- expanse(i)
@@ -81,9 +83,9 @@ plot(cityTA, col='blue')
 plot(yoloTA, add=TRUE, border='red', lwd=3)
 ```
 
-So we have a little sliver of Davis inside of Solano.
+Our data suggest that we have a little sliver of Davis inside of Solano county (the county to the south of Yolo) --- but that is probably not correct. At least it would seem likely that the boundaries may be the same in reality. 
 
-Everything looks OK. Now we can intersect rail and city, and make a buffer. 
+Otherwise, everything looks OK. Now we can intersect rail and city, and make a buffer. 
 
 ```{r}
 davis_rail <- intersect(railTA, cityTA)
@@ -93,6 +95,7 @@ Compute a 500 meter buffer around railroad inside Davis:
 
 ```{r, over10}
 buf <- buffer(railTA, width=500)
+buf <- aggregate(buf)
 rail_buf <- intersect(buf, cityTA)
 
 plot(cityTA, col='light gray')
@@ -105,6 +108,7 @@ box()
 
 
 What is the percentage of the area of the city of Davis that is within 500 m of a railroad?
+
 ```{r}
 round(100 * expanse(rail_buf) / expanse(cityTA))
 ```
@@ -114,6 +118,7 @@ round(100 * expanse(rail_buf) / expanse(cityTA))
 ## Proximity
 
 Which park in Davis is furthest, and which is closest to the railroad? First get the parks data. 
+
 ```{r}
 parks <- spat_data("parks")
 crs(parks, TRUE)
@@ -121,6 +126,7 @@ parksTA <- project(parks, TA)
 ```
 
 Now plot the parks that are the furthest and the nearest from a railroad.
+
 ```{r, over12}
 plot(cityTA, col="light gray", border="light gray")
 plot(railTA, add=TRUE, col="blue", lwd=4)
@@ -140,10 +146,10 @@ plot(parksTA[j, ], add=TRUE, col="red", lwd=3, border="orange")
 ```
 
 
-Another way to approach this is to first create a raster with distance to the railroad values. Here we compute the average distance to any place inside the park, not to its border. You could also compute the distance to the centroid of a park.
+Another way to approach this is to first create a raster with distance to the railroad values. Here we compute the average distance to any place inside the park. You could also compute the distance to the border or the centroids of the parks.
  
 ```{r, over14, fig.width=8, fig.height=4.5}
-# use cityTA to set the geogaphic extent
+# use cityTA to set the geographic extent
 r <- rast(cityTA)
 
 # arbitrary resolution
@@ -188,32 +194,15 @@ plot(parksTA, add=T, col="green")
 ``` 
   
 
-## Fields
+## Raster data
 
-
-### Raster data
-
-raster data can be read with the rast methods. See the terra package for more details
+raster data can be read with the `rast` method. See the terra package for more details
 
 
 ```{r}
 alt <- spat_data("elevation")
 alt
 ```
-
-
-Shaded relief can be nice to look at.
-
-```{r, over22, fig.width=7}
-slope <- terrain(alt, "slope")
-aspect <- terrain(alt, "aspect")
-hill <- terra:::shade(slope, aspect, 40, 270)
-plot(hill, col=grey(0:100/100), legend=FALSE, main="Elevation")
-plot(alt, col=rainbow(25, alpha=0.35), add=TRUE)
-```
-
-You can also try the `plot3D` function in the rasterVis package.
-
 
 ### Query
 
@@ -226,6 +215,7 @@ hist(unlist(v), main="Elevation in Yolo county")
 
 
 Another approach:
+
 ```{r, over26}
 # cut out a rectangle (extent) of Yolo
 yalt <- crop(alt, yolo)
@@ -248,7 +238,5 @@ We want to travel by train in Yolo county and we want to get as close as possibl
 
 Define "hilly" as some vague notion of a combination of high elevation and slope (in degrees). Use some of the functions you have seen above, as well as function 'distance' to create a plot of distance from the railroad against hillyness. Make a map to illustrate the result, showing where you get off the train, where you go to, and what the elevation and slope profile would be if you follow the shortest (as the crow flies) path.
 
-Bonus: use package `gdistance` to find the least-cost path between these two points (assign a cost to slope, perhaps using Tobler's hiking function).
-
-
+Bonus: use the `costDist` function to find the least-cost path between these two points (assign a cost to slope, perhaps using Tobler's hiking function).
 

@@ -52,7 +52,7 @@ if (!dopdf) {
 		e <- gsub("<span class=\"c1\">## ", "", e)
 		e <- gsub('<div class=\"highlight-default notranslate\"><div class=\"highlight\"><pre><span></span><span class=\"c1\">', "", e)
 	    e <- gsub('<div class=\"highlight-default notranslate\"><div class=\"highlight\"><pre><span></span>', "", e)
-		e <- substr(e, 1, 100)
+		e <- substr(e, 1, 125)
 		e <- e[!(e %in% ignore_errors)]
 		if (length(e) > 0) {
 			print(f)
