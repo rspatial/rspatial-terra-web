@@ -41,7 +41,7 @@ plot(bf[,1:2], cex=0.5, col="red")
 
 library(geodata)
 wrld <- geodata::world(path=".")
-bnds <- wrld[wrld$NAME_0 %in% c("Canada", "Mexico", "United States"), ]
+bnds <- wrld[wrld$COUNTRY %in% c("Canada", "Mexico", "United States"), ]
 lines(bnds)
 ```
 

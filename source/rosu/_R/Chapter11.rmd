@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Map overlay
 
 
@@ -103,7 +108,6 @@ plot(rail_buf, add=TRUE, col='light blue', border='light blue')
 plot(railTA, add=TRUE, lty=2, lwd=6)
 plot(cityTA, add=TRUE)
 plot(davis_rail, add=TRUE, col='red', lwd=6)
-box()
 ```
 
 
@@ -133,7 +137,7 @@ plot(railTA, add=TRUE, col="blue", lwd=4)
 plot(parksTA, col="dark green", add=TRUE)
 
 d <- distance(parksTA, railTA)
-dmin <- apply(d, 2, min)
+dmin <- apply(d, 1, min)
 parksTA$railDist <- dmin
 
 i <- which.max(dmin)
