@@ -154,13 +154,13 @@ In this case, it makes sense to combine the three layers into a single image, by
 plotRGB(b, r=1, g=2, b=3)
 ```
 
-You can also use a number of other plotting functions with `SpatRasters`, including `hist`, `persp`, `contour`}, and `density`. See the help files for more info. 
+You can also use a number of other plotting functions with SpatRasters, including `hist`, `persp`, `contour`}, and `density`. See the help files for more info. 
 
 The `rasterVis` and `tmap` packages provides a lot of very nice mapping options as well. 
 
 ## Basemaps
 
-You can get many different basemaps with the maptiles package. Reading the data again. 
+You can get many different base-maps with the maptiles package. Reading the data again. 
 ```{r, maps_data}
 library(terra)
 f <- system.file("ex/lux.shp", package="terra")

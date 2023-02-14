@@ -293,7 +293,7 @@ For each cell get the income coefficient:
 inc <- sapply(res, function(x) x['income'])
 ```
 
-Use these values in a RasterLayer
+Use these values in a SpatRaster
 ```{r, gwr20}
 rinc <- setValues(r, inc)
 plot(rinc)
@@ -341,7 +341,7 @@ Now specify the model
 gwr.model <- ______ 
 ```
 
-`gwr` returns a list-like object that includes (as first element) a `SpatialPointsDataFrame` that has the model coefficients. Plot these using `spplot`, and after that, transfer them to a `RasterBrick` object.
+`gwr` returns a list-like object that includes (as first element) a `SpatialPointsDataFrame` that has the model coefficients. Plot these and, after that, transfer them to a `SpatRaster`.
 
 To extract the SpatialPointsDataFrame:
 

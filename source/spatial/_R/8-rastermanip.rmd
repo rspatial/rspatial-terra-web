@@ -233,7 +233,7 @@ There are several functions that deal with modifying the spatial extent of `Spat
 
 `trim` crops a `SpatRaster` by removing the outer rows and columns that only contain `NA` values. In contrast, `extend` adds new rows and/or columns with `NA` values. The purpose of this could be to create a new `SpatRaster` with the same Extent of another, larger, `SpatRaster` such that they can be used together in other functions. 
 
-The `merge` function lets you merge 2 or more `Raster` objects into a single new object. The input objects must have the same resolution and origin (such that their cells neatly fit into a single larger raster). If this is not the case you can first adjust one of the `Raster` objects with `aggregate`/`disagg` or `resample`.
+The `merge` function lets you merge 2 or more SpatRaster objects into a single new object. The input objects must have the same resolution and origin (such that their cells neatly fit into a single larger raster). If this is not the case you can first adjust one of the SpatRaster objects with `aggregate`/`disagg` or `resample`.
 
 `aggregate` and `disagg` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disagg` are the best functions when adjusting cells size only, with an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible. 
 

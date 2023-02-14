@@ -103,8 +103,7 @@ vv <- v
 vv$pa <- as.factor(vv$pa)
 rfmod2 <- randomForest(pa ~., data=vv)
 r4 <- predict(logo, rfmod2, type='prob')
-rr4 <- as(r4, "Raster")
-raster::spplot(rr4)
+plot(r4, range=c(0,1))
 ```
 
 ## cforest 

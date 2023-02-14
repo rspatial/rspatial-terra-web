@@ -44,7 +44,7 @@ plot(m)
 
 The `lapp` (for layer-apply) method can be used as an alternative to the raster algebra discussed above. Like the methods discussed in the following subsections provide either easy to use short-hand, or more efficient computation for large (file based) objects. 
 
-With `lapp` you can combine multiple Raster objects (e.g. multiply them). The related method `mask` removes all values from one layer that are `NA` in another layer, and `cover` combines two layers by taking the values of the first layer except where these are `NA`.
+With `lapp` you can combine multiple SpatRaster objects. The related method `mask` removes all values from one layer that are `NA` in another layer, and `cover` combines two layers by taking the values of the first layer except where these are `NA`.
 
 
 ## app
