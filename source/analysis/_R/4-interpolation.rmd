@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Almost any geographic variable of interest has [spatial autocorrelation](/terra/analysis/3-spauto.html). That can be a problem in statistical tests, but it is a very useful feature when we want to predict values at locations where no measurements have been made; as we can generally safely assume that values at nearby locations will be similar. There are several spatial interpolation techniques. We show some of them in this chapter.
+Almost any geographic variable of interest has [spatial autocorrelation](/analysis/3-spauto.html). That can be a problem in statistical tests, but it is a very useful feature when we want to predict values at locations where no measurements have been made; as we can generally safely assume that values at nearby locations will be similar. There are several spatial interpolation techniques. We show some of them in this chapter.
 
 ## Temperature in California 
 
@@ -297,7 +297,7 @@ idp <- mask(idp, ca)
 plot(idp, 1)
 ```
 
-We can find good values for the idw parameters (distance decay and number of neighbours) through optimization. For simplicity's sake I do not do that *k* times here. The optim function may be a bit hard to grasp at first. But the essence is simple. You provide a function that returns a value that you want to minimize (or maximize) given a number of unknown parameters. Your provide initial values for these parameters, and optim then searches for the optimal values (for which the function returns the lowest number).
+We can find good values for the idw parameters (distance decay and number of neighbours) through optimization. For simplicity's sake I only do that once here, not *k* times. The `optim` function may be a bit hard to grasp at first. But the essence is simple. You provide a function that returns a value that you want to minimize (or maximize) given a number of unknown parameters. You also need to provide initial values for these parameters. `optim` then searches for the optimal values (for which the function returns the lowest number).
 
 
 ```{r}

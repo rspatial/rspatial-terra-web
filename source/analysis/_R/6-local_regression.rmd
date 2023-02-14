@@ -64,8 +64,8 @@ g
 
 Link the results back to the raster
 ```{r, loca18, fig.width=9}
-slope <- copy(r)
-intercept <- copy(r)
+slope <- deepcopy(r)
+intercept <- deepcopy(r)
 slope[!is.na(slope)] <- g$SDF$ALT 
 intercept[!is.na(intercept)] <- g$SDF$'(Intercept)'
 s <- c(intercept, slope)

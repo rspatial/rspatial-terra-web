@@ -108,7 +108,7 @@ g <- p[i,]
 g
 ```
 
-It is also possible to interactively select and query records by clicking on a plotted dataset. That is difficult to show here. See `?select` for interactively selecting geometries and `?click` to identify attributes by clicking on a plot (map).
+It is also possible to interactively select and query records by clicking on a plotted dataset. That is difficult to show here. See `?sel` for interactively selecting geometries and `?click` to identify attributes by clicking on a plot (map).
 
 
 ## Append and aggregate
@@ -165,10 +165,10 @@ zag
 plot(zag, col="light gray")
 ```
 
-This is a structure that is similar to what you may get for an archipelago: multiple polygons represented as one entity (one row). Use `disaggregate` to split these up into their parts.
+This is a structure that is similar to what you may get for an archipelago: multiple polygons represented as one entity (one row). Use `disagg` to split these up into their parts.
 
 ```{r diis}
-zd <- disaggregate(zag)
+zd <- disagg(zag)
 zd
 ```
 
@@ -250,7 +250,7 @@ We can query polygons with points ("point-in-polygon query").
 
 ```{r, pts}
 pts <- matrix(c(6, 6.1, 5.9, 5.7, 6.4, 50, 49.9, 49.8, 49.7, 49.5), ncol=2)
-spts <- vect(pts, proj4string=crs(p))
+spts <- vect(pts, crs=crs(p))
 plot(z, col='light blue', lwd=2)
 points(spts, col='light gray', pch=20, cex=6)
 text(spts, 1:nrow(pts), col='red', font=2, cex=1.5)

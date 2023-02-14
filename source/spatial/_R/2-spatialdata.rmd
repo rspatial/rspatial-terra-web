@@ -2,9 +2,9 @@
 
 ## Introduction
 
-Spatial phenomena can generally be thought of as either discrete objects with clear boundaries or as a continuous phenomenon that can be observed everywhere, but does not have natural boundaries. Discrete spatial objects may refer to a river, road, country, town, or a research site. Examples of continuous phenomena, or "spatial fields", include elevation, temperature, and air quality.
+Spatial phenomena can generally be thought of as either discrete objects with clear boundaries or as a continuous phenomena that can be observed everywhere, but that do not have natural boundaries. Discrete spatial objects may refer to a river, road, country, town, or a research site. Examples of continuous phenomena, or "spatial fields", include elevation, temperature, and air quality.
 
-Spatial objects are usually represented by *vector* data. Such data consists of a description of the "geometry" or "shape" of the objects, and normally also includes additional variables. For example, a vector data set may describe the borders of the countries of the world (geometry), and also store their names and the size of their population in 2015; or the geometry of the roads in an area, as well as their type and names. These additional variables are often referred to as "attributes". Continuous spatial data (fields) are usually represented with a *raster* data structure. We discuss these two data types in turn. 
+Spatial objects are usually represented by *vector* data. Such data consists of a description of the "geometry" or "shape" of the objects, and normally also includes additional variables. For example, a vector data set may represent the borders of the countries of the world (geometry), and also store their names and the size of their population in 2015; or it may have the geometry of the roads in an area, as well as their type and names. These additional variables are often referred to as "attributes". Continuous spatial data (fields) are usually represented with a *raster* data structure. We discuss these two data types in turn. 
 
 ## Vector data 
 
@@ -88,7 +88,7 @@ However, `wst` is a data.frame and *R* does not automatically understand the spe
 
 Moreover, it is non-trivial to do some basic spatial operations. For example, the blue polygon drawn on the map above might represent a state, and a next question might be which of the 10 stations fall within that polygon. And how about any other operation on spatial data, including reading from and writing data to files? To facilitate such operation a number of *R* packages have been developed that define new spatial data types that can be used for this type of specialized operations. 
 
-Recent packages in R that define such spatial data structures include `terra` and `sf`. These packages replace a set of older packages including `sp`, `raster`, `rgdal` and `rgeos`.
+Recent packages in R that define such spatial data structures include `terra` and `sf`. These packages replace a set of older packages including `raster` and `sp`.
 
 We mostly use the `terra` package in these materials. You can install the latest released version of *terra* from CRAN with `install.packages("terra")` 
 	

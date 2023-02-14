@@ -1,4 +1,3 @@
-
 # Absence and background points
 
 
@@ -47,17 +46,13 @@ points(bg2, cex=0.5)
 
 There are several approaches one could use to sample 'pseudo-absence' points, i.e., points from a more restricted area than 'background'. VanDerWal et al. (2009) sampled withn a radius of presence points. Here is one way to implement that, using the `Solanum acaule` data.
 
-We first read the cleaned and subsetted `S. acaule` data that we produced in the previous chapter 
+We first read the cleaned and subsetted `S. acaule` data that we produced in the previous chapter.
+
 ```{r, sdm16a}
 acfile <- file.path(system.file(package="predicts"), "ex/acaule.rds")
 ac <- readRDS(acfile)
 ```
 
-`ac` is a `PackedSpatVector`. To use it we must change it into a `SpatVector`
-
-```{r, sdm16b}
-ac <- vect(ac)
-```
 
 We first create a 'circles' model (see the chapter about geographic models), using an arbitrary radius of 50 km
 ```{r, sdm17}

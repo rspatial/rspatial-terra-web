@@ -1,4 +1,3 @@
-
 # Spatial distribution models
 
 
@@ -18,8 +17,8 @@ First make sure we have the packages needed:
 
 ```{r pkgs, echo=TRUE}
 if (!require("rspat")) remotes::install_github("rspatial/rspat")
-if (!require("geodata")) remotes::install_github("rspatial/geodata")
 if (!require("predicts")) remotes::install_github("rspatial/predicts")
+if (!require("geodata")) install.packages("geodata")
 ```  
   
 ## Data 
@@ -42,7 +41,7 @@ plot(bf[,1:2], cex=0.5, col="red")
 
 library(geodata)
 wrld <- geodata::world(path=".")
-bnds <- wrld[wrld$NAME_0 %in% c("Canada", "Mexico", "United States"), ]
+bnds <- wrld[wrld$COUNTRY %in% c("Canada", "Mexico", "United States"), ]
 lines(bnds)
 ```
 

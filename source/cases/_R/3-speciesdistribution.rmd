@@ -7,49 +7,18 @@ In this case-study I show some techniques that can be used to analyze species di
 ## Import and prepare data
 
 The data we will use is available in the rspatial package. First install that from github, using the `remotes` package.
+
 ```{r, a1}
 if (!require("rspat")) remotes::install_github('rspatial/rspat')
 library(rspat)
 ```
 
-The extracted file is a tab delimited text file. Normally, you would read such a file with something like:
+The extracted file is a csv file (comma-seperated-by values). We can read it with:
 
 ```{r a1b, error=TRUE}
-f <- system.file("WILDPOT.txt", package="rspat")
+f <- system.file("wildpot.csv", package="rspat")
 basename(f)
-d <- read.table(f, header=TRUE)
-```
-
-But that does not work in this case because some lines are incomplete. So we have to resort to some more complicated tricks.
-
-```{r, a2}
-# read all lines using UTF-8 encoding
-d <- readLines(f, encoding="UTF-8")
-# split each line into elements using the tabs
-dd <- strsplit(d, "\t")
-# show that the number of elements varies
-table(sapply(dd, length))
-
-# function to complete each line to 22 items
-fun <- function(x) {
-	r <- rep("", 22)
-	r[1:length(x)] <- x
-	r 
-}
-
-# apply function to each element of the list
-ddd <- lapply(dd, fun)
-# row bind all elements (into a matrix)
-v <- do.call(rbind, ddd)
-v[1:3, 1:8]
-
-#set the column names and remove them from the data
-colnames(v) <- v[1,]
-v <- v[-1,]
-
-# coerce into a data.frame and change the type of some variables
-# to numeric (instead of character)
-v <- data.frame(v, stringsAsFactors=FALSE)
+v <- read.csv(f)
 ```
 
 The coordinate data is in degrees, minutes, seconds (in separate columns, fortunately), so we need to compute longitude and latitude as single numbers.

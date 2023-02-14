@@ -1,5 +1,5 @@
-
 # Model fitting, prediction, and evaluation
+
 
 
 ## Model fitting
@@ -113,7 +113,7 @@ auc <- as.numeric(mv$statistic) / (length(p) * length(a))
 auc
 ```
 
-Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the dismo package. See `?pa_evaluate` for info on additional evaluation measures that are available.
+Below we show how you can compute these, and other statistics more conveniently, with the `evaluate` function in the predicts package. See `?pa_evaluate` for info on additional evaluation measures that are available.
 
 ```{r, sdm40, width=7,height=5 }
 library(predicts)
@@ -204,6 +204,7 @@ back_test <- backgr[s, ]
 ```
 
 ```{r, sdm45c}
+library(dismo)
 sb <- dismo::ssb(pres_test, back_test, pres_train)
 sb[,1] / sb[,2]
 ```
