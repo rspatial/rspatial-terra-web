@@ -24,7 +24,7 @@ So the basic way to record a location is a coordinate pair in degrees and a refe
 
 ### Projections
 
-A major question in spatial analysis and cartography is how to transform this three dimensional angular system to a two dimensional planar (sometimes called "Cartesian") system. A planar system is easier to use for certain calculations and required to make maps (unless you have a 3-d printer). The different types of planar coordinate reference systems are referred to as "projections'. Examples are "Mercator', "UTM', "Robinson', "Lambert', "Sinusoidal" "Robinson" and "Albers". 
+A major question in spatial analysis and cartography is how to transform this three dimensional angular system to a two dimensional planar (sometimes called "Cartesian") system. A planar system is easier to use for certain calculations and required to make maps (unless you have a 3-d printer). The different types of planar coordinate reference systems are referred to as "projections". Examples are "Mercator", "UTM", "Robinson", "Lambert", "Sinusoidal" and "Albers". 
 
 There is not one best projection. Some projections can be used for a map of the whole world; other projections are appropriate for small areas only. One of the most important characteristics of a map projection is whether it is "equal area" (the scale of the map is constant) or "conformal" (the shapes of the geographic features are as they are seen on a globe). No two dimensional map projection can be both conformal and equal-area (but they can be approximately both for smaller areas, e.g. UTM, or Lambert Equal Area for a larger area), and some are neither. 
 
