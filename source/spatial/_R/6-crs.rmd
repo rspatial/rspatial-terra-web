@@ -124,7 +124,7 @@ plot(pr1)
 
 But that is not a good method. As you should want to assure that you project to exactly the raster parameters  you need (so that it lines up with other raster data you are using).  
 
-To have this kind of control, provide an existing SpatRaster with the geomotry you desire. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
+To have this kind of control, provide an existing SpatRaster with the geometry you desire. That is generally the best way to project raster. By providing an existing SpatRaster, such that your newly projected data perfectly aligns with it. In this example we do not have an existing SpatRaster object, so we create from the result obtained above.
 
 ```{r}
 x <- rast(pr1)
