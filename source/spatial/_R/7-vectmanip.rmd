@@ -108,7 +108,7 @@ g <- p[i,]
 g
 ```
 
-It is also possible to interactively select and query records by clicking on a plotted dataset. That is difficult to show here. See `?select` for interactively selecting geometries and `?click` to identify attributes by clicking on a plot (map).
+It is also possible to interactively select and query records by clicking on a plotted dataset. That is difficult to show here. See `?sel` for interactively selecting geometries and `?click` to identify attributes by clicking on a plot (map).
 
 
 ## Append and aggregate

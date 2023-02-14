@@ -105,7 +105,7 @@ While we can create a `SpatRaster` from scratch, it is more common to do so from
 
 A notable feature of the `terra` package is that it can work with raster datasets that are stored on disk and are too large to be loaded into memory (RAM). The package can work with large files because the objects it creates from these files only contain information about the structure of the data, such as the number of rows and columns, the spatial extent, and the filename, but it does not attempt to read all the cell values in memory. In computations with these objects, data is processed in chunks. If no output filename is specified to a function, and the output raster is too large to keep in memory, the results are written to a temporary file. 
 
-For this example, we first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction for your own files (just type the file name; don't forget the forward slashes).
+Below we first we get the name of an example raster file that is installed with the "terra" package. Do __not__ use this `system.file` construction for your own files. Just type the file name as you would do for any other file, but don't forget to use forward slashes as path separators.
 
 ```{r, raster-2a1 }
 filename <- system.file("ex/elev.tif", package="terra")
