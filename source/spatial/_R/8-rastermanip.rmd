@@ -371,7 +371,7 @@ It is also possible to convert the values of a `SpatRaster` to points or polygon
 
 ## Summarizing functions
 
-When used with a `SpatRaster` object as first argument, normal summary statistics functions such as `min`, `max` and `mean` return a `SpatRaster`. You can use `cellStats` if, instead, you want to obtain a summary for all cells of a single `SpatRaster` object. You can use `freq` to make a frequency table, or to count the number of cells with a specified value. Use `zonal` to summarize a `SpatRaster` object using zones (areas with the same integer number) defined in a `SpatRaster` and `crosstab` to cross-tabulate two `SpatRaster` objects.
+When used with a `SpatRaster` object as first argument, normal summary statistics functions such as `min`, `max` and `mean` return a `SpatRaster`. You can use `global` if, instead, you want to obtain a summary for all cells of a single `SpatRaster` object. You can use `freq` to make a frequency table, or to count the number of cells with a specified value. Use `zonal` to summarize a `SpatRaster` object using zones (areas with the same integer number) defined in a `SpatRaster` and `crosstab` to cross-tabulate two `SpatRaster` objects.
 
 ```{r, raster-10a}
 r <- rast(ncol=36, nrow=18)
