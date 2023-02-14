@@ -1,9 +1,14 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
 # Maps
 
-Generally maps are created by running `plot(x)`, sometimes several times. 
+You can make a map with `plot(x)`, were `x` is a `SpatRaster` or `SpatVector`. You can add additional spatial data or text with functions such as `points`, `lines`, `text`
 
 You can zoom in using `zoom(x)` and clicking on the map twice (to indicate where to zoom to). Or use `select(x)` to save a spatial subset to a new object. With `click(x)` it is possible to interactively query a SpatRaster by clicking once or several times on a map plot.
-
 
 ## SpatVector
 
@@ -32,6 +37,7 @@ But if you want colors it is probably easiest to use an attribute.
 ```{r, maps_3}
 plot(p, "NAME_2", col=rainbow(25))
 ```
+
 
 You can request maps for multiple variables
 ```{r, maps_4a, fig.width=10}
@@ -114,19 +120,17 @@ plot(rr, plg=list(x="topright"), mar=m)
 ```
 
 
-If the raster is categorical you get the labels 
+If the raster is categorical you get the category labels in the legend.
+
+Make a categorical (factor) raster 
 
 ```{r, maps_15, fig.height=5, fig.width=9}
-set.seed(0)
-x <- rast(nrow=10, ncol=10)
-values(x) <- sample(0:2, ncell(r), replace=TRUE)
-cls <- c("forest", "water", "urban")
-levels(x) <- cls
-names(x) <- "land cover"
+x <- classify(r, c(140, 300, 400, 550))
+levels(x) <- data.frame(id=0:2, elevation=c("low", "intermediate", "high"))
 is.factor(x)
 x
+
 plot(x, col=c("green", "blue", "light gray"))
-text(x, digits=3, cex=.75, halo=TRUE)
 ```
 
 When plot is used with a multi-layer object, all layers are plotted (up to 16), unless the layers desired are indicated with an additional argument. 
@@ -174,12 +178,9 @@ lines(p, col="blue", lwd=3)
 
 You can use the `leaflet` package to make interactive maps. 
 
-
 ```{r leaflet, message=FALSE}
-library(sf)
 library(leaflet)
-leaflet(sf::st_as_sf(p)) %>%
-   addTiles() %>%
-   addPolygons(fillOpacity=0.1)
+m <- plet(p)
+m
 ```
 

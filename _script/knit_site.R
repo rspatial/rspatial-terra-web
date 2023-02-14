@@ -1,5 +1,30 @@
 #!/usr/bin/Rscript
 
+detach_pkgs <- function() {
+	s <- sessionInfo()
+	pkgs <- names(s$otherPkgs)
+	#pkgs <- c(pkgs, names(s$loadedOnly))
+	if (length(pkgs) > 0) {
+		pkgs <- pkgs[!(pkgs %in% c(s$basePkgs, "tools", "Rcpp", "terra", "compiler"))]
+	}
+	if (length(pkgs) > 0) {
+		suppressWarnings(
+			suppressMessages(
+				invisible(lapply(paste0('package:', pkgs), detach, character.only=TRUE,unload=TRUE))
+			)
+		)
+	}
+}
+
+# must be in global env when using new.env
+knitr::opts_chunk$set(
+	dev        = 'png',
+	fig.width  = 6,	fig.height = 6,
+	fig.path = 'figures/',
+	fig.cap="",
+	collapse   = TRUE
+)
+
 do_knit <- function(option, quiet=TRUE) {
 
 	ff <- list.files("_R", pattern='.Rmd$', ignore.case=TRUE, full.names=TRUE, recursive=TRUE)
@@ -82,6 +107,7 @@ do_knit <- function(option, quiet=TRUE) {
 			pc <- paste('pandoc',  md[i], '-f markdown -t rst -o', rst[i])
 			sysfun(pc)
 			file.remove(md[i])
+			detach_pkgs()
 		}
 	} 
 }

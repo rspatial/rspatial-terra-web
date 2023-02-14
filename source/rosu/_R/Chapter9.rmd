@@ -1,6 +1,5 @@
 # Fields
 
-
 ## Introduction
 
 This handout accompanies Chapter 9 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). 

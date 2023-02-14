@@ -6,7 +6,7 @@ The `terra` package supports many mathematical operations. Math operations are g
 
 We use the same Landsat data as in Chapter 2.
 
-```{r lsstack, message=FALSE}
+```{r lsstack}
 library(terra)
 rfiles <- paste0('data/rs/LC08_044034_20170614_B', 1:11, ".tif")
 landsat <- rast(rfiles)
@@ -165,7 +165,6 @@ par(mfrow=c(1,2))
 plotRGB(landsatFCC, stretch = "lin", main="False Color", mar=c(3.1, 3.1, 2.1, 2.1))
 plot(pcClass, main="PCA")
 ```
-
 
 To learn more about the information contained in the vegetation and soil line plots read this paper by [Gitelson et al](http://www.tandfonline.com/doi/abs/10.1080/01431160110107806#.V6hp_LgrKhd). Details about [PCA](http://cires.colorado.edu/esoc/sites/default/files/class-files/GEOG%204110_5100%20Lecture%2015%20%28Mahsa%29.pdf) and an extension of PCA in remote sensing, [Tasseled-cap Transformation](http://wiki.landscapetoolbox.org/doku.php/remote_sensing_methods:tasseled-cap_transformation).
 

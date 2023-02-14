@@ -6,6 +6,7 @@ This handout accompanies Chapter 8 in [O'Sullivan and Unwin (2010)](http://www.w
 
 ## LISA
 
+
 We compute some measures of local spatial autocorrelation. 
 
 First get the Auckland data.
@@ -133,8 +134,8 @@ g
 Link the results back to the raster. Note the use of `slope <- copy` to get a *deep copy*. If you do `slope <- r`, both `slope` and `r` point to the *same object in memory*, so you need to avoid that.
 
 ```{r, loca18, fig.width=9}
-slope <- copy(r)
-intercept <- copy(r)
+slope <- deepcopy(r)
+intercept <- deepcopy(r)
 slope[!is.na(slope)] <- g$SDF$ALT 
 intercept[!is.na(intercept)] <- g$SDF$"(Intercept)"
 s <- c(intercept, slope)

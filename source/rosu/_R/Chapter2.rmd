@@ -1,6 +1,5 @@
 # Pitfalls and potential
 
-
 ## Introduction
 
 This page shows how you can implement the examples provided in Chapter 2 of [O'Sullivan and Unwin (2010)](https://www.wiley.com/en-us/Geographic+Information+Analysis%2C+2nd+Edition-p-9780470288573). To get most out of this, go through the examples slowly, line by line. You should inspect the objects created and read the help files associated with the functions used. 

@@ -3,7 +3,9 @@ output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+
 # The length of a coastline
+
 
 This page accompanies Chapter 1 of [O'Sullivan and Unwin (2010)](https://www.wiley.com/en-us/Geographic+Information+Analysis%2C+2nd+Edition-p-9780470288573). 
 There is only one numerical example in this chapter, and it is a complicated one. I reproduce it here anyway, perhaps you can revisit it when you reach the end of the book (and you will be amazed to see how much you have learned!).
@@ -28,6 +30,7 @@ if (!require("rspat")) remotes::install_github("rspatial/rspat")
 Now you should have the data for all chapters. 
 
 ```{r, nzfrac1}
+library(terra)
 library(rspat)
 coast <- spat_data("nz_coastline")
 coast

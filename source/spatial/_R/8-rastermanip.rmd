@@ -8,7 +8,8 @@ In this chapter general aspects of the design of the `terra` package are discuss
 
 ## Creating SpatRaster objects
 
-A `SpatRaster` can easily be created from scratch using the function `rast`. The default settings will create a global raster data structure with a longitude/latitude coordinate reference system and 1 by 1 degree cells. You can change these settings by providing additional arguments such as `xmin`, `nrow`, `ncol`, and/or `crs`, to the function. You can also change these parameters after creating the object. If you set the projection, this is only to properly define it, not to change it. To transform a `SpatRaster` to another coordinate reference system (projection) you can use the function `projectRaster`.
+A `SpatRaster` can easily be created from scratch using the function `rast`. The default settings will create a global raster data structure with a longitude/latitude coordinate reference system and 1 by 1 degree cells. You can change these settings by providing additional arguments such as `xmin`, `nrow`, `ncol`, and/or `crs`, to the function. You can also change these parameters after creating the object. If you set the projection, this is only to properly define it, not to change it. To transform a `SpatRaster` to another coordinate reference system (projection) you can use the `project` function.
+
 
 Here is an example of creating and changing a `SpatRaster` object 'r' from scratch.
 
@@ -104,7 +105,7 @@ While we can create a `SpatRaster` from scratch, it is more common to do so from
 
 A notable feature of the `terra` package is that it can work with raster datasets that are stored on disk and are too large to be loaded into memory (RAM). The package can work with large files because the objects it creates from these files only contain information about the structure of the data, such as the number of rows and columns, the spatial extent, and the filename, but it does not attempt to read all the cell values in memory. In computations with these objects, data is processed in chunks. If no output filename is specified to a function, and the output raster is too large to keep in memory, the results are written to a temporary file. 
 
-For this example, first we get the name of an example file installed with the package. Do __not__ use this `system.file` construction for your own files (just type the file name; don't forget the forward slashes).
+Below we first we get the name of an example raster file that is installed with the "terra" package. Do __not__ use this `system.file` construction for your own files. Just type the file name as you would do for any other file, but don't forget to use forward slashes as path separators.
 
 ```{r, raster-2a1 }
 filename <- system.file("ex/elev.tif", package="terra")
@@ -234,7 +235,7 @@ There are several functions that deal with modifying the spatial extent of `Spat
 
 The `merge` function lets you merge 2 or more `Raster` objects into a single new object. The input objects must have the same resolution and origin (such that their cells neatly fit into a single larger raster). If this is not the case you can first adjust one of the `Raster` objects with `aggregate`/`disagg` or `resample`.
 
-`aggregate` and `disaggregate` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values, e.g. `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disaggregate` are the best functions when adjusting cell sizes by an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible.
+`aggregate` and `disagg` allow for changing the resolution (cell size) of a `SpatRaster` object. In the case of `aggregate`, you need to specify a function determining what to do with the grouped cell values `mean`. It is possible to specify different (dis)aggregation factors in the x and y direction. `aggregate` and `disagg` are the best functions when adjusting cells size only, with an integer step (e.g. each side 2 times smaller or larger), but in some cases that is not possible. 
 
 For example, you may need nearly the same cell size, while shifting the cell centers. In those cases, the `resample` function can be used. It can do either nearest neighbor assignments (for categorical data) or bilinear interpolation (for numerical data). Simple linear shifts of a Raster object can be accomplished with the `shift` function or with the `extent` function. 
 
@@ -243,11 +244,12 @@ With the `warp` function you can transform values of `SpatRaster` object to a ne
 Here are some simple examples.
 
 Aggregate and disaggregate.
+
 ```{r, raster-5, fig.width=9, fig.height=4 }
 r <- rast()
 values(r) <- 1:ncell(r)
 ra <- aggregate(r, 20)
-rd <- disaggregate(ra, 20)
+rd <- disagg(ra, 20)
 ```
 
 Crop and merge example.
@@ -277,7 +279,7 @@ The `lapp` (layer-apply) function can be used as an alternative to the raster al
 
 
 
-### Reclassify
+### Classify
 
 You can use `classify` to replace ranges of values with single values, or to substitute (replace) single values with other values. 
 
@@ -333,10 +335,9 @@ y <- classify(x, cbind(id=c(2,3), v=c(40,50)))
 as.matrix(y)
 ```
 
-### Focal functions
+### Focal methods
 
-The `focal` function currently only work for (single layer) SpatRaster objects. They make a computation using values in a neighborhood of cells around a focal cell, and putting the result in the focal cell of the output `SpatRaster`. The neighborhood is a user-defined matrix of weights and could approximate any shape by giving some cells zero weight. It is possible to only compute new values for cells that are `NA` in the input `SpatRaster`.
-
+The `focal` methods computate new values based on the values in a neighborhood of cells around a focal cell, and putting the result in the focal cell of the output SpatRaster. The neighborhood is a user-defined matrix of weights and could approximate any shape by giving some cells zero weight. It is possible to only computes new values for cells that are `NA` in the input SpatRaster.
 
 ### Distance
 
@@ -420,7 +421,7 @@ rowFromY(r, 0)
 
 ## Accessing cell values
 
-Cell values can be accessed with several methods. Use `getValues` to get all values or a single row; and `getValuesBlock` to read a block (rectangle) of cell values. 
+Cell values can be accessed with several methods. Use `values` to get all values or a subset such as a single row or a block (rectangle) of cell values. 
 
 ```{r, raster-20}
 r <- rast(system.file("ex/elev.tif", package="terra"))

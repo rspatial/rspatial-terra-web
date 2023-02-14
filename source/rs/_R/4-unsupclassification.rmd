@@ -38,7 +38,7 @@ e <- ext(-121.807, -121.725, 38.004, 38.072)
 ndvi <- crop(ndvi, e)
 ndvi
 
-# convert the raster to vecor/matrix
+# convert the raster to a data.frme
 nr <- values(ndvi)
 str(nr)
 ```
