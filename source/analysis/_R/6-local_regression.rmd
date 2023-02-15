@@ -1,7 +1,7 @@
 # Local regression
 
 
-Regression models are typically "global". That is, all date are used simultaneously to fit a single model. In some cases it can make sense to fit more flexible "local" models. Such models exist in a general regression framework (e.g. generalized additive models), where "local" refers to the values of the predictor values. In a spatial context local refers to location. Rather than fitting a single regression model, it is possible to fit several models, one for each location (out of possibly very many) locations. This technique is sometimes called "geographically weighted regression" (GWR). GWR is a data exploration technique that allows to understand changes in importance of different variables over space (which may indicate that the model used is misspecified and can be improved). 
+Regression models are typically "global". That is, all date are used simultaneously to fit a single model. In some cases it can make sense to fit more flexible "local" models. Such models exist in a general regression framework (e.g. generalized additive models), where "local" refers to the values of the predictor values. In a spatial context local refers to location. Rather than fitting a single regression model, it is possible to fit several models, one for each location (out of possibly very many) locations. This technique is sometimes called "geographically weighted regression" (GWR). GWR is a data exploration technique that allows to understand changes in importance of different variables over space (which may indicate that the model used is mis-specified and can be improved). 
 
 There are two examples here. One short example with California precipitation data, and than a more elaborate example with house price data.
 
@@ -223,7 +223,7 @@ cnres2 <- cnres
 
 # scale all variables, except the first one (county name)
 values(cnres2) <- as.data.frame(scale(as.data.frame(cnres)[,-1]))
-plot(cnres2, 1:6, plg=list(x="topright"), mar=c(1,1,1,1))
+plot(cnres2, names(cnres2)[1:6], plg=list(x="topright"), mar=c(1,1,1,1))
 ```
 
 

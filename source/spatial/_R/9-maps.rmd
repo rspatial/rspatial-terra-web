@@ -4,11 +4,12 @@ editor_options:
   chunk_output_type: console
 ---
 
+
 # Maps
 
-You can make a map with `plot(x)`, were `x` is a `SpatRaster` or `SpatVector`. You can add additional spatial data or text with functions such as `points`, `lines`, `text`
+You can make a map with `plot(x)`, were `x` is a `SpatRaster` or a `SpatVector`. You can add additional spatial data or text with functions such as `points`, `lines`, `text`
 
-You can zoom in using `zoom(x)` and clicking on the map twice (to indicate where to zoom to). Or use `select(x)` to save a spatial subset to a new object. With `click(x)` it is possible to interactively query a SpatRaster by clicking once or several times on a map plot.
+You can zoom in using `zoom(x)` and clicking on the map twice (to indicate where to zoom to). Or use `sel(x)` to save a spatial subset to a new object. With `click(x)` it is possible to interactively query a SpatRaster by clicking once or several times on a map plot.
 
 ## SpatVector
 

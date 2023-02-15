@@ -152,7 +152,7 @@ The background data will only be used for model testing and does not need to be 
 
 ```{r, sdm43}
 k <- 5
-group <- make_folds(pres, k)
+group <- folds(pres, k)
 group[1:10]
 unique(group)
 table(group)

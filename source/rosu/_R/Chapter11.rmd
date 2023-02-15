@@ -5,7 +5,6 @@ editor_options:
 ---
 # Map overlay
 
-
 ## Introduction
 
 This document shows some example *R* code to do "overlays" and associated spatial data manipulation to accompany Chapter 11 in [O'Sullivan and Unwin (2010)](http://www.wiley.com/WileyCDA/WileyTitle/productCd-0470288574.html). You have already seen many of this type of data manipulation in previous labs. And we have done perhaps more advanced things using regression type models (including LDA and RandomForest). This chapter is very much a review of what you have already seen: basic spatial data operations with *R*. 
