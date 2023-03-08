@@ -66,48 +66,58 @@ do_knit <- function(option, quiet=TRUE) {
 	}
 	if (length(ff) > 0) {
 		##library(knitr)
-		loadNamespace("knitr")
+#		loadNamespace("knitr")
 
 		outf <- gsub("_R/", "", ff)
 		md <-  gsub(".rmd$", '.md', outf)
 		rst <-  gsub(".rmd$", ".rst", outf)
-		txtp <- file.path(dirname(outf), "txt", basename(outf))
-		rcd <- gsub(".rmd$", ".txt", txtp)
+#		txtp <- file.path(dirname(outf), "txt", basename(outf))
+#		rcd <- gsub(".rmd$", ".txt", txtp)
 		
-		knitr::opts_chunk$set(
-			dev        = 'png',
-			fig.width  = 6,	fig.height = 6,
-			fig.path = 'figures/',
-			fig.cap="",
-			collapse   = TRUE
-		)
+#		knitr::opts_chunk$set(
+#			dev        = 'png',
+#			fig.width  = 6,	fig.height = 6,
+#			fig.path = 'figures/',
+#			fig.cap="",
+#			collapse   = TRUE
+#		)
 		#opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 		
+#		for (i in 1:length(ff)) {
+#		
+#			dn <- dirname(rst[i])
+#			if (dn != ".") {
+#				knitr::opts_chunk$set(
+#					fig.path = paste0(dn, '/figures/')
+#				)
+#				fdirclean <- TRUE
+#			} else {
+#				fdirclean <- FALSE
+#			}
+#			cat(paste("   ", tools::file_path_sans_ext(outf[i]), "\n"))
+#			knitr::knit(ff[i], md[i], envir = new.env(), encoding='UTF-8', quiet=quiet)
+#			knitr::purl(ff[i], rcd[i], quiet=TRUE)
+#			if (fdirclean) {
+#				x <- readLines(md[i])
+#				j <- grep("png", x)
+#				x[j] = gsub(paste0(dn, "/"), "", x[j])
+#				writeLines(x, md[i])
+#			}
+#			pc <- paste('pandoc',  md[i], '-f markdown -t rst -o', rst[i])
+#			sysfun(pc)
+#			file.remove(md[i])
+#			detach_pkgs()
+#		}
+
 		for (i in 1:length(ff)) {
-		
-			dn <- dirname(rst[i])
-			if (dn != ".") {
-				knitr::opts_chunk$set(
-					fig.path = paste0(dn, '/figures/')
-				)
-				fdirclean <- TRUE
-			} else {
-				fdirclean <- FALSE
-			}
-			cat(paste("   ", tools::file_path_sans_ext(outf[i]), "\n"))
-			knitr::knit(ff[i], md[i], envir = new.env(), encoding='UTF-8', quiet=quiet)
-			knitr::purl(ff[i], rcd[i], quiet=TRUE)
-			if (fdirclean) {
-				x <- readLines(md[i])
-				j <- grep("png", x)
-				x[j] = gsub(paste0(dn, "/"), "", x[j])
-				writeLines(x, md[i])
-			}
+			cat(paste("   ", tools::file_path_sans_ext(ff[i]), "\n"))
+		    ks <- paste("Rscript --vanilla ../../_script/knit_script.R", ff[i], quiet)
+			sysfun(ks)
+
 			pc <- paste('pandoc',  md[i], '-f markdown -t rst -o', rst[i])
 			sysfun(pc)
-			file.remove(md[i])
-			detach_pkgs()
+			file.remove(md[i])		
 		}
 	} 
 }

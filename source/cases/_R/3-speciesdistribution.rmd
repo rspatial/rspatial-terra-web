@@ -21,7 +21,7 @@ basename(f)
 v <- read.csv(f)
 ```
 
-The coordinate data is in degrees, minutes, seconds (in separate columns, fortunately), so we need to compute longitude and latitude as single numbers.
+The coordinates in `v` are expressed in degrees, minutes, seconds (in separate columns, fortunately). We need to compute longitude and latitude as single decimal numbers.
 
 ```{r, a3}
 # first coerce character values to numbers

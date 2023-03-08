@@ -114,7 +114,7 @@ plotRGB(landsatFCC, stretch="lin")
 ```
 
 
-__Question 1__: *Use the plotRGB function with the multi-band (11 bands) `landsat` image to create a true and false color composite (hint remember the position of the bands in the image).* 
+__Question 1__: *Now use the plotRGB function with the multi-band (11 layers) `landsat` SpatRaster to create a true and false color composite (hint remember the position of the bands).* 
 
 
 ## Subset and rename bands

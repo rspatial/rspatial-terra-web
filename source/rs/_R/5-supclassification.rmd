@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Supervised Classification
 
 
@@ -47,7 +52,7 @@ Next we generate random points within each polygons.
 ```{r sample-points, fig.height=4.23}
 set.seed(1)
 # generate point samples from the polygons 
-ptsamp <- spatSample(samp, 1000, method="random")
+ptsamp <- spatSample(samp, 200, method="random")
 plot(ptsamp, "class")
 ```
 
@@ -58,6 +63,7 @@ Detailes of the class mapped in NCLD 2011 can be found here (here)[https://www.m
 ```{r nlcd, fig.height=4.23}
 nlcd <- rast('data/rs/nlcd-L1.tif')
 names(nlcd) <- c("nlcd2001", "nlcd2011")
+nlcd2011 <- nlcd[[2]]
 
 # The class names and colors for plotting
 nlcdclass <- c("Water", "Developed", "Barren", "Forest", "Shrubland", "Herbaceous", "Cultivated", "Wetlands")
@@ -65,7 +71,6 @@ classdf <- data.frame(value = c(1,2,3,4,5,7,8,9), names = nlcdclass)
 # Hex codes of colors
 classcolor <- c("#5475A8", "#B50000", "#D2CDC0", "#38814E", "#AF963C", "#D1D182", "#FBF65D", "#C8E6F8") 
 
-nlcd2011 <- nlcd[[2]]
 levels(nlcd2011) <- classdf
 # plot the locations over the original nlcd raster
 plot(nlcd2011, col=classcolor)
@@ -74,13 +79,11 @@ points(ptlonlat)
 ```
 
 
-Generate sample sites from NLCD raster
-```{r}
-# Set the random number generator to reproduce the results
-set.seed(99)
+Generate sample sites from the NLCD SpatRaster
 
+```{r}
 # Sampling
-samp2011 <- spatSample(nlcd2011, size = 500)
+samp2011 <- spatSample(nlcd2011, size = 200, method="regular")
 
 # Number of samples in each class
 table(samp2011[,1])
@@ -88,15 +91,13 @@ table(samp2011[,1])
 ```
 
 
-## Extract spectral values for the training sites
+## Extract reflectance values for the training sites
 
-Once we have the training sites, we can extract the cell values from `landsat` layers. These band values will be the predictor variables and "class" from `ptsamp` will be the response variable.
+Once we have the training sites, we can extract the cell values from each layer in `landsat`. These values will be the predictor variables and "class" from `ptsamp` will be the response variable.
 
 ```{r extractvalues}
-# We use the x-y coordinates to extract the spectral values for the locations 
-xy <- as.matrix(geom(ptsamp)[,c('x','y')])
-
-df <- extract(landsat, xy)[,-1]
+# extract the reflectance values for the locations 
+df <- extract(landsat, ptsamp, ID=FALSE)
 
 # Quick check for the extracted values
 head(df)
@@ -146,7 +147,7 @@ classified
 plot(classified)
 ```
 
-Observe that there are `r nlyr(classified)` layers in the `classified` object, each of the layer representing the probability of a particular LULC class. Bewlow, we make a single layer SpatRaster showing, for each grid cell, the LULC class with the highest probability.  
+Observe that there are `r nlyr(classified)` layers in the `classified` object, each of the layer representing the probability of a particular LULC class. Below, we make a SpatRaster that shows, for each grid cell, the LULC class with the highest probability.  
 
 ```{r combine-results1}
 lulc <- which.max(classified)
@@ -179,11 +180,6 @@ set.seed(99)
 # number of folds
 k <- 5
 j <- sample(rep(1:k, each = round(nrow(sampdata))/k))
-
-# or using `dismo` library to get equal number of samples 
-# library(dismo)
-# j <- kfold(sampdata, k = 5, by=sampdata$classvalue)
-
 table(j)
 ```
 
@@ -200,9 +196,11 @@ for (k in 1:5) {
 	              minsplit = 5)
 	pclass <- predict(cart, test, na.rm = TRUE)
 	# assign class to maximum probablity
-	pclass <- apply(pclass, 1, which.max)
+	pc <- apply(pclass, 1, which.max)
+	# use labels instead of numbers 
+	pc <- colnames(pclass)[pc]
 	# create a data.frame using the reference and prediction
-	x[[k]] <- cbind(test$class, as.integer(pclass))
+	x[[k]] <- cbind(test$class, pc)
 }
 ```
 
@@ -215,9 +213,6 @@ colnames(y) <- c('observed', 'predicted')
 
 # confusion matrix
 conmat <- table(y)
-# change the name of the classes
-colnames(conmat) <- classdf$classnames
-rownames(conmat) <- classdf$classnames
 print(conmat)
 ```
 
