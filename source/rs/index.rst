@@ -1,6 +1,6 @@
    
-Remote Sensing with *terra*
-===========================
+Remote Sensing
+==============
 
 Aniruddha Ghosh and Robert J. Hijmans
 

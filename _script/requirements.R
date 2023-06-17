@@ -18,18 +18,20 @@ pkgs <- gsub('\"', "", pkgs)
 #pkgs <- pkgs[!(pkgs=='rspatial')]
 
 ipkgs <- rownames(installed.packages())
-gpkgs <- c("luna", "geodata", "predicts", "rspat")
+
+gpkgs <- c("luna", "rspat")
 for (pk in gpkgs) {
 	if (!(pk %in% ipkgs)) {
 		remotes::install_github(paste0("rspatial/", pk))
 	}
 }
-ipkgs <- rownames(installed.packages())
 
+ipkgs <- rownames(installed.packages())
 for (pk in pkgs) {
   if (!(pk %in% ipkgs)) {
 	print(paste("installing", pk))
     install.packages(pkgs=pk, repos="https://cloud.r-project.org/", quiet=TRUE)
   }
 }
+
 

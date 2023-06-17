@@ -39,7 +39,7 @@ ndvi <- crop(ndvi, e)
 ndvi
 
 # convert the raster to a data.frme
-nr <- values(ndvi)
+nr <- as.data.frame(ndvi, cell=TRUE)
 str(nr)
 ```
 
@@ -49,8 +49,9 @@ Please note that `values(ndvi)` converted the `ndvi` SpatRaster to an array (mat
 # It is important to set the seed generator because `kmeans` initiates the centers in random locations
 set.seed(99)
 
-# We want to create 10 clusters, allow 500 iterations, start with 5 random sets using "Lloyd" method
-kmncluster <- kmeans(na.omit(nr), centers = 10, iter.max = 500, nstart = 5, algorithm="Lloyd")
+# Create 10 clusters, allow 500 iterations, start with 5 random sets using "Lloyd" method. 
+# Do not use the first column (cell number).
+kmncluster <- kmeans(nr[,-1], centers=10, iter.max = 500, nstart = 5, algorithm="Lloyd")
 
 # kmeans returns an object of class "kmeans"
 str(kmncluster)
@@ -60,8 +61,8 @@ str(kmncluster)
 
 ```{r kmeansraster}
 # Use the ndvi object to set the cluster values to a new raster
-knr <- ndvi
-values(knr) <- kmncluster$cluster
+knr <- rast(ndvi, nlyr=1)
+knr[nr$cell] <- kmncluster$cluster
 knr
 ```
 

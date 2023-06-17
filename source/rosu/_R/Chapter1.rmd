@@ -20,9 +20,6 @@ if (!require("remotes")) install.packages("remotes")
 Now install `rspat`
 
 ```{r getDataOSU1, echo=TRUE}
-# to make this work with older versions of R
-Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = "true")
-# install rspat
 if (!require("rspat")) remotes::install_github("rspatial/rspat")
 ```
 

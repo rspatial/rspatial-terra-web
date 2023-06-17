@@ -65,14 +65,15 @@ nlcd <- rast('data/rs/nlcd-L1.tif')
 names(nlcd) <- c("nlcd2001", "nlcd2011")
 nlcd2011 <- nlcd[[2]]
 
-# The class names and colors for plotting
+# assign class names as categories (levels)
 nlcdclass <- c("Water", "Developed", "Barren", "Forest", "Shrubland", "Herbaceous", "Cultivated", "Wetlands")
 classdf <- data.frame(value = c(1,2,3,4,5,7,8,9), names = nlcdclass) 
-# Hex codes of colors
+levels(nlcd2011) <- classdf
+
+# colors (as hexidecimal codes)
 classcolor <- c("#5475A8", "#B50000", "#D2CDC0", "#38814E", "#AF963C", "#D1D182", "#FBF65D", "#C8E6F8") 
 
-levels(nlcd2011) <- classdf
-# plot the locations over the original nlcd raster
+# plot the locations on top of the original nlcd raster
 plot(nlcd2011, col=classcolor)
 ptlonlat <- project(ptsamp, crs(nlcd2011))
 points(ptlonlat)
