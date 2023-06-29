@@ -50,11 +50,11 @@ do_knit <- function(option, quiet=TRUE) {
 	} else { 
 		if (length(kf) > 0 ) {
 			stime <- file.info(ff)
-			fn <- gsub("_R/", "./", raster::extension((rownames(stime)), ""))
+			fn <- gsub("_R/", "./", tools::file_path_sans_ext(rownames(stime)))
 			stime <- data.frame(f=fn, stime = stime$mtime, stringsAsFactors=FALSE)
 
 			btime <- file.info(kf)
-			fn <- paste0("./", raster::extension((rownames(btime)), ""))
+			fn <- paste0("./", tools::file_path_sans_ext(rownames(btime)))
 			btime <- data.frame(f=fn, btime = btime$mtime, stringsAsFactors=FALSE)
 
 			m <- merge(stime, btime, by=1, all.x=TRUE)

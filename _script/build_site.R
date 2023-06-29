@@ -42,6 +42,13 @@ if (!dopdf) {
 	ff <- list.files("build/html", patt='\\.html$', recursive=TRUE, full=TRUE)
 
 	ignore_errors <- "Error in read.table(f, header = TRUE): more columns than column names</span>"
+		
+	ignore_errors2 <- c("Error in eval(expr, envir, enclos): object &#39;Yi", "Error in quantile.default(d$score2): missing value", "Error: &#39;\\p&#39; is an unrecognized escape in c",
+    "Error in nrow(): argument &quot;x&quot; is missing", "Error in sumsquare(a = 1, d = 2): unused argument ",
+"Error in sumsquare(1:5): argument &quot;b&quot; is", "Error in f1(x, ...): unused argument (z = 5)</span", "Error in aggregate.data.frame(d[, c(&quot;v1&quot;")
+
+	
+	
 	txtin <-  'R.txt" rel="nofollow"> View page source</a>'
 	txtout <- 'R.txt" rel="nofollow"> <em>R</em> code</a>'
 	txt2 <- '.rst.txt" rel="nofollow"> View page source</a>$'
@@ -54,6 +61,9 @@ if (!dopdf) {
 	    e <- gsub('<div class=\"highlight-default notranslate\"><div class=\"highlight\"><pre><span></span>', "", e)
 		e <- substr(e, 1, 125)
 		e <- e[!(e %in% ignore_errors)]
+		e <- substr(e, 1, 50)
+		e <- e[!(e %in% ignore_errors2)]
+
 		if (length(e) > 0) {
 			print(f)
 			print(e)

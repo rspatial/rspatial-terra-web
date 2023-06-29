@@ -4,7 +4,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-
 # Maps
 
 You can make a map with `plot(x)`, were `x` is a `SpatRaster` or a `SpatVector`. You can add additional spatial data or text with functions such as `points`, `lines`, `text`

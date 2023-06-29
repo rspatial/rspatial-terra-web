@@ -1,0 +1,179 @@
+# Algebra
+
+Vectors and matrices can be used to compute new vectors (matrices) with simple and intuitive algebraic expressions. 
+
+## Vector algebra
+
+We have two vectors, `a` and `b`
+
+```{r}
+a <- 1:5
+b <- 6:10
+```
+
+Multiplication works element by element. That is `a[1] * b[1]`, `a[2] * b[2]`, etc
+```{r}
+d <- a * b
+a
+b
+d
+```
+
+The examples above illustrate a special feature of *R* not found in most other programming languages. This is that you do not need to 'loop' over elements in an array (vector in this case) to compute new values. It is important to use this feature as much as possible. In other programming languages you would need to write a  *for-loop* to achieve the above (for-loops do exist in *R*. They are very important and are discussed in a later chapter). 
+
+You can also multiply a vector with a single number. 
+```{r}
+a * 3
+```
+
+In the examples above the computations used either vectors of the same length, or one of the vectors had length 1. You can use algebraic computations with vectors of different lengths, as the shorter ones will be "recycled". *R* only issues a warning if the length of the longer vector is not a multiple of the length of the shorter object. This is a great feature when you need it, but it may also make you overlook errors when your data are not what you think they are.
+
+```{r}
+a + c(1,10)
+```
+
+No warning here:
+```{r}
+1:6 + c(0,10)
+```
+
+### Logical comparisons 
+
+It is very common in computer programs to test for (in)equality or whether a value is greater of smaller than another value.
+
+Recall that `==` is used to test for equality
+
+```{r}
+a <- 1:5
+b <- 6:10
+a == 2
+```
+
+And inequality is evaluated with `!=`
+```
+a != 2
+```
+
+"Less than or equal" is `<=`, and "more than or equal" is `>=`.  
+```{r}
+a < 3
+b >= 9
+```
+
+
+`&` is Boolean "AND", and `|` is Boolean "OR". 
+
+```{r}
+a
+b
+b > 6 & b < 8
+
+# combining a and b
+b > 9 | a <= 2
+```
+
+
+### Functions
+
+There are many functions that allow us to do vectorized algebra. For example:
+
+```{r}
+sqrt(a)
+exp(a)
+```
+
+Not all functions return a vector of the same length. The following functions return just one or two numbers:
+```{r}
+min(a)
+max(a)
+range(a)
+sum(a)
+mean(a)
+median(a)
+prod(a)
+sd(a)
+```
+
+If you cannot guess what `prod` and `sd` do, look it up in the help files (e.g. `?sd`)
+
+
+### Random numbers
+
+It is common to create a vector of random numbers in data analysis, and also to create example data to demonstrate how a procedure works. To get 10 numbers sampled from the uniform distribution between 0 and 1 you can do
+```{r}
+r <- runif(10)
+r
+```
+
+For Normally distributed numbers, use `rnorm`
+
+```{r}
+r <- rnorm(10, mean=10, sd=2)
+r
+```
+
+If you run the functions above, you will get different numbers then the ones shown here. After all, they are random numbers! Modern data analysis methods use a lot of randomization. This can make a challange to exactely reproduce results obtained. To allow for exact reproduction of examples or real data analysis, we often want to assure that we take exactly the *same* random sample each time we run our code. To do that we use `set.seed`. This function initializes the random number generator (to a specific point in an infinite but static sequence of numbers). This is illustrated below.
+
+```{r}
+set.seed(12)
+runif(2)
+runif(3)
+runif(4)
+
+set.seed(12)
+runif(1)
+runif(2)
+
+set.seed(12)
+runif(3)
+runif(5)
+```
+
+Note that after each time `set.seed` is called, the same sequence of random numbers was be generated. This is a very important feature, as it allows us to exactly reproduce results that involve random sampling. The seed number is arbitrary; a different seed number will give a different sequence. 
+
+```{r}
+set.seed(999)
+runif(3)
+runif(5)
+```
+
+The idea is that this will allow you to exactly reproduce results. By avoiding small amounts of variation between each time you run your code, you can be sure that all still works as before. You may wonder how to choose the value of the seed. You could take the date (e.g. "20210329"), but it should not really matter. If you notice that you data analysis gives materially different results besed on your choice of the seed, than you need to reconsider what you are doing, as your results are not stable (or potentially run it many times).
+
+
+## Matrices
+
+Computation with matrices is also 'vectorized'. For example, with matrix `m` you can do `m * 5` to multiply all values of m3 with 5, or do `m^2` or `m * m` to square the values of m. 
+
+```{r}
+# set up an example matrix
+m <- matrix(1:6, ncol=3, nrow=2, byrow=TRUE)
+m
+
+m * 2
+
+m^2
+```
+
+We can also do math with a matrix and a vector. Note, again, that computation with matrices in *R* is column-wise, and that shorter vectors are recycled. 
+
+```{r}
+m * 1:2
+```
+
+
+Can you predict the result of this multiplication?
+```
+m * 1:4
+```
+
+
+You can multiply two matrices.
+```{r}
+m * m
+```
+
+Note that this is "cell by cell" multiplication. For ['matrix multiplication'](https://en.wikipedia.org/wiki/Matrix_multiplication) in the mathematical sense, you need to use the `%*%` operator.
+
+```{r}
+m %*% t(m)
+```
