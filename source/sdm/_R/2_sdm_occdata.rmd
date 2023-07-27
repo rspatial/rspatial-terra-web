@@ -69,7 +69,7 @@ Below is a simple way to make a map of the occurrence localities of *Solanum aca
 ```{r, sdm3}
 library(geodata)
 wrld <- world(path=".")
-plot(wrld, xlim=c(-110,60), ylim=c(-80,40), col="light yellow", border="light gray")
+plot(wrld, xlim=c(-110,90), ylim=c(-80,40), col="light yellow", border="light gray")
 # add the points
 points(acgeo$lon, acgeo$lat, col='red', pch=20)
 ```
