@@ -222,7 +222,7 @@ r <- rast(acv)
 res(r) <- 1
 
 # extend (expand) the extent of the SpatRaster a little
-r <- extend(r, ext(r)+1)
+r <- extend(r, ext(r)+1, snap = "out")
 
 # sample:
 set.seed(13)
