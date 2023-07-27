@@ -176,7 +176,7 @@ colnames(m) <- c("polygons", "acaule")
 m
 ```
 
-In this case the mismatch is probably because wrld_simpl is not very precise as the records map to locations very close to the border between Bolivia and its neighbors.
+In this case the mismatch is probably because `wrld` is not very precise as the records map to locations very close to the border between Bolivia and its neighbors.
 
 ```{r, sdm6e}
 plot(acv)
