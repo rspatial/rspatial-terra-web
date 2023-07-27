@@ -36,16 +36,16 @@ If you do not have any species distribution data you can get started by download
 
 
 ```{r, sdm11B, eval=FALSE}
-acaule <- geodata::sp_occurrence("solanum", "acaule*", geo=FALSE)
+acaule <- geodata::sp_occurrence("solanum", "acaule", geo=FALSE)
 ## Loading required namespace: jsonlite
-## 7238 records found
-## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200
+## 6974 records found
+## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200-4500-4800-5100-5400-5700-
+## 6000-6300-6600-6900-6974
 ```
 
-If you want to understand the order of the arguments given here to `gbif` or find out what other arguments you can use with this function, check out the help file (remember you can't access help files if the library is not loaded), by typing: `?gbif` or `help(gbif)`. Note the use of the asterix in "acaule*" to not only request `Solanum acaule`, but also variations such as the full name, *Solanum acaule* Bitter, or subspecies such as *Solanum acaule* subsp. *aemulans*.
-
+If you want to understand the order of the arguments given here to `sp_occurrence` or find out what other arguments you can use with this function, check out the help file (remember you can't access help files if the library, in this case `geodata`, is not loaded), by typing: `?sp_occurrence` or `help(sp_occurrence)`.
  
-Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (January 2013), there were 1082 records with coordinates,
+Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (in January 2013), there were 1082 records with coordinates,
 
 ```{r, sdm2}
 # load the saved S. acaule data
