@@ -153,10 +153,10 @@ class(acv)
 We can now use do a spatial query of the polygons in `wrld`
 
 ```{r, sdm6b}
-ovr <- extract(acv, wrld)
+ovr <- extract(wrld, acv)
 ```
 
-Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of wrld_simpl
+Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of `wrld`.
 
 
 ```{r, sdm6c}
