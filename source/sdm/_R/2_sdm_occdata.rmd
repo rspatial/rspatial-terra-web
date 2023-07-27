@@ -251,7 +251,7 @@ In a real research project you would want to spend much more time on this first 
 
 ## 2.8  Exercises
 
-1. Use the gbif function to download records for the African elephant (or another species of your preference, try to get one with between 10 and 100 records). Use option "geo=FALSE" to also get records with no (numerical) georeference.
+1. Use the `sp_occurrence` function to download records for the African elephant (or another species of your preference, try to get one with between 10 and 100 records). Use option "geo=FALSE" to also get records with no (numerical) georeference.
 
 2. Summarize the data: how many records are there, how many have coordinates, how many records without coordinates have a textual georeference (locality description)?
 
@@ -263,7 +263,7 @@ In a real research project you would want to spend much more time on this first 
 
 More advanced:
 
-6. Use the 'rasterize' function to create a raster of the number of observations and make a map. Use "wrld_simpl" from the maptools package for country boundaries.
+6. Use the 'rasterize' function to create a raster of the number of observations and make a map. Use "world" from the geodata package for country boundaries.
 
 7. Map the uncertainty associated with the georeferences. Some records in data returned by gbif have that. You can also extract it from the data returned by the geocode function.
 
