@@ -86,9 +86,10 @@ up <- up[up$service == "EOSDIS", ]
 Now we are ready to download the data
 
 ```{r download}
-mf <- luna::getModis(product, start, end, aoi=aoi, download=TRUE,
+mf <- luna::getNASA(product, start, end, aoi=aoi, download=TRUE,
                      path=datadir, username=up$user, password=up$pwd)
 mf
 ```
 
 In the next chapters we will use the downloaded files. 
+	

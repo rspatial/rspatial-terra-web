@@ -29,6 +29,7 @@ qa_bits <- cbind(from, to, reject)
 qa_bits
 ```
 
+
 Pixels with bits 1 and 2 with values "01" or "10" will be rejected. All other combinations ("00" and "11" in this case) are not rejected. 
 
 We use the downloaded MODIS file that, in a previouse step, we saved in the `datadir` directory.
@@ -36,7 +37,7 @@ We use the downloaded MODIS file that, in a previouse step, we saved in the `dat
 ```{r mod, message=FALSE}
 library(terra)
 datadir <- file.path(dirname(tempdir()), "_modis")
-mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
+mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.061.2021149144347.hdf")
 
 r <- rast(mf)
 ```
