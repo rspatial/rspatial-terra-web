@@ -183,4 +183,3 @@ library(leaflet)
 m <- plet(p)
 m
 ```
-

@@ -65,7 +65,7 @@ lines(aoi, col="red", lwd=2)
 Let's now find out what MODIS data is available for this area. We can search the data available from a NASA server
 
 ```{r getfilenames}
-mf <- luna::getModis(product, start, end, aoi=aoi, download = FALSE)
+mf <- luna::getNASA(product, start, end, aoi=aoi, download = FALSE)
 mf
 ```
 

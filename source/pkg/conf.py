@@ -218,7 +218,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'TerraPackage.tex', u'The terra package',
+    (master_doc, 'terraPackage.tex', u'The terra package',
      u'Robert J. Hijmans', 'manual'),
 ]
 
@@ -248,7 +248,7 @@ latex_use_parts = False
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'TerraPackage', u'The terra package',
+    (master_doc, 'terraPackage', u'The terra package',
      [author], 1)
 ]
 
@@ -262,8 +262,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'TerraPackage', u'The terra package',
-     author, 'TerraPackage', 'Introduction to the terra package',
+    (master_doc, 'terraPackage', u'The terra package',
+     author, 'terraPackage', 'Introduction to the terra package',
      'Miscellaneous'),
 ]
 

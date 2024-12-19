@@ -52,7 +52,7 @@ Making such predictions for a few environments can be very useful to explore and
 
 ```{r, sdm27b, fig.width=9, fig.height=6}
 pr <- partialResponse(bc, presvals, "bio1")
-plot(pr, type="l")
+plot(pr[[1]], type="l")
 ```
 
 In most cases, howver, the purpose of SDM is to create a map of suitability scores. We can do that by providing the predict function with a Raster* object and a model object. As long as the variable names in the model object are available as layers in the SpatRaster object.
