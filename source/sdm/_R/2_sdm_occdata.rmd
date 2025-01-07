@@ -36,16 +36,16 @@ If you do not have any species distribution data you can get started by download
 
 
 ```{r, sdm11B, eval=FALSE}
-acaule <- geodata::sp_occurrence("solanum", "acaule*", geo=FALSE)
+acaule <- geodata::sp_occurrence("solanum", "acaule", geo=FALSE)
 ## Loading required namespace: jsonlite
-## 7238 records found
-## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200
+## 6974 records found
+## 0-300-600-900-1200-1500-1800-2100-2400-2700-3000-3300-3600-3900-4200-4500-4800-5100-5400-5700-
+## 6000-6300-6600-6900-6974
 ```
 
-If you want to understand the order of the arguments given here to `gbif` or find out what other arguments you can use with this function, check out the help file (remember you can't access help files if the library is not loaded), by typing: `?gbif` or `help(gbif)`. Note the use of the asterix in "acaule*" to not only request `Solanum acaule`, but also variations such as the full name, *Solanum acaule* Bitter, or subspecies such as *Solanum acaule* subsp. *aemulans*.
-
+If you want to understand the order of the arguments given here to `sp_occurrence` or find out what other arguments you can use with this function, check out the help file (remember you can't access help files if the library, in this case `geodata`, is not loaded), by typing: `?sp_occurrence` or `help(sp_occurrence)`.
  
-Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (January 2013), there were 1082 records with coordinates,
+Many occurrence records may not have geographic coordinates. In this case, out of the 1366 records that GBIF returned (in January 2013), there were 1082 records with coordinates,
 
 ```{r, sdm2}
 # load the saved S. acaule data
@@ -69,7 +69,7 @@ Below is a simple way to make a map of the occurrence localities of *Solanum aca
 ```{r, sdm3}
 library(geodata)
 wrld <- world(path=".")
-plot(wrld, xlim=c(-110,60), ylim=c(-80,40), col="light yellow", border="light gray")
+plot(wrld, xlim=c(-110,90), ylim=c(-80,40), col="light yellow", border="light gray")
 # add the points
 points(acgeo$lon, acgeo$lat, col='red', pch=20)
 ```
@@ -79,11 +79,11 @@ The `wrld` dataset contains rough country outlines. You can use other datasets o
 
 ## Data cleaning
 
-Data 'cleaning' is particularly important for data sourced from species distribution data warehouses such as GBIF. Such efforts do not specifically gather data for the purpose of species distribution modeling, so you need to understand the data and clean them appropriately, for your application. Here we provide an example.  
+Data 'cleaning' is particularly important for data sourced from species distribution data warehouses such as GBIF. Such efforts do not specifically gather data for the purpose of species distribution modeling, so you need to understand the data and clean them appropriately, for your application. Here we provide an example.
 
 `Solanum acaule` is a species that occurs in the higher parts of the Andes mountains of southern Peru, Bolivia and northern Argentina. Do you see any errors on the map? 
 
-There are a few records that map in the ocean just south of Pakistan. Any idea why that may have happened? It is a common mistake, missing minus signs. The coordinates are around (65.4, 23.4) but they should in Northern Argentina, around (-65.4, -23.4) (you can use the "click" function to query the coordintates on the map). There are two records (rows 303 and 885) that map to the same spot in Antarctica (-76.3, -76.3). The locality description says that is should be in Huarochiri, near Lima, Peru. So the longitude is probably correct, and erroneously copied to the latitude. Interestingly the record occurs twice. The orignal source is the International Potato Center, and a copy is provided by "SINGER" that aling the way appears to have "corrected" the country to Antarctica:
+There are a few records that map in the ocean just south of Pakistan. Any idea why that may have happened? It is a common mistake, missing minus signs. The coordinates are around (65.4, 23.4) but they should in Northern Argentina, around (-65.4, -23.4) (you can use the "click" function to query the coordintates on the map). There are two records (rows 303 and 885) that map to the same spot in Antarctica (-76.3, -76.3). The locality description says that is should be in Huarochiri, near Lima, Peru. So the longitude is probably correct, and erroneously copied to the latitude. Interestingly the record occurs twice. The orignal source is the International Potato Center, and a copy is provided by "SINGER" that along the way appears to have "corrected" the country to Antarctica:
 
 ```{r, sdm4a}
 acgeo[c(303,885),1:10]
@@ -153,10 +153,10 @@ class(acv)
 We can now use do a spatial query of the polygons in `wrld`
 
 ```{r, sdm6b}
-ovr <- extract(acv, wrld)
+ovr <- extract(wrld, acv)
 ```
 
-Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of wrld_simpl
+Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of `wrld`.
 
 
 ```{r, sdm6c}
@@ -176,7 +176,7 @@ colnames(m) <- c("polygons", "acaule")
 m
 ```
 
-In this case the mismatch is probably because wrld_simpl is not very precise as the records map to locations very close to the border between Bolivia and its neighbors.
+In this case the mismatch is probably because `wrld` is not very precise as the records map to locations very close to the border between Bolivia and its neighbors.
 
 ```{r, sdm6e}
 plot(acv)
@@ -222,7 +222,7 @@ r <- rast(acv)
 res(r) <- 1
 
 # extend (expand) the extent of the SpatRaster a little
-r <- extend(r, ext(r)+1)
+r <- extend(r, ext(r)+1, snap = "out")
 
 # sample:
 set.seed(13)
@@ -237,7 +237,7 @@ points(acsel, cex=1, col='red', pch='x')
 ```
 
 
-Note that with the `gridSample` function you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
+Note that with the `gridSample` function from the `dismo` package you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
 
 At this point, it could be useful to save the cleaned data set. For example, you can use `as.data.frame(acsel)` and then `write.csv`. Or you can use `pack` and `saveRDS` so that we can use them later. We did that, and the saved file is available from the `predicts` package and can be read like this:
 
@@ -251,7 +251,7 @@ In a real research project you would want to spend much more time on this first 
 
 ## 2.8  Exercises
 
-1. Use the gbif function to download records for the African elephant (or another species of your preference, try to get one with between 10 and 100 records). Use option "geo=FALSE" to also get records with no (numerical) georeference.
+1. Use the `sp_occurrence` function to download records for the African elephant (or another species of your preference, try to get one with between 10 and 100 records). Use option "geo=FALSE" to also get records with no (numerical) georeference.
 
 2. Summarize the data: how many records are there, how many have coordinates, how many records without coordinates have a textual georeference (locality description)?
 
@@ -263,7 +263,7 @@ In a real research project you would want to spend much more time on this first 
 
 More advanced:
 
-6. Use the 'rasterize' function to create a raster of the number of observations and make a map. Use "wrld_simpl" from the maptools package for country boundaries.
+6. Use the 'rasterize' function to create a raster of the number of observations and make a map. Use "world" from the geodata package for country boundaries.
 
 7. Map the uncertainty associated with the georeferences. Some records in data returned by gbif have that. You can also extract it from the data returned by the geocode function.
 
