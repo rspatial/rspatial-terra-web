@@ -133,17 +133,15 @@ plot(z2, add=TRUE, border='red', lwd=2, col='red')
 ```
 
 
-To append SpatVector objects of the same (vector) type you can use `c`
+To append SpatVector objects of the same (vector) type you can use `rbind`
 
 ```{r}
 b <- rbind(p, z)
-# with older versions
-# b <- c(p, z)
 head(b)
 tail(b)
 ```
 
-Note how `rbind` (`c` for older versions of terra) allows you to append `SpatVect` objects with different attribute names, unlike the standard `rbind` for `data.frame`s. 
+Note how `rbind` allows you to append SpatVector objects with different attribute names, unlike the standard `rbind` for `data.frame`s. 
 
 
 ## Aggregate
