@@ -156,7 +156,7 @@ We can now use do a spatial query of the polygons in `wrld`
 ovr <- extract(acv, wrld)
 ```
 
-Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of wrld_simpl
+Object 'ovr' has, for each point, the matching record from `wrld`. We need the variable 'NAME_0' in the data.frame of `wrld`
 
 
 ```{r, sdm6c}
@@ -237,7 +237,7 @@ points(acsel, cex=1, col='red', pch='x')
 ```
 
 
-Note that with the `gridSample` function you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
+Note that with the "chess" argument in `terra::spatSample` function you can also do 'chess-board' sampling. This can be useful to split the data in 'training' and 'testing' sets (see the model evaluation chapter).
 
 At this point, it could be useful to save the cleaned data set. For example, you can use `as.data.frame(acsel)` and then `write.csv`. Or you can use `pack` and `saveRDS` so that we can use them later. We did that, and the saved file is available from the `predicts` package and can be read like this:
 
