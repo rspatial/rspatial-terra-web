@@ -10,7 +10,7 @@ A large number of MODIS products is available. We first need to find data for th
 library(terra)
 library(luna)
 
-# lists all products that are currently searchable
+# lists all products that are currently searchable0
 prod <- getProducts() 
 head(prod)
 
@@ -86,9 +86,9 @@ up <- up[up$service == "EOSDIS", ]
 Now we are ready to download the data
 
 ```{r download}
-mf <- luna::getNASA(product, start, end, aoi=aoi, download=TRUE,
+mf <- luna::getNASA(product, start, end, aoi=aoi, download=TRUE, overwrite=TRUE,
                      path=datadir, username=up$user, password=up$pwd)
-mf
+basename(mf)
 ```
 
 In the next chapters we will use the downloaded files. 

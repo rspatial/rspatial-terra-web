@@ -217,7 +217,7 @@ plot(hh, "residuals", breaks=brks, col=rev(brewer.pal(grps, "RdBu")))
 ```
 
 
-Are the residuals spatially autocorrelated for either of these models? Let's plot them for the spatial error model.
+Are the residuals spatially auto-correlated for either of these models? Let's plot them for the spatial error model.
 
 ```{r spregplot3}
 brks <- quantile(hh$residuals, 0:(grps-1)/(grps-1), na.rm=TRUE)
