@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Pitfalls and potential
 
 ## Introduction
@@ -126,7 +131,7 @@ text(ri)
 ```
 
 
-The `raster` package has an aggregate function that we will use. We specify that we want to aggregate sets of 2 columns, but not aggregate rows. The values for the new cells should be computed from the original cells using the mean function. 
+The "terra" package has an aggregate function that we will use. We specify that we want to aggregate sets of 2 columns, but not aggregate rows. The values for the new cells should be computed from the original cells using the mean function. 
 
 __Question 2__: *Instead of the `mean` function What other functions could, in principle, reasonably be used in an aggregation of raster cells?*
 
@@ -177,7 +182,7 @@ Same idea for for the other aggregation ('Aggregation scheme 2'). But note that 
 ai2 <- aggregate(ri, c(1, 2), fun=mean)
 ad2 <- aggregate(rd, c(1, 2), fun=mean)
 plot(ai2)
-text(ai2, digits=1, srt=90)
+text(ai2, digits=1, srt=90, halo=TRUE)
 
 s2 <- c(ai2, ad2)
 names(s2) <- c('ind', 'dep')
@@ -204,11 +209,11 @@ plotMAUP <- function(r1, r2, title="") {
 	b1 <- as.polygons(r1, dissolve=FALSE) 
     plot(b1, axes=FALSE)
   # plot the raster cell values
-	text(r1, cex=1.75)
+	text(r1, cex=1.75, halo=TRUE)
 	
   # add the title	
 	if (length(title) == 1) {
-		text(1.2, 1.1, title, xpd =NA, cex=2)
+		text(8, 7, title, xpd =NA, cex=2)
 	} else {
 		mtext(paste0('      ', title[1]), xpd =NA, cex=1.25)
 	}
@@ -221,7 +226,6 @@ plotMAUP <- function(r1, r2, title="") {
 		mtext(paste0(title[2], '      '), xpd =NA, cex=1.25)
 	}
 
-	
   # scatter plot
 	i <- as.vector(values(r1))
 	d <- as.vector(values(r2))
@@ -393,7 +397,8 @@ __Question 5__: *Show how you can do 'column-normalization' (Just an exercise, i
 Proximity polygons are discussed on pages 50-52. Here I show how you can compute these with the `voronoi` function. We use the data from the previous example.
 	
 ```{r}
-v <- voronoi(vect(pts))
+vp <- vect(pts)
+v <- voronoi(vp)
 ```
 
 Here is a plot of our proximity polygons (also known as a Voronoi diagram).
@@ -401,8 +406,8 @@ Here is a plot of our proximity polygons (also known as a Voronoi diagram).
 ```{r, ch2-20, fig.width=6, fig.height=6}
 par(mai=rep(0,4))
 plot(v, lwd=4, border='gray', col=rainbow(6))
-points(pts, pch=20, cex=2)
-text(pts+5, toupper(letters[1:6]), cex=1.5)
+points(vp, pch=20, cex=2)
+text(vp, toupper(letters[1:6]), pos=4, cex=1.5, halo=TRUE)
 ```
 
 Note that the `voronoi` functions returns a `SpatVector`. This is a class (type of object) that can be used to represent geospatial polygons in *R*. 

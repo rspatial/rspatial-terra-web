@@ -42,7 +42,7 @@ You can download all the data required for the examples used in this book using 
 ```{r getData}
 dir.create("data", showWarnings = FALSE)
 if (!file.exists("data/rs/samples.rds")) {
-	download.file("https://biogeo.ucdavis.edu/data/rspatial/rs.zip", dest = "data/rs.zip")
+	download.file("https://geodata.ucdavis.edu/rspatial/rs.zip", dest = "data/rs.zip")
 	unzip("data/rs.zip", exdir="data")
 }
 
