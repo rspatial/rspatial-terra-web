@@ -188,7 +188,7 @@ rpart.plot(cart, uniform=TRUE, main="Regression Tree")
 ```
 
 
-__Question 1__: *Describe the environmental conditions that Bigfoot appears to enjoy most?*
+__Question 1__: *What are the environmental conditions that Bigfoot appears to enjoy most?*
 
 
 And now we can use the model to show how attractive the climate is for this species.

@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Spatial Data Science'
-copyright = u'2020-2021, Robert J. Hijmans'
+copyright = u'2020-2026, Robert J. Hijmans'
 author = u'Robert J. Hijmans'
 
 # The version info for the project you're documenting, acts as replacement for

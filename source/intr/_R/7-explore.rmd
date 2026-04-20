@@ -111,7 +111,7 @@ mean(d$score1)
 Note that in some functions you may need to use `na.rm=TRUE` if there are `NA` values. Otherwise, as soon as there is a single `NA` value in a computation, the results becomes `NA`. This is very common in *R* ---  so keep that in mind if all your results are `NA`. 
 
 ```{r}
-quantile(d$score2)
+try(quantile(d$score2))
 range(d$score2)
 quantile(d$score2, na.rm=TRUE)
 range(d$score2, na.rm=TRUE)

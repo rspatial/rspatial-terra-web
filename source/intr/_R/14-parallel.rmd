@@ -1,0 +1,249 @@
+# Parallelization
+
+## Introduction
+
+Many computations on `SpatRaster` (and to a lesser extent `SpatVector`)  objects are slow because of the large (file) size of the raster. The computations are also embarrassingly parallel: the same operation is applied to many cells, many features, or many tiles, and the work for each piece is independent. There are several ways to take advantage of multiple cores or multiple machines when working with terra, and the right one depends on (a) the nature of the operation, (b) whether you are on a single computer or on a cluster, and (c) whether the data are in memory, in a single file, or scattered across many files.
+
+This chapter discusses the available approaches and their trade-offs, and ends with a roadmap for further parallelization support in terra.
+
+
+## A fundamental constraint: terra objects hold a C++ pointer
+
+`SpatRaster`, `SpatVector`, `SpatRasterDataset`, `SpatRasterCollection`, `SpatExtent` and `SpatGraticule` are *thin* R objects: each holds an external pointer to an underlying C++ object that lives in the memory of the R session that created it. As a consequence, these objects
+**cannot be serialized** or sent to a worker process with `parallel::clusterExport` / `parLapply` / `mclapply` / `future` directly. After serialization the pointer would be a dangling address in the worker's memory.
+
+If you try, the worker either errors out, returns `NULL`, or crashes:
+
+```{r, eval=FALSE}
+library(terra)
+library(parallel)
+r <- rast(system.file("ex/elev.tif", package="terra"))
+cl <- makeCluster(2)
+parLapply(cl, 1:2, function(i) global(r, "mean", na.rm=TRUE))   # FAILS
+```
+
+There are three ways out, described in the next sections.
+
+
+## Strategy 1 — `wrap()` and `unwrap()`
+
+`wrap()` converts a terra object into a regular R object (called `PackedSpatRaster`, `PackedSpatVector`, etc.) that holds the data and the
+metadata in plain R memory. Such packed objects can be sent to workers, or returned across `future` boundaries. On the worker side, `unwrap()` reconstructs a usable `SpatRaster` / `SpatVector`. The terra version of `saveRDS` writes such packed objects to disk.
+
+```{r, eval=FALSE}
+library(terra)
+library(parallel)
+
+r <- rast(system.file("ex/elev.tif", package="terra"))
+pr <- wrap(r)                      # serializable
+
+cl <- makeCluster(4)
+clusterEvalQ(cl, library(terra))   # workers need the package loaded
+
+results <- parLapply(cl, 1:4, function(i, p) {
+    x <- unwrap(p)                 # rebuild the SpatRaster on the worker
+    global(x, "mean", na.rm=TRUE)
+}, p = pr)
+
+stopCluster(cl)
+```
+
+`wrap()` reads all values into memory, so it is most useful for small to medium rasters. For large rasters consider Strategy 2 instead.
+
+
+## Strategy 2 — pass filenames, open on the worker
+
+When the data already live in a file (GeoTIFF, NetCDF, ...) the cheapest "serialization" is the filename. Each worker opens its own `SpatRaster` from the file. terra is fully thread-safe at the file-open level (each worker gets its own dataset handle), and only the grid cells that are actually read are pulled from disk.
+
+```{r, eval=FALSE}
+fname <- system.file("ex/elev.tif", package="terra")
+cl <- makeCluster(4)
+clusterEvalQ(cl, library(terra))
+
+results <- parLapply(cl, 1:4, function(i, f) {
+    r <- rast(f)                   # cheap: only metadata is loaded
+    global(r, "mean", na.rm=TRUE)
+}, f = fname)
+
+stopCluster(cl)
+```
+
+This pattern is clearly better than `wrap()` whenever:
+
+- the dataset is too large to comfortably fit in worker memory,
+- you have many files (one per worker, or one per task), or
+- you are on an HPC cluster where all nodes can see the same shared file system.
+
+
+## Strategy 3 — partition by tiles with `window()`
+
+`window(x) <- ext(...)` sets a *read window*: subsequent operations on `x` behave as if `x` had only that extent, but no data are copied or moved. This is the natural way to split a large raster into tiles that are processed independently and then mosaicked back together.
+
+```{r, eval=FALSE}
+fname <- system.file("ex/elev.tif", package="terra")
+r <- rast(fname)
+
+tiles <- getTileExtents(r, 50, extend=FALSE, buffer=0)
+
+cl <- makeCluster(4)
+clusterEvalQ(cl, library(terra))
+
+outs <- parLapply(cl, tiles, function(e, f) {
+    x <- rast(f)
+    window(x) <- e
+    out <- focal(x, w=11, fun="mean")
+    wrap(out) # return the small result
+}, f = fname)
+
+stopCluster(cl)
+
+result <- do.call(mosaic, lapply(outs, unwrap))
+```
+In stead of returning the output, you can also write the results to files and combine these with `vrt` 
+
+When tiles overlap (as they should for any window-based focal/aggregate operation, by at least the half-window size) the boundary pixels can later be discarded. 
+
+
+## Within-process parallelism: TBB
+
+A growing number of terra's C++ code paths are parallelized internally with [Intel TBB](https://github.com/oneapi-src/oneTBB). When TBB is
+available at build time (which is the default on Windows and on most Linux distributions) you can opt into TBB-based threading by setting the `parallel` write option (this is the default in the development version):
+
+```{r, eval=FALSE}
+terra:::.have_TBB()                 # is TBB available?
+
+# per call
+focal(r, w=21, fun="mean", wopt=list(parallel=TRUE))
+
+# session-wide default
+terraOptions(parallel=TRUE)
+focal(r, w=21, fun="mean")          # now uses TBB
+```
+
+Functions that currently benefit from TBB include parts of `arith`, distance calculations on `SpatVector`, and the new fast `focal` path
+(`new=TRUE`, the default). TBB has no per-call setup cost and shares the process memory, so it is the most efficient way to use multiple cores **on a single machine** for one operation. Combine with Strategy 2 or 3 to reach across machines.
+
+
+## Function-level parallelism: the `cores` argument
+
+Some functions that apply a user-supplied R function over cells or layers take a `cores` argument and use `parallel::makeCluster` (PSOCK) under the hood. Currently this includes:
+
+- `app(x, fun, ..., cores)`
+- `tapp(x, index, fun, ..., cores)`
+- `lapp(x, fun, ..., cores)`
+- `predict(model, ..., cores)`  (and `interpolate`, `regress`)
+- `aggregate(x, fact, fun, ..., cores)`
+
+```{r, eval=FALSE}
+r <- rast(system.file("ex/elev.tif", package="terra"))
+out <- app(r, fun=function(v) median(v, na.rm=TRUE), cores=4)
+```
+
+terra creates the cluster, ships the function (and any extra named arguments) to each worker, and processes the raster block-by-block with
+the workers in parallel. For `predict` you can also pass `cpkgs=` to preload packages on each worker, which is necessary when the prediction function comes from a package such as **randomForest** or **mgcv**.
+
+Important caveats:
+
+- Extra `...` arguments **must be named** when `cores > 1`, because the workers receive them by name through `clusterExport`.
+- The function `fun` is serialized to each worker; it should not capture large objects from its enclosing environment, and any terra objects it uses must be passed in via `wrap()` or as filenames.
+- The cluster is created and torn down per call. For repeated calls with many small tasks create your own cluster and pass that to argument `cores`
+
+## Passing user functions: `app`, `lapp`, `tapp`, `focal`, `focalCpp`
+
+Several terra functions accept a user-defined R function:
+
+- `app(x, fun, ...)` applies `fun` to all values of each cell across
+  layers.
+- `lapp(x, fun, ...)` applies `fun` to layers by name.
+- `tapp(x, index, fun, ...)` aggregates layers by group.
+- `focal(x, w, fun, ...)` applies `fun` to values in a moving window.
+- `focalCpp(x, w, fun, ...)` does the same but expects a vectorized
+  function written for performance (e.g. via Rcpp).
+
+For built-in functions (`"sum"`, `"mean"`, `"min"`, `"max"`, `"modal"`, "first"`) terra dispatches to the optimized C++ implementation and
+parallelism is controlled via TBB (`wopt=list(parallel=TRUE)`). For arbitrary R functions the work happens in R, and the `cores` argument is the relevant knob (see previous section).
+
+
+## Single computer vs. HPC cluster
+
+The right choice depends on where the cores are.
+
+### One computer, multiple cores
+
+In rough order of preference:
+
+1. **TBB** (`wopt=list(parallel=TRUE)`) — zero setup cost, no serialization, lowest overhead. Use whenever the operation supports it.
+2. **`cores=` argument** in `app`/`lapp`/`tapp`/`predict`/etc. — for user-defined R functions on a single raster.
+3. **Manual `parallel::parLapply` with `wrap()` or filenames** — for custom workflows that loop over rasters, layers, models, or tiles.
+4. **`window()` tiling + `parLapply`** — when one operation on one large raster can be split spatially. Particularly effective for `focal`, `aggregate`, and `predict` on rasters that do not fit in memory.
+
+`mclapply` and `future::multicore` (forked workers) work too on macOS and Linux. They share memory copy-on-write so `wrap()` is unnecessary, but the C++ pointer must still be valid on the worker, which it is for forked processes that did not modify the object after the fork. Avoid them on Windows and in RStudio (they fall back to sequential).
+
+### HPC cluster of nodes (each with multiple cores)
+
+On an HPC system you typically combine **two levels** of parallelism:
+
+- **Across nodes**: one R process per node (or per task), launched via the scheduler (SLURM, PBS, ...) using `Rscript`, `batchtools`,
+  `future.batchtools`, MPI (via `Rmpi`/`pbdMPI`), or simply by partitioning input filenames or tiles across array jobs.
+- **Within node**: TBB (set `terraOptions(parallel=TRUE)` at the top of the worker script) and/or `cores=` for user functions.
+
+The most reliable inter-node "serialization" of raster data is **the filename on a shared file system** (Lustre, NFS, GPFS, ...). Build the
+SpatRaster on each node from the path; never `wrap()` and ship raster values across the network if the file is reachable.
+
+```{r, eval=FALSE}
+# slurm_array.R, dispatched as one task per tile
+args <- commandArgs(trailingOnly=TRUE)
+i <- as.integer(args[1])
+
+library(terra)
+terraOptions(parallel=TRUE)         # use TBB within this node
+
+r <- rast("/shared/dem.tif")
+window(r) <- tiles[[i]]             # tiles defined in a shared script
+out <- focal(r, w=11, fun="mean")
+writeRaster(out, sprintf("/shared/out/tile_%03d.tif", i))
+```
+
+Then mosaic the tiles in a final, single-process step.
+
+
+## Other useful patterns
+
+- **`tiles()`** generates `SpatExtent` tiles from a template raster — a convenient input for the tiling strategy above.
+- **`makeTiles(x, y)`** writes one file per tile to disk; a cluster job can then process the tiles independently.
+- **`vrt()`** stitches many files back into a single virtual raster without copying any pixels.
+- **`writeRaster(..., gdal=c("BIGTIFF=YES", "NUM_THREADS=ALL_CPUS"))`** uses GDAL's own threading for compression.
+- **`spatSample()`** with a large `size` runs faster with TBB.
+- For **`SpatVector`**: most geometric predicates (`relate`, `nearest`, `distance`) honour TBB; for very large layers consider partitioning
+  the layer geographically with `crop()` and processing the parts on separate workers.
+
+
+## Roadmap for better parallelization support
+
+Areas where terra can be improved (contributions welcome):
+
+1. **More TBB coverage**.
+   Obvious next targets are `aggregate(fun=...)`, `extract`, `terrain`, `mask` / `cover`, `classify`, `subst`, `crop`, `extend`, `predict` (built-in stat models), and the `merge`/`mosaic` core. Many of these are pixel-wise or block-wise operations whose inner loops are immediately parallelizable.
+
+2. **Honour `terraOptions(parallel=TRUE)` more consistently.** At the moment some C++ paths check `opt.parallel`, others
+   unconditionally run sequentially. A pass through the codebase to gate every parallelizable kernel on a single, documented option (and a
+   `threads` option to cap the thread count) would make behaviour predictable.
+
+3. **Block-level parallelism in writeRaster.**
+   Most chunked writers process blocks sequentially. With a thread-safe block queue and an output GDAL dataset opened in `UPDATE` mode,
+   blocks could be computed and written in parallel.
+
+4. **A `tile_apply()` convenience wrapper.**
+   A single high-level function that takes `(x, fun, tiles, cores, cpkgs, ...)`, runs `fun` on each tile (with `window()` set under the
+   hood) on a worker cluster, and returns a mosaicked `SpatRaster`. This would package the Strategy 3 pattern shown above.
+
+5. **First-class `future`/`mirai` integration.**
+   `wrap()` plus `future_lapply()` already works, but a thin `terra::future_app()` / `terra::future_focal()` would handle the
+   wrap/unwrap dance and enforce filename-based shipping for large rasters automatically.
+
+6. **GPU offload.**
+   Several inner kernels (`focal`, `aggregate`, `arith`, `terrain`) are regular enough to map cleanly to CUDA / SYCL / OpenMP target offload. This is a larger undertaking but would dwarf the speedups achievable with multi-core CPUs for pixel-wise operations.
+
+7. **Documentation.**
+   A short cheatsheet of "which function takes which parallel knob" would make these capabilities much more discoverable. This chapter is
+   a first step in that direction.
