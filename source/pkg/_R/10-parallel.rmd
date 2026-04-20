@@ -171,6 +171,15 @@ terraOptions(parallel=TRUE)
 focal(r, w=21, fun="mean")          
 ```
 
+By default TBB schedules across all logical CPU cores. To cap the number of threads (for example to leave room for other processes, or to keep a forked worker from spawning hundreds of children), set the `threads` option. `threads = 0` (the default) means "no cap, use the TBB default". Any positive value caps the number of threads at that count. The option is honoured by every TBB-parallel kernel in terra and is also forwarded to GDAL's warp engine (`project()`, `resample()`, `warp()`).
+
+```{r, eval=FALSE}
+terraOptions(parallel=TRUE, threads=4)         # use at most 4 threads
+focal(r, w=21, fun="mean")                     # capped at 4
+
+terraOptions(threads=0)                        # back to "all CPUs"
+```
+
 Functions that currently benefit from TBB include parts of `arith`, distance calculations on `SpatVector`, and the new fast `focal` path
 (`new=TRUE`, the default). TBB has no per-call setup cost and shares the process memory, so it is the most efficient way to use multiple cores **on a single machine** for one operation. Combine with Strategy 2 or 3 to reach across machines.
 
