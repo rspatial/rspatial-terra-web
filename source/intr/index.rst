@@ -19,6 +19,5 @@ Introduction to R
 	11-dataprep
 	12-plots
 	13-statmodels
-	14-parallel
-	15-misc
-	16-help
+	14-misc
+	15-help

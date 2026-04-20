@@ -272,31 +272,28 @@ Then mosaic the tiles in a final, single-process step.
 
 ## Roadmap for better parallelization support
 
-Areas where terra can be improved (contributions welcome):
+Ideas for areas where terra can be improved:
 
 1. **More TBB coverage**.
+   
    Obvious next targets are `aggregate(fun=...)`, `extract`, `terrain`, `mask` / `cover`, `classify`, `subst`, `crop`, `extend`, `predict` (built-in stat models), and the `merge`/`mosaic` core. Many of these are pixel-wise or block-wise operations whose inner loops are immediately parallelizable.
 
-2. **Honour `terraOptions(parallel=TRUE)` more consistently.** At the moment some C++ paths check `opt.parallel`, others
-   unconditionally run sequentially. A pass through the codebase to gate every parallelizable kernel on a single, documented option (and a
-   `threads` option to cap the thread count) would make behaviour predictable.
-
-3. **Block-level parallelism in writeRaster.**
+2. **Block-level parallelism in writeRaster.**
+   
    Most chunked writers process blocks sequentially. With a thread-safe block queue and an output GDAL dataset opened in `UPDATE` mode,
    blocks could be computed and written in parallel.
 
-4. **A `tile_apply()` convenience wrapper.**
+3. **A `tile_apply()` convenience wrapper.**
+   
    A single high-level function that takes `(x, fun, tiles, cores, cpkgs, ...)`, runs `fun` on each tile (with `window()` set under the
    hood) on a worker cluster, and returns a mosaicked `SpatRaster`. This would package the Strategy 3 pattern shown above.
 
-5. **First-class `future`/`mirai` integration.**
+4. **First-class `future`/`mirai` integration.**
+   
    `wrap()` plus `future_lapply()` already works, but a thin `terra::future_app()` / `terra::future_focal()` would handle the
    wrap/unwrap dance and enforce filename-based shipping for large rasters automatically.
 
-6. **GPU offload.**
-   Several inner kernels (`focal`, `aggregate`, `arith`, `terrain`) are regular enough to map cleanly to CUDA / SYCL / OpenMP target offload. This is a larger undertaking but would dwarf the speedups achievable with multi-core CPUs for pixel-wise operations.
+5. **GPU offload.**
 
-7. **Documentation.**
-   A short cheatsheet of "which function takes which parallel knob" would make these capabilities much more discoverable. This chapter is
-   a first step in that direction.
+   Several inner kernels (`focal`, `aggregate`, `arith`, `terrain`) are regular enough to map cleanly to CUDA / SYCL / OpenMP target offload. This is a larger undertaking but would dwarf the speedups achievable with multi-core CPUs for pixel-wise operations.
 
