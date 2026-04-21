@@ -6,7 +6,7 @@ Many computations on `SpatRaster` (and to a lesser extent `SpatVector`)  objects
 
 In some cases parallelization is essential and easy --- for example when processing many files on a cluster, or for tasks that are repeated often enough that the setup cost is amortised. In other cases the gain is marginal and not worth the effort, because setting up a parallel workflow can take a long time, introduce subtle errors, and complicate debugging. It pays to first time a single-threaded run, estimate the best-case speed-up, and only then decide whether to parallelize. 
 
-This chapter discusses the available approaches and their trade-offs, and ends with a roadmap for further parallelization support in terra.
+This chapter discusses the available approaches and their trade-offs.
 
 
 ## A fundamental constraint: terra objects hold a C++ pointer
@@ -202,7 +202,7 @@ out <- app(r, fun=function(v) median(v, na.rm=TRUE), cores=4)
 terra creates the cluster, ships the function (and any extra named arguments) to each worker, and processes the raster block-by-block with
 the workers in parallel. For `predict` you can also pass `cpkgs=` to preload packages on each worker, which is necessary when the prediction function comes from a package such as **randomForest** or **mgcv**.
 
-Important caveats:
+Important notes:
 
 - Extra `...` arguments **must be named** when `cores > 1`, because the workers receive them by name through `clusterExport`.
 - The function `fun` is serialized to each worker; it should not capture large objects from its enclosing environment, and any terra objects it uses must be passed in via `wrap()` or as filenames.
@@ -275,34 +275,6 @@ Then mosaic the tiles in a final, single-process step.
 - **`vrt()`** stitches many files back into a single virtual raster without copying any pixels.
 - **`writeRaster(..., gdal=c("BIGTIFF=YES", "NUM_THREADS=ALL_CPUS"))`** uses GDAL's own threading for compression.
 - **`spatSample()`** with a large `size` runs faster with TBB.
-- For **`SpatVector`**: most geometric predicates (`relate`, `nearest`, `distance`) honour TBB; for very large layers consider partitioning
-  the layer geographically with `crop()` and processing the parts on separate workers.
+- For **`SpatVector`**: most geometric predicates (`relate`, `nearest`, `distance`) honour TBB; 
 
-
-## Roadmap for better parallelization support
-
-Ideas for areas where terra can be improved:
-
-1. **More TBB coverage**.
-   
-   Obvious next targets are `aggregate(fun=...)`, `extract`, `terrain`, `mask` / `cover`, `classify`, `subst`, `crop`, `extend`, `predict` (built-in stat models), and the `merge`/`mosaic` core. Many of these are pixel-wise or block-wise operations whose inner loops are immediately parallelizable.
-
-2. **Block-level parallelism in writeRaster.**
-   
-   Most chunked writers process blocks sequentially. With a thread-safe block queue and an output GDAL dataset opened in `UPDATE` mode,
-   blocks could be computed and written in parallel.
-
-3. **A `tile_apply()` convenience wrapper.**
-   
-   A single high-level function that takes `(x, fun, tiles, cores, cpkgs, ...)`, runs `fun` on each tile (with `window()` set under the
-   hood) on a worker cluster, and returns a mosaicked `SpatRaster`. This would package the Strategy 3 pattern shown above.
-
-4. **First-class `future`/`mirai` integration.**
-   
-   `wrap()` plus `future_lapply()` already works, but a thin `terra::future_app()` / `terra::future_focal()` would handle the
-   wrap/unwrap dance and enforce filename-based shipping for large rasters automatically.
-
-5. **GPU offload.**
-
-   Several inner kernels (`focal`, `aggregate`, `arith`, `terrain`) are regular enough to map cleanly to CUDA / SYCL / OpenMP target offload. This is a larger undertaking but would dwarf the speedups achievable with multi-core CPUs for pixel-wise operations.
 
