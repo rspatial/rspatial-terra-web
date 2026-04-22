@@ -25,9 +25,9 @@ It is very important to stay up to date with R and the packages, as they improve
 ## Piping
 
 
-It has become quite common to use the `|>` "piping" operator in R, or the `or `%>%` variant defined in the `magrittr` package. We do not use it much in our tutorials, but we show it here so that you can understand it when you come across it.
+It has become quite common to use the `|>` "piping" operator in R, or the `%>%` variant defined in the `magrittr` package. We do not use it much in our tutorials, but we show it here so that you can understand it when you come across it.
 
-In this example we have vector v. We want to change it into a data.frame with 1o rows and 3 columns, use apply to get the mean values per row, and show the first few results 
+In this example we have vector `v`. We want to change it into a data.frame with 10 rows and 3 columns, use apply to get the mean values per row, and show the first few results 
 
 ```{r}
 v <- 1:30
@@ -75,9 +75,11 @@ Compared to nested function calls, the benefit of this approach is that the oper
 
 ## How to write a good script?
 
-Read and follow [this style guide](https://google.github.io/styleguide/Rguide.xml).
+It is very important to invest time and effort in writing clean, concise and expressive scripts. Just like you might do when you write an essay. 
 
-Only use a path name at the very top of your script. After that, all path names should be relative.
+Have a look, and consider following [this style guide](https://google.github.io/styleguide/Rguide.xml).
+
+Only define a path name at the very top of your script. After that, all filenames should be relative to that path.
 
 Do not copy and paste the same code into a single script (or multiple scripts), perhaps with minor changes. Rather, write general purpose functions to put code together. You can store these functions in a separate .R file and access them via `source('myfunctions.R)`; and then reuse them. If you have a few of these, you might want to put them into your own R package. Even if the functions are only for your own use.
 

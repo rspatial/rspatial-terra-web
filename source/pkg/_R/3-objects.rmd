@@ -80,7 +80,7 @@ xmax(r)
 
 The function `terra` also allows you to create a `SpatRaster` from another object, including another `SpatRaster`, or `SpatRaster` objects from the "terra" package.
 
-It is more common, however, to create a `SpatRaster` object from a file. The raster package can use raster files in several formats, including some 'natively' supported formats and other formats via the `rgdal` package. Supported formats for reading include GeoTIFF, ESRI, ENVI, and ERDAS. Most formats supported for reading can also be written to. 
+It is more common, however, to create a `SpatRaster` object from a file. The terra package can use raster files in several formats, including some 'natively' supported formats and other formats via the `rgdal` package. Supported formats for reading include GeoTIFF, ESRI, ENVI, and ERDAS. Most formats supported for reading can also be written to. 
 
 ```{r  raster-2a, fig=TRUE , echo=TRUE}
 # get the name of an example file installed with the package

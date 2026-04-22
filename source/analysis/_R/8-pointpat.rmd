@@ -94,7 +94,7 @@ points(crime, col='red', cex=.5)
 The number of events in each quadrat can be counted using the 'rasterize' function. That function can be used to summarize the number of points within each cell, but also to compute statistics based on the 'marks' (attributes). For example we could compute the number of different crime types) by changing the 'fun' argument to another function (see ?rasterize).
 
 ```{r, pp4, fig.width=8, fig.height=4}
-nc <- rasterize(crime, r, fun=function(i){length(i)}, background=0)
+nc <- rasterize(crime, r, fun=length, background=0)
 plot(nc)
 plot(city, add=TRUE)
 ``` 

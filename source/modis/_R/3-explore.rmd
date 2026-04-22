@@ -6,13 +6,13 @@
 
 Now that we have successfully downloaded one MODIS tile, we can use `terra` package to explore and visualize it. Please note that MODIS tiles are distributed in HDF format that may include sub-datasets. The sub-dataset and processing steps might be different for various MODIS collections (e.g. daily scenes, vegetation indices).
 
-Now that we have donwload some MODIS data, we can explore and visualize it.
+Now that we have download some MODIS data, we can explore and visualize it.
 
 First create a SpatRaster object from the file created on the previous page.
 
 ```{r mplot, message=FALSE}
 datadir <- file.path(dirname(tempdir()), "_modis")
-mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.006.2015198070255.hdf")
+mf <- file.path(datadir, "MOD09A1.A2009361.h21v08.061.2021149144347.hdf")
 
 library(terra)
 r <- rast(mf[1])
@@ -68,4 +68,4 @@ plotRGB(r, r = 1, g = 4, b = 3, stretch="lin")
 
 *Exercise:* Create False Color Composite plot using the same data. Hint: try `plotRGB` and specify the bands you need.    
 
-*Exercise:* Save the plots to grahics files. Hint: have a look at `?png`.
+*Exercise:* Save the plots to graphics files. Hint: have a look at `?png`.

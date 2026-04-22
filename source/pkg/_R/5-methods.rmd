@@ -88,7 +88,7 @@ There are a number of distance related methods. `distance` computes the shortest
 
 ## Spatial configuration
 
-The `clump` method identifies groups of cells that are connected. `boundaries` identifies edges, that is, transitions between cell values. `area` computes the size of each grid cell (for unprojected rasters), this may be useful to, e.g. compute the area covered by a certain class on a longitude/latitude raster. 
+The `patches` method identifies groups of cells that are connected. `boundaries` identifies edges, that is, transitions between cell values. `area` computes the size of each grid cell (for unprojected rasters), this may be useful to, e.g. compute the area covered by a certain class on a longitude/latitude raster. 
 
 ```{r  raster-7}
 r <- rast(nrow=45, ncol=90)

@@ -40,7 +40,7 @@ templates_path = ['../rtheme/templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
-source_suffix = ['.rst', '.md']
+source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 
 #source_parsers = {
 #   '.md': 'recommonmark.parser.CommonMarkParser',
@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Spatial Data Science'
-copyright = u'2020-2021, Robert J. Hijmans'
+copyright = u'2020-2026, Robert J. Hijmans'
 author = u'Robert J. Hijmans'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -71,7 +71,7 @@ author = u'Robert J. Hijmans'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

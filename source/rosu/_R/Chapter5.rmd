@@ -369,7 +369,7 @@ par(mai=c(0,0,0.5,0.5))
 plot(ds, main='crime density')
 ``` 
 
-Density is the number of points per unit area. Let's check if the numbers makes sense, by adding them up and multiplying with the area of the raster cells. I use raster package functions for that.
+Density is the number of points per unit area. Let's check if the numbers makes sense, by adding them up and multiplying with the area of the raster cells. 
 
 ```{r}
 nrow(pts)

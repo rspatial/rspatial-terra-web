@@ -174,13 +174,3 @@ plotRGB(bg)
 lines(p, col="blue", lwd=3)
 ```
 
-## Interactive maps 
-
-You can use the `leaflet` package to make interactive maps. 
-
-```{r leaflet, message=FALSE}
-library(leaflet)
-m <- plet(p)
-m
-```
-

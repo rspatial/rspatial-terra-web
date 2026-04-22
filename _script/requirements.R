@@ -13,7 +13,7 @@ pkgs <- unique(unlist(sapply(f, libfun)))
 pkgs <- pkgs[nchar(pkgs) < 100]
 pkgs <- gsub("library\\(", "", pkgs)
 pkgs <- trimws(gsub(")", "", pkgs))
-pkgs <- sort(unique(c(pkgs, c("raster"))))
+pkgs <- sort(unique(c(pkgs, c("raster", "webshot", "spatialreg", "spdep"))))
 pkgs <- gsub('\"', "", pkgs)
 #pkgs <- pkgs[!(pkgs=='rspatial')]
 

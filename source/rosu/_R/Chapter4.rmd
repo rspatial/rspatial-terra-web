@@ -257,7 +257,7 @@ randomLineInRectangle <- function(xmn=0, xmx=0.8, ymn=0, ymx=0.6, retXY=FALSE) {
 	x <- runif(1, xmn, xmx)
 	y <- runif(1, ymn, ymx)
 	angle <- runif(1, 0, 359.99999999)
-	if (angle == 0) {
+	if (angle == 90) {
 		# vertical line, tan is infinite
 		if (retXY) {
 			xy <- rbind(c(x, ymn), c(x, y), c(x, ymx))
