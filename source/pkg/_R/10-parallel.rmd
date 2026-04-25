@@ -12,7 +12,7 @@ This chapter discusses the available approaches and their trade-offs for paralle
 ## The constraint: terra objects hold a C++ pointer
 
 
-`SpatRaster`, `SpatVector`, `SpatRasterDataset`, `SpatRasterCollection`, `SpatExtent` and `SpatGraticule` are *thin* R objects: each holds an external pointer to an underlying C++ object that lives in the memory of the R session that created it. This helps wrinting fast code, but as a consequence, these objects **cannot be serialized** or sent to a worker process with functions like `parallel::clusterExport` / `parLapply` / `mclapply` / `future` directly. After serialization the pointer would be a dangling address in the worker's memory.
+`SpatRaster`, `SpatVector`, `SpatRasterDataset`, `SpatRasterCollection`, `SpatExtent` and `SpatGraticule` are *thin* R objects: each holds an external pointer to an underlying C++ object that lives in the memory of the R session that created it. This helps writing fast code, but as a consequence, these objects **cannot be serialized** or sent to a worker process with functions like `parallel::clusterExport` / `parLapply` / `mclapply` / `future` directly. After serialization the pointer would be a dangling address in the worker's memory.
 
 If you try, the worker either errors out, returns `NULL`, or crashes:
 
@@ -56,7 +56,7 @@ global(r, "sum", na.rm=TRUE)
 
 ```
 
-It most cases it is important to use `wrap` argument `proxy=FALSE` to avoid that `wrap()` reads all values into memory, as that may not work with large rasters. This assumes that the workers can read from the same shared file system as the parent process.
+In most cases it is important to use `wrap` argument `proxy=TRUE` to avoid that `wrap()` reads all values into memory, as that may not work with large rasters. This assumes that the workers can read from the same shared file system as the parent process.
 
 
 ## Strategy 2 — pass filenames, open them on the worker
@@ -86,7 +86,7 @@ This pattern is clearly better than `wrap()` whenever:
 
 ## Strategy 3 — partition by tiles
 
-terra faciliates this approach with the `tile_apply()` method. 
+terra facilitates this approach with the `tile_apply()` method. 
 
 In its simplest form:
 
@@ -115,7 +115,7 @@ You can override the default by passing `tiles =` (a `SpatExtent`, a list of the
 
 ### Edge effects: `buffer = ` for `focal`-style operations
 
-For neighbourhood operations like `focal`, processing each tile in isolation produces erroneous results at tile boundaries (cells near the seam see fewer neighbours than they should). Pass `buffer = ` to read the additional number of rows/coluymns that are needed around each tile. The function then runs `fun` on the enlarged region, and crops the result back to the original tile before writing. Per-tile outputs stay non-overlapping. 
+For neighbourhood operations like `focal`, processing each tile in isolation produces erroneous results at tile boundaries (cells near the seam see fewer neighbours than they should). Pass `buffer = ` to read the additional number of rows/columns that are needed around each tile. The function then runs `fun` on the enlarged region, and crops the result back to the original tile before writing. Per-tile outputs stay non-overlapping. 
 
 ```{r, eval=FALSE}
 out <- tile_apply(r, function(x) focal(x, w=11, fun="mean"), buffer=5, cores=4)
@@ -219,7 +219,7 @@ For very large rasters you can combine it with Strategy 3 (read the values from 
 
 ## Function-level parallelism: the `cores` argument
 
-Some functions that apply a user-supplied R function take a `cores` argument and use `parallel::makeCluster` (PSOCK) under the hood. Currently this includes the following functions: `app`, `tapp`, `lapp`, `predict`, `interpolate`, `regress`, `aggregate`, and `focal`
+Some functions that apply a user-supplied R function take a `cores` argument and use `parallel::makeCluster` (PSOCK) under the hood. Currently this includes the following functions: `app`, `tapp`, `lapp`, `predict`, `interpolate`, `regress`, `aggregate`, and `focal`.
 
 
 ```{r, eval=FALSE}
@@ -229,20 +229,20 @@ out <- app(r, fun=function(v) median(v, na.rm=TRUE), cores=4)
 
 With these functions, terra creates the cluster, ships the function (and any extra named arguments) to each worker, and processes the raster block-by-block with the workers in parallel. For `predict` you can also pass `cpkgs=` to preload packages on each worker, which is necessary when the prediction function comes from a package such as **randomForest** or **mgcv**.
 
-### built-in functions
+### Built-in functions
 
-Note that with built-in functions that can be supplied as a character value such as (`"sum"`, `"mean"`, `"min"`, `"max"`, `"modal"`, "first"`) the `cores` argument is ignored because terra uses optimized C++ implementations and parallelism is controlled via TBB (as long as terraOptions()$parallel .
+Note that with built-in functions that can be supplied as a character value such as (`"sum"`, `"mean"`, `"min"`, `"max"`, `"modal"`, `"first"`) the `cores` argument is ignored because terra uses optimized C++ implementations and parallelism is controlled via TBB (as long as `terraOptions()$parallel` is `TRUE`).
 
 ### Important caveats:
 
 - Extra `...` arguments **must be named** when `cores > 1`, because the workers receive them by name through `clusterExport`.
 - The function `fun` is serialized to each worker; it should not capture large objects from its enclosing environment, and any terra objects it uses must be passed in via `wrap()` or as filenames.
-- The cluster is created and torn down per call and that takes time. For repeated calls with many small tasks create your own cluster and pass that to argument `cores`
+- The cluster is created and torn down per call and that takes time. For repeated calls with many small tasks create your own cluster and pass that to argument `cores`.
 
 
 ## Within-process parallelism: TBB
 
-A growing number of terra's C++ code paths are parallelized internally with [Intel TBB](https://github.com/oneapi-src/oneTBB). When TBB is
+A growing number of terra's C++ code paths are parallelized internally with [Intel Threading Building Blocks](https://github.com/uxlfoundation/oneTBB). When TBB is
 available at build time (which is the default on Windows and on most Linux distributions) you can opt into TBB-based threading by setting the `parallel` write option (this is the default in the version >= 1.9-21):
 
 ```{r, eval=FALSE}
@@ -266,7 +266,7 @@ focal(r, w=21, fun="mean")                     # capped at 4
 terraOptions(threads=0)                        # back to "all CPUs"
 ```
 
-Functions that currently benefit from TBB include parts of `arith`, distance calculations on `SpatVector`, and `focal` with internal fnctins such as `mean` and `sum`. TBB has no per-call setup cost and shares the process memory, so it is the most efficient way to use multiple cores **on a single machine** for one operation. It can be combined with Strategy 2 or 3 to use multi-core processing across machines.
+Functions that currently benefit from TBB include parts of `arith`, distance calculations on `SpatVector`, and `focal` with internal functions such as `mean` and `sum`. TBB has no per-call setup cost and shares the process memory, so it is the most efficient way to use multiple cores **on a single machine** for one operation. It can be combined with Strategy 2 or 3 to use multi-core processing across machines.
 
 
 
@@ -278,11 +278,11 @@ The right choice depends on where the cores are.
 
 In rough order of preference:
 
-1. **TBB** (`wopt=list(parallel=TRUE)`) — zero setup cost, no serialization, lowest overhead. Use whenever the operation supports it.
-2. **`cores=` argument** in `app`/`lapp`/`tapp`/`predict`/etc. — for user-defined R functions on a single raster.
-3. **`tile_apply(x, fun, cores=, buffer=)`** — when one operation on one large raster can be split spatially. Particularly effective for `focal`, `aggregate`, and `predict` on rasters that do not fit in memory.
-4. **Manual `parallel::parLapply` with `wrap()` or filenames** — for custom workflows that loop over rasters, layers, models, or tiles, or when you need a non-PSOCK back-end.
-5. **Raw values via `values()` / `readValues`** — when the per-cell computation is a fast vectorized R expression and you would rather not move terra objects across process boundaries at all.
+1. TBB (`wopt=list(parallel=TRUE)`) — zero setup cost, no serialization, lowest overhead. Use whenever the operation supports it.
+2. `cores=` argument in `app`/`lapp`/`tapp`/`predict`/etc. — for user-defined R functions on a single raster.
+3. `tile_apply(x, fun, cores=, buffer=)` — when one operation on one large raster can be split spatially. Particularly effective for `focal`, `aggregate`, and `predict` on rasters that do not fit in memory.
+4. Manual `parallel::parLapply` with `wrap()` or filenames — for custom workflows that loop over rasters, layers, models, or tiles, or when you need a non-PSOCK back-end.
+5. Raw values via `values()` / `readValues` — when the per-cell computation is a fast vectorized R expression and you would rather not move terra objects across process boundaries at all.
 
 `mclapply` and `future::multicore` (forked workers) work too on macOS and Linux. They share memory copy-on-write so `wrap()` is unnecessary, but the C++ pointer must still be valid on the worker, which it is for forked processes that did not modify the object after the fork. Avoid them on Windows and in RStudio (they fall back to sequential).
 
