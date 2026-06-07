@@ -294,8 +294,7 @@ On an HPC system you typically combine **two levels** of parallelism:
   `future.batchtools`, MPI (via `Rmpi`/`pbdMPI`), or simply by partitioning input filenames or tiles across array jobs.
 - **Within node**: TBB (set `terraOptions(parallel=TRUE)` at the top of the worker script), `cores=` for user functions, and/or `tile_apply()` for tiled neighbourhood operations.
 
-The most reliable inter-node "serialization" of raster data is **the filename on a shared file system** (Lustre, NFS, GPFS, ...). Build the
-SpatRaster on each node from the path; never `wrap()` and ship raster values across the network if the file is reachable.
+The most reliable inter-node "serialization" of raster data is **the filename on a shared file system**. Build the SpatRaster on each node from the path; never `wrap()` and ship raster values across the network if the file is reachable.
 
 ```{r, eval=FALSE}
 # slurm_array.R, dispatched as one task per tile
